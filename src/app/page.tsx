@@ -1,0 +1,317 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Globe2, RotateCcw, ExternalLink, Radio, Activity } from 'lucide-react';
+import RegionPanel, { TxEntry } from '@/components/RegionPanel';
+import type { Step } from '@/components/Tour';
+import { getDisaster, SEVERITY_COLOR, REGION_NAMES } from '@/lib/chile';
+import { DemoAccounts, setupDemo, explorerTx } from '@/lib/stellar';
+
+const VacaGlobe = dynamic(() => import('@/components/VacaGlobe'), { ssr: false });
+const Tour = dynamic(() => import('@/components/Tour'), { ssr: false });
+
+interface SelectedRegion {
+  id: number;
+  name: string;
+  center: [number, number];
+}
+
+// ── Pasos del tour guiado (react-joyride) ──
+const OVERVIEW_STEPS: Step[] = [
+  {
+    target: '[data-tour="brand"]',
+    title: 'Bienvenido a V.A.C.A.',
+    content:
+      'Infraestructura de resiliencia post-catástrofe sobre Stellar. Te guiamos por el flujo completo del MVP, paso a paso.',
+    placement: 'bottom-start',
+  },
+  {
+    target: '[data-tour="status"]',
+    title: 'Stellar Testnet en vivo',
+    content:
+      'Conectamos a la red de prueba real de Stellar. Cada operación de la demo es una transacción verificable en el explorador.',
+    placement: 'bottom-end',
+  },
+  {
+    target: '[data-tour="legend"]',
+    title: 'Focos de catástrofe',
+    content:
+      'El globo enfoca Chile. Cada foco pulsante es una región afectada; el color indica la severidad (crítico, alto o medio).',
+    placement: 'top-start',
+  },
+  {
+    target: 'body',
+    title: 'Empieza por una región',
+    content:
+      'Haz clic en una región con foco para abrir su panel de ayuda. Allí te explicaremos el flujo completo de la donación.',
+    placement: 'center',
+  },
+];
+
+const PANEL_STEPS: Step[] = [
+  {
+    target: '[data-tour="panel-header"]',
+    title: 'Panel de la región',
+    content:
+      'Aquí ves el detalle de la catástrofe: tipo de evento, severidad y personas damnificadas. Sigue los 5 pasos para entregar ayuda.',
+    placement: 'left',
+  },
+  {
+    target: '[data-tour="catastro"]',
+    title: '1 · Verdad emergente',
+    content:
+      'Validamos el catastro cruzando reportes comunitarios. Al validar, la confianza llega al 100% y se activa la capa de ayuda.',
+    placement: 'left',
+  },
+  {
+    target: '[data-tour="wallet"]',
+    title: '2 · Wallet multifirma',
+    content:
+      'Cada evento abre su propia cuenta 2-de-2: requiere la firma de la Plataforma y la Municipalidad para liberar fondos (anti-fraude).',
+    placement: 'left',
+  },
+  {
+    target: '[data-tour="tokenize"]',
+    title: '3 · Tokenizar necesidades',
+    content:
+      'Cada necesidad (agua, alimentos, abrigo…) se emite como un asset en Stellar Testnet, trazable de punta a punta.',
+    placement: 'left',
+  },
+  {
+    target: '[data-tour="donate"]',
+    title: '4 · Donar al pool',
+    content:
+      'Las donaciones en USDC entran al pool multifirma del evento. Define el monto y dona; el saldo del pool se actualiza al instante.',
+    placement: 'left',
+  },
+  {
+    target: '[data-tour="proof"]',
+    title: '5 · Liberar + Proof of Aid',
+    content:
+      'Con doble firma se libera la ayuda vía Claimable Balance; el beneficiario la reclama y se genera el Proof of Aid verificable.',
+    placement: 'left',
+  },
+  {
+    target: 'body',
+    title: 'Transparencia total',
+    content:
+      'Cada acción genera transacciones que aparecen abajo a la derecha y enlazan al explorador de Stellar. ¡Explora libremente!',
+    placement: 'center',
+  },
+];
+
+export default function Home() {
+  // La simulación arranca directamente (sin modal): el globo vuela a Chile.
+  const [started] = useState(true);
+  const [selected, setSelected] = useState<SelectedRegion | null>(null);
+  const [accounts, setAccounts] = useState<DemoAccounts | null>(null);
+  const [setupMsg, setSetupMsg] = useState('');
+  const [txLog, setTxLog] = useState<TxEntry[]>([]);
+
+  // Tour guiado (react-joyride): fase 'overview' (globo/HUD) y fase 'panel' (flujo de ayuda).
+  const [tourPhase, setTourPhase] = useState<'idle' | 'overview' | 'panel'>('idle');
+  const [panelTourPending, setPanelTourPending] = useState(false);
+  const [panelTourShown, setPanelTourShown] = useState(false);
+
+  // Deep-links (usados por los tests E2E): ?region=<id>.
+  // El tour solo corre en una visita normal (sin parámetros de demo/tests).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search);
+    const r = p.get('region');
+    if (r && REGION_NAMES[Number(r)]) {
+      const id = Number(r);
+      setSelected({ id, name: REGION_NAMES[id], center: [0, 0] });
+    }
+    const skipTour = p.has('start') || p.has('region') || p.has('mock') || p.has('notour');
+    if (!skipTour) {
+      setTourPhase('overview');
+      setPanelTourPending(true);
+    }
+  }, []);
+
+  // Lanza el tour del panel la primera vez que se abre una región con catástrofe.
+  useEffect(() => {
+    if (tourPhase !== 'idle' || !panelTourPending || panelTourShown) return;
+    if (selected && getDisaster(selected.id)) {
+      const t = setTimeout(() => {
+        setTourPhase('panel');
+        setPanelTourShown(true);
+        setPanelTourPending(false);
+      }, 450);
+      return () => clearTimeout(t);
+    }
+  }, [selected, tourPhase, panelTourPending, panelTourShown]);
+
+  const handleTourFinish = useCallback(() => setTourPhase('idle'), []);
+
+  // Inicializa cuentas demo al arrancar la simulación
+  useEffect(() => {
+    if (!started || accounts) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await setupDemo((m) => !cancelled && setSetupMsg(m));
+        if (!cancelled) {
+          setAccounts(res.accounts);
+          setSetupMsg('');
+        }
+      } catch (e: any) {
+        if (!cancelled) setSetupMsg('Error inicializando Testnet: ' + (e?.message ?? ''));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [started, accounts]);
+
+  const handleRegionClick = useCallback((id: number, name: string, center: [number, number]) => {
+    setSelected({ id, name, center });
+  }, []);
+
+  const handleTx = useCallback((entry: TxEntry) => {
+    setTxLog((log) => [entry, ...log].slice(0, 12));
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setSelected(null);
+    setTxLog([]);
+  }, []);
+
+  const disaster = selected ? getDisaster(selected.id) ?? null : null;
+
+  return (
+    <main className="relative h-screen w-screen overflow-hidden bg-[var(--bg-void)] text-[var(--text-primary)]">
+      {/* Globo */}
+      <VacaGlobe
+        started={started}
+        selectedRegionId={selected?.id ?? null}
+        onRegionClick={handleRegionClick}
+      />
+
+      {/* HUD superior */}
+      <header className="pointer-events-none absolute left-0 right-0 top-0 z-20 flex items-start justify-between p-3 md:p-4">
+        <div data-tour="brand" className="pointer-events-auto flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border-active)] bg-[var(--bg-panel)] backdrop-blur">
+            <Globe2 size={18} className="text-[var(--gold-primary)]" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-bold tracking-wide text-[var(--text-heading)]">
+              V.A.C.A.
+            </div>
+            <div className="hidden text-[10px] uppercase tracking-widest text-[var(--text-muted)] sm:block">
+              Resiliencia humanitaria · Stellar
+            </div>
+          </div>
+        </div>
+
+        {started && (
+          <div data-tour="status" className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 md:gap-2">
+            <StatusPill accounts={accounts} setupMsg={setupMsg} />
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] px-2 py-1.5 text-[11px] font-medium text-[var(--text-secondary)] backdrop-blur transition hover:text-[var(--text-primary)] md:px-3 md:py-2 md:text-xs"
+            >
+              <RotateCcw size={12} className="md:hidden" />
+              <RotateCcw size={13} className="hidden md:block" />
+              <span className="hidden md:inline">Reiniciar</span>
+            </button>
+          </div>
+        )}
+      </header>
+
+      {/* Leyenda inferior */}
+      {started && !selected && (
+        <div data-tour="legend" className="pointer-events-none absolute bottom-3 left-3 z-20 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] p-2.5 backdrop-blur md:bottom-4 md:left-4 md:p-3">
+          <div className="mb-1.5 text-[10px] uppercase tracking-widest text-[var(--text-muted)] md:mb-2">
+            Focos
+          </div>
+          <div className="space-y-1 md:space-y-1.5">
+            {(['critico', 'alto', 'medio'] as const).map((s) => (
+              <div key={s} className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)] md:gap-2 md:text-[11px]">
+                <span
+                  className="h-2 w-2 rounded-full md:h-2.5 md:w-2.5"
+                  style={{ background: SEVERITY_COLOR[s], boxShadow: `0 0 8px ${SEVERITY_COLOR[s]}` }}
+                />
+                {s === 'critico' ? 'Crítico' : s === 'alto' ? 'Alto' : 'Medio'}
+              </div>
+            ))}
+          </div>
+          <div className="mt-1.5 hidden border-t border-[var(--border-secondary)] pt-1.5 text-[10px] text-[var(--text-muted)] md:block">
+            Haz clic en una región afectada
+          </div>
+        </div>
+      )}
+
+      {/* Registro de transacciones */}
+      {started && txLog.length > 0 && (
+        <div className="pointer-events-auto absolute bottom-3 left-3 z-20 w-64 max-w-[calc(100vw-1.5rem)] rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] p-2.5 backdrop-blur md:bottom-4 md:left-auto md:right-4 md:w-72 md:p-3">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[var(--text-muted)] md:mb-2">
+            <Activity size={12} className="text-[var(--cyan-primary)]" /> Transacciones
+          </div>
+          <div className="max-h-40 space-y-1 overflow-y-auto md:max-h-48 md:space-y-1.5">
+            {txLog.map((t, i) => (
+              <a
+                key={i}
+                href={explorerTx(t.hash)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between gap-2 rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-2 py-1 text-[11px] transition hover:border-[var(--border-active)] md:py-1.5"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-[var(--text-primary)]">{t.label}</span>
+                  <span className="block truncate text-[10px] text-[var(--text-muted)]">
+                    {t.regionName}
+                  </span>
+                </span>
+                <ExternalLink size={12} className="shrink-0 text-[var(--text-muted)]" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Panel lateral de región */}
+      <div
+        className={`absolute right-0 top-0 z-30 h-full w-full transform transition-transform duration-300 md:w-[380px] ${
+          selected ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {selected && (
+          <RegionPanel
+            regionName={selected.name}
+            disaster={disaster}
+            accounts={accounts}
+            onClose={() => setSelected(null)}
+            onTx={handleTx}
+          />
+        )}
+      </div>
+
+      {/* Tour guiado paso a paso */}
+      {tourPhase !== 'idle' && (
+        <Tour
+          steps={tourPhase === 'overview' ? OVERVIEW_STEPS : PANEL_STEPS}
+          run
+          onFinish={handleTourFinish}
+        />
+      )}
+    </main>
+  );
+}
+
+function StatusPill({ accounts, setupMsg }: { accounts: DemoAccounts | null; setupMsg: string }) {
+  const ok = !!accounts;
+  return (
+    <div className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] px-3 py-2 text-xs backdrop-blur">
+      <Radio
+        size={13}
+        className={ok ? 'text-[var(--alert-green)]' : 'animate-pulse text-[var(--gold-primary)]'}
+      />
+      <span className="text-[var(--text-secondary)]">
+        {ok ? 'Testnet lista' : setupMsg || 'Conectando Testnet…'}
+      </span>
+    </div>
+  );
+}

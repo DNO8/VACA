@@ -1,0 +1,41 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+pnpm-debug.log*
+
+# env
+.env*.local
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# imagenes
+
+/*.png
+
+#test results 
+/test-results/
+
+#scripts
+/scripts/
+
+#markdowns y documentación
+/Markdowns/
+/VACA - documentación/
