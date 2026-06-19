@@ -4,6 +4,9 @@ import { Joyride, EVENTS, type EventData, type Options, type Step, type Styles }
 
 export type { Step };
 
+// La versión instalada de react-joyride soporta floaterProps en runtime, pero sus tipos no lo incluyen.
+const JoyrideAny = Joyride as any;
+
 const options: Partial<Options> = {
   arrowColor: '#0C0E1A',
   backgroundColor: '#0C0E1A',
@@ -14,8 +17,6 @@ const options: Partial<Options> = {
   spotlightPadding: 6,
   showProgress: true,
   skipBeacon: true,
-  showSkipButton: true,
-  disableScrolling: false,
   buttons: ['back', 'skip', 'primary'],
   zIndex: 10000,
 };
@@ -95,7 +96,7 @@ export default function Tour({ steps, run, onFinish }: TourProps) {
   };
 
   return (
-    <Joyride
+    <JoyrideAny
       steps={steps}
       run={run}
       continuous
@@ -104,7 +105,7 @@ export default function Tour({ steps, run, onFinish }: TourProps) {
       options={options}
       styles={styles}
       locale={locale}
-      floaterProps={floaterProps as any}
+      floaterProps={floaterProps}
     />
   );
 }

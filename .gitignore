@@ -20,6 +20,9 @@ pnpm-debug.log*
 # env
 .env*.local
 
+# typescript
+*.tsbuildinfo
+
 # playwright
 /test-results/
 /playwright-report/

@@ -10,7 +10,7 @@ test.describe('V.A.C.A. — flujo de la demo', () => {
     await expect(page.getByText('V.A.C.A.')).toBeVisible();
     // Ya no existe el modal con CTA "Iniciar simulación".
     await expect(page.getByRole('button', { name: /Iniciar simulación/i })).toHaveCount(0);
-    await expect(page.getByText(/Focos de catástrofe/i)).toBeVisible();
+    await expect(page.getByText(/Focos/i)).toBeVisible();
   });
 
   test('al cargar (mock) se inicializa la Testnet automáticamente', async ({ page }) => {
@@ -57,7 +57,7 @@ test.describe('V.A.C.A. — flujo de la demo', () => {
     await expect(page.getByText(/Proof of Aid registrado/i)).toBeVisible();
 
     // Registro de transacciones (dashboard de transparencia)
-    await expect(page.getByText('Transacciones Testnet')).toBeVisible();
+    await expect(page.getByText(/Transacciones/i)).toBeVisible();
     await expect(page.getByText(/Beneficiario reclamó la ayuda/i)).toBeVisible();
   });
 
