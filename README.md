@@ -73,11 +73,11 @@ node scripts/build-regions.mjs   # escribe public/chile-regions.geojson
 
 ### Cobertura de primitivas Stellar (Pitch, Diapositiva 5)
 
-- **Claimable Balances (USDC)** ✅
-- **Tokenización de insumos (`ITEM-*`)** ✅
-- **Cuentas multifirma 2-de-2 por evento** ✅
-- **Verdad emergente / confianza progresiva (Diapositivas 2–4)** ✅ (gating del Aid Layer)
-- **Contrato Soroban de Proof of Aid** ⏳ pendiente (hoy el Proof of Aid usa primitivas nativas).
+- **Claimable Balances (USDC)** 
+- **Tokenización de insumos (`ITEM-*`)** 
+- **Cuentas multifirma 2-de-2 por evento** 
+- **Verdad emergente / confianza progresiva (Diapositivas 2–4)** (gating del Aid Layer)
+- **Contrato Soroban de Proof of Aid** pendiente (hoy el Proof of Aid usa primitivas nativas).
 
 > Las llaves del modo demo son **solo Testnet** (sin valor real). La arquitectura objetivo es
 > non-custodial (firma client-side del propio usuario); el modo demo firma por conveniencia.
