@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { Analytics } from '@vercel/analytics/next';
 
 export const viewport: Viewport = {
   themeColor: '#D4AF37',
@@ -22,7 +23,10 @@ export default function RootLayout({
   return (
     <html lang="es" dir="ltr">
       <body className="antialiased">
-        <ErrorBoundary name="VACA Core">{children}</ErrorBoundary>
+        <ErrorBoundary name="VACA Core">
+          {children}
+          <Analytics />
+        </ErrorBoundary>
       </body>
     </html>
   );
