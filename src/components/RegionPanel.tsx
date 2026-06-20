@@ -86,6 +86,8 @@ export default function RegionPanel({
     );
   }
 
+  const busyStep = getBusyStep(busyLabel);
+
   const color = SEVERITY_COLOR[disaster.severity];
   const confidence = validated ? 100 : disaster.confidence;
 
@@ -196,13 +198,6 @@ export default function RegionPanel({
         </div>
       )}
 
-      {busy && (
-        <div className="mt-3 flex items-center gap-2 rounded-md border border-[var(--border-cyan)] bg-[var(--cyan-glow)] p-2 text-xs text-[var(--text-cyan)]">
-          <Loader2 size={14} className="animate-spin" />
-          <span>{busyLabel}</span>
-        </div>
-      )}
-
       {/* 0. Verdad emergente */}
       <Section icon={<FileSearch size={15} />} title="1 · Catastro · Verdad emergente" accent={color} dataTour="catastro">
         <div className="mb-2 flex items-center justify-between text-[11px] text-[var(--text-muted)]">
@@ -233,6 +228,7 @@ export default function RegionPanel({
             Validar catastro comunitario
           </button>
         )}
+        {busyStep === 1 && <BusyNotice label={busyLabel} />}
       </Section>
 
       {/* 2. Wallet multifirma */}
@@ -264,6 +260,7 @@ export default function RegionPanel({
             Activar wallet multifirma
           </button>
         )}
+        {busyStep === 2 && <BusyNotice label={busyLabel} />}
       </Section>
 
       {/* 3. Tokenizar necesidades */}
@@ -307,6 +304,7 @@ export default function RegionPanel({
             );
           })}
         </div>
+        {busyStep === 3 && <BusyNotice label={busyLabel} />}
       </Section>
 
       {/* 4. Donar */}
@@ -344,6 +342,7 @@ export default function RegionPanel({
             Pool del evento: {donatedTotal.toLocaleString('es-CL')} USDC
           </div>
         )}
+        {busyStep === 4 && <BusyNotice label={busyLabel} />}
       </Section>
 
       {/* 5. Liberar + Proof of Aid */}
@@ -370,6 +369,7 @@ export default function RegionPanel({
             {donatedTotal > 0 ? 'Liberar y entregar ayuda (2-de-2)' : 'Primero realiza una donación'}
           </button>
         )}
+        {busyStep === 5 && <BusyNotice label={busyLabel} />}
       </Section>
     </Shell>
   );
@@ -418,9 +418,27 @@ function Shell({
           {badge}
         </span>
       </div>
-      <div className="flex-1 space-y-3 overflow-y-auto p-3 md:space-y-4 md:p-4">{children}</div>
+      <div className="flex-1 space-y-3 overflow-y-auto p-3 pb-24 md:space-y-4 md:p-4 md:pb-16">{children}</div>
     </div>
   );
+}
+
+function BusyNotice({ label }: { label: string }) {
+  return (
+    <div className="mt-2 flex items-center gap-2 rounded-md border border-[var(--border-cyan)] bg-[var(--cyan-glow)] p-2 text-xs text-[var(--text-cyan)]">
+      <Loader2 size={14} className="animate-spin" />
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function getBusyStep(label: string): number | null {
+  if (label.includes('reportes')) return 1;
+  if (label.includes('wallet')) return 2;
+  if (label.includes('Tokenizando')) return 3;
+  if (label.includes('Donando')) return 4;
+  if (label.includes('Liberando')) return 5;
+  return null;
 }
 
 function Section({

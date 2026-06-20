@@ -182,7 +182,7 @@ export default function Home() {
   const disaster = selected ? getDisaster(selected.id) ?? null : null;
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-[var(--bg-void)] text-[var(--text-primary)]">
+    <main className="relative h-dvh w-screen overflow-hidden bg-[var(--bg-void)] text-[var(--text-primary)]">
       {/* Globo */}
       <VacaGlobe
         started={started}
@@ -274,7 +274,7 @@ export default function Home() {
 
       {/* Panel lateral de región */}
       <div
-        className={`absolute right-0 top-0 z-30 h-full w-full transform transition-transform duration-300 md:w-[380px] ${
+        className={`absolute right-0 top-0 z-30 h-dvh w-full transform transition-transform duration-300 md:w-[380px] ${
           selected ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

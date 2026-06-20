@@ -1,8 +1,36 @@
-# V.A.C.A. — MVP Web (Stellar Testnet)
+# V.A.C.A. — Vaquita de Ayuda y Coordinación Activa
 
-Infraestructura de resiliencia humanitaria post-catástrofe sobre **Stellar**. El MVP
-demuestra el riel de ayuda: **catastro → tokenización → donación → reclamo → Proof of Aid**,
-todo verificable en Testnet, sobre un **globo terráqueo interactivo** enfocado en las regiones de Chile.
+Infraestructura cívica descentralizada para transformar la solidaridad ciudadana en una **autopista de resiliencia humanitaria** en Chile y América Latina.
+
+> **La idea central:** cuando un desastre colapsa la información y el Estado tarda días en llegar, VACA permite que la comunidad genere el primer catastro, que los donantes envíen ayuda trazable y que los damnificados la reclamen directamente — sin que la fundación custodie el dinero.
+
+## ¿Qué problema resolvemos?
+
+- **El abismo del "Día 0":** la Ficha FIBE tarda entre 3 y 14 días en ejecutarse masivamente; mientras tanto, no hay datos confiables sobre quién necesita qué.
+- **La "segunda catástrofe":** la solidaridad espontánea genera desorden logístico: basura humanitaria (ropa sucia, pañales vencidos), rutas saturadas y ayuda sin dirección.
+- **La crisis de confianza:** los donantes desconfían del destino final de sus aportes por falta de trazabilidad en tiempo real.
+- **El músculo estatal limitado:** SENAPRED cuenta con recursos mínimos y personal de terreno insuficiente.
+
+## ¿Cómo funciona VACA?
+
+El sistema se organiza en cuatro capas:
+
+1. **Community Coordination Layer** — app mobile offline-first para que vecinos y damnificados generen el primer catastro durante el colapso de datos.
+2. **Aid Distribution Layer** — donaciones en USDC y vouchers tokenizados sobre la red Stellar, distribuidos con Claimable Balances.
+3. **Vaquita Insights** — capa analítica SaaS B2G/B2B para gobiernos, municipalidades y ONGs.
+4. **Proof of Aid** — certificados de impacto inmutables que devuelven la confianza al donante.
+
+## ¿Por qué Stellar?
+
+- **Costos insignificantes y liquidación en segundos:** microtransacciones ideales para ayuda humanitaria.
+- **Claimable Balances nativos:** permite reservar fondos para un RUT o wallet específico sin que la fundación los custodie.
+- **Cuentas multifirma:** cada evento de emergencia puede tener una wallet que exija firmas conjuntas (plataforma + municipalidad) para prevenir fraudes.
+- **Tokenización simple:** creación de assets específicos (`ITEM-AGUA`, `VOUCHER-HABITACION`) para vincular la donación con insumos concretos.
+- **Cumplimiento regulatorio:** al no custodiar fondos, VACA evita la fricción de licencias bancarias transfronterizas.
+
+## MVP Web (Stellar Testnet)
+
+Este repositorio contiene el MVP web demostrable para el Instaward de Stellar. El demo ejecuta el riel completo de ayuda — **catastro → tokenización → donación → reclamo → Proof of Aid** — todo verificable en Testnet, sobre un **globo terráqueo interactivo** enfocado en las regiones de Chile.
 
 ## Stack
 
@@ -71,6 +99,22 @@ Para que el E2E sea rápido y determinista hay dos afordancias (también útiles
 - **`?mock=1`** — la capa Stellar responde con datos simulados (sin tocar la red Testnet).
 - **`?start=1`** y **`?region=<COD_REGI>`** — saltan el landing y abren el panel de una región
   sin depender del click sobre el canvas del globo (ej. `/?start=1&region=5&mock=1`).
+
+## Modelo de negocio
+
+VACA opera bajo una **sostenibilidad híbrida**:
+
+- **Gratis para ciudadanos y voluntarios:** la app comunitaria y el reclamo de ayuda no tienen costo.
+- **SaaS B2G/B2B:** Vaquita Insights se vende a municipalidades, GOREs y ONGs como suscripción anual en UTM.
+- **Non-custodial:** VACA no custodia los fondos; la ejecución financiera fluye por Stellar y rieles regulados como Sozu Pay, reduciendo la fricción regulatoria.
+- **Social Yield:** los fondos en tránsito pueden generar rendimientos en DeFi para neutralizar comisiones de off-ramp y maximizar el impacto.
+
+## Roadmap
+
+- **Fase 1 (actual):** MVP Web — riel de ayuda y tokenización sobre Stellar Testnet.
+- **Fase 2:** MVP Mobile — app offline-first con sincronización eventual para el "Día 0".
+- **Fase 3:** Vaquita Insights — SaaS institucional con National Emergency Index (NEI).
+- **Fase 4:** Gobernanza comunitaria y escalamiento regional (Chile → Colombia, Perú, Ecuador, Paraguay).
 
 ## Estructura
 
