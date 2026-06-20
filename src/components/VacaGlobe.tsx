@@ -20,11 +20,51 @@ interface VacaGlobeProps {
 
 const DISASTER_IDS = new Set(DISASTERS.map((d) => d.regionId));
 
+// Calcular bounding box de un polígono/multipolígono GeoJSON
+function getFeatureBounds(feature: any): maplibregl.LngLatBoundsLike | null {
+  const coords = feature?.geometry?.coordinates;
+  if (!coords || !Array.isArray(coords)) return null;
+  let minLng = Infinity;
+  let minLat = Infinity;
+  let maxLng = -Infinity;
+  let maxLat = -Infinity;
+
+  const visit = (ring: number[]) => {
+    if (!Array.isArray(ring) || ring.length < 2) return;
+    const lng = Number(ring[0]);
+    const lat = Number(ring[1]);
+    if (Number.isFinite(lng) && Number.isFinite(lat)) {
+      minLng = Math.min(minLng, lng);
+      minLat = Math.min(minLat, lat);
+      maxLng = Math.max(maxLng, lng);
+      maxLat = Math.max(maxLat, lat);
+    }
+  };
+
+  const walk = (node: any) => {
+    if (Array.isArray(node)) {
+      if (node.length === 2 && typeof node[0] === 'number') {
+        visit(node);
+      } else {
+        node.forEach(walk);
+      }
+    }
+  };
+
+  walk(coords);
+  if (!Number.isFinite(minLng)) return null;
+  return [
+    [minLng, minLat],
+    [maxLng, maxLat],
+  ];
+}
+
 function VacaGlobe({ started, selectedRegionId, onRegionClick, onReady }: VacaGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const hoveredId = useRef<number | null>(null);
+  const geoRef = useRef<any>(null);
   const clickHandler = useRef(onRegionClick);
   clickHandler.current = onRegionClick;
 
@@ -76,6 +116,7 @@ function VacaGlobe({ started, selectedRegionId, onRegionClick, onReady }: VacaGl
       }
 
       // Enriquecer features con severidad/estado de catástrofe
+      geoRef.current = geo;
       geo.features.forEach((f: any) => {
         const d = DISASTERS.find((x) => x.regionId === f.properties.regionId);
         f.properties.hasDisaster = d ? 1 : 0;
@@ -248,9 +289,37 @@ function VacaGlobe({ started, selectedRegionId, onRegionClick, onReady }: VacaGl
     const map = mapRef.current;
     // limpiar selección previa
     DISASTER_IDS.forEach((id) => map.setFeatureState({ source: 'regions', id }, { selected: false }));
-    // reaplicar a todas las regiones conocidas no es trivial; limpiamos por id seleccionado
     if (selectedRegionId != null) {
       map.setFeatureState({ source: 'regions', id: selectedRegionId }, { selected: true });
+
+      // Zoom a la región seleccionada
+      const feature = geoRef.current?.features?.find(
+        (f: any) => f.properties?.regionId === selectedRegionId
+      );
+      if (feature) {
+        const center = feature.properties?.center;
+        if (center) {
+          const c = typeof center === 'string' ? JSON.parse(center) : center;
+          map.flyTo({
+            center: c,
+            zoom: 7.2,
+            pitch: 40,
+            bearing: 0,
+            duration: 1500,
+            essential: true,
+          });
+        } else {
+          const bounds = getFeatureBounds(feature);
+          if (bounds) {
+            map.fitBounds(bounds, {
+              padding: { top: 120, bottom: 120, left: 120, right: 420 },
+              duration: 1500,
+              maxZoom: 8,
+              essential: true,
+            });
+          }
+        }
+      }
     }
   }, [ready, selectedRegionId]);
 
