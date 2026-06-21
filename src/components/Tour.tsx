@@ -8,11 +8,11 @@ export type { Step };
 const JoyrideAny = Joyride as any;
 
 const options: Partial<Options> = {
-  arrowColor: '#0C0E1A',
-  backgroundColor: '#0C0E1A',
-  primaryColor: '#D4AF37',
-  textColor: '#E8E6E0',
-  overlayColor: 'rgba(4, 4, 10, 0.78)',
+  arrowColor: '#1E3240',
+  backgroundColor: '#1E3240',
+  primaryColor: '#FD802E',
+  textColor: '#FFFFFF',
+  overlayColor: 'rgba(16, 24, 32, 0.78)',
   spotlightRadius: 12,
   spotlightPadding: 6,
   showProgress: true,
@@ -32,15 +32,16 @@ const floaterProps = {
 const styles: Partial<Styles> = {
   tooltip: {
     borderRadius: 14,
-    border: '1px solid rgba(212, 175, 55, 0.4)',
-    boxShadow: '0 8px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.08)',
+    border: '1px solid rgba(166, 194, 212, 0.35)',
+    boxShadow: '0 8px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(253, 128, 46, 0.1)',
     padding: 18,
+    backdropFilter: 'blur(20px)',
   },
   tooltipContainer: {
     textAlign: 'left',
   },
   tooltipTitle: {
-    color: '#F5F0E0',
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: 700,
     marginBottom: 4,
@@ -49,22 +50,22 @@ const styles: Partial<Styles> = {
     padding: '8px 0',
     fontSize: 13,
     lineHeight: 1.6,
-    color: '#9B978E',
+    color: '#A6C2D4',
   },
   buttonPrimary: {
     borderRadius: 8,
     fontWeight: 700,
-    color: '#04040A',
+    color: '#101820',
     padding: '8px 16px',
     fontSize: 13,
   },
   buttonBack: {
-    color: '#9B978E',
+    color: '#A6C2D4',
     fontSize: 13,
     marginRight: 8,
   },
   buttonSkip: {
-    color: '#5C5A54',
+    color: '#6A8BA3',
     fontSize: 12,
   },
   spotlight: {

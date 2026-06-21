@@ -223,7 +223,7 @@ export default function RegionPanel({
           <button
             onClick={handleValidate}
             disabled={busy}
-            className="mt-2 w-full rounded-md border border-[var(--border-active)] py-2 text-[12px] font-semibold text-[var(--gold-light)] transition hover:bg-[var(--hover-accent)] disabled:opacity-40 md:py-1.5 md:text-[11px]"
+            className="vaca-metal-btn mt-2 w-full py-2 text-[12px] disabled:opacity-40 md:py-1.5 md:text-[11px]"
           >
             Validar catastro comunitario
           </button>
@@ -255,7 +255,7 @@ export default function RegionPanel({
           <button
             onClick={handleCreateWallet}
             disabled={busy || !validated}
-            className="w-full rounded-md border border-[var(--border-active)] py-2 text-[12px] font-semibold text-[var(--gold-light)] transition hover:bg-[var(--hover-accent)] disabled:opacity-40 md:py-1.5 md:text-[11px]"
+            className="vaca-metal-btn w-full py-2 text-[12px] disabled:opacity-40 md:py-1.5 md:text-[11px]"
           >
             Activar wallet multifirma
           </button>
@@ -295,7 +295,7 @@ export default function RegionPanel({
                   <button
                     onClick={() => handleTokenize(n.code, n.target)}
                     disabled={busy || !validated}
-                    className="shrink-0 rounded border border-[var(--border-active)] px-3 py-1.5 text-[12px] font-semibold text-[var(--gold-light)] transition hover:bg-[var(--hover-accent)] disabled:opacity-40 sm:px-2.5 sm:py-1 sm:text-[11px]"
+                    className="vaca-metal-btn shrink-0 px-3 py-1.5 text-[12px] disabled:opacity-40 sm:px-2.5 sm:py-1 sm:text-[11px]"
                   >
                     Tokenizar
                   </button>
@@ -331,8 +331,8 @@ export default function RegionPanel({
           <button
             onClick={handleDonate}
             disabled={busy || !wallet}
-            className="rounded-md px-4 py-2 text-[13px] font-bold text-[#04040A] transition disabled:opacity-40 md:px-3 md:py-1.5 md:text-[12px]"
-            style={{ background: color }}
+            className="vaca-metal-btn px-4 py-2 text-[13px] disabled:opacity-40 md:px-3 md:py-1.5 md:text-[12px]"
+            style={{ boxShadow: `0 0 20px ${color}44, inset 0 1px 0 rgba(255,255,255,0.5)` }}
           >
             Donar
           </button>
@@ -364,7 +364,7 @@ export default function RegionPanel({
           <button
             onClick={handleRelease}
             disabled={busy || donatedTotal === 0}
-            className="w-full rounded-md border border-[var(--border-active)] py-2.5 text-[13px] font-bold text-[var(--gold-light)] transition hover:bg-[var(--hover-accent)] disabled:opacity-40 md:py-2 md:text-[12px]"
+            className="vaca-metal-btn w-full py-2.5 text-[13px] disabled:opacity-40 md:py-2 md:text-[12px]"
           >
             {donatedTotal > 0 ? 'Liberar y entregar ayuda (2-de-2)' : 'Primero realiza una donación'}
           </button>
@@ -393,7 +393,10 @@ function Shell({
       <div
         data-tour="panel-header"
         className="relative shrink-0 border-b border-[var(--border-primary)] p-3 md:p-4"
-        style={{ boxShadow: `inset 0 2px 0 ${severityColor}` }}
+        style={{
+          boxShadow: `inset 0 2px 0 ${severityColor}, 0 0 40px ${severityColor}22`,
+          background: `linear-gradient(180deg, ${severityColor}15 0%, transparent 60%)`,
+        }}
       >
         <button
           onClick={onClose}
@@ -426,8 +429,8 @@ function Shell({
 function BusyNotice({ label }: { label: string }) {
   return (
     <div className="mt-2 flex items-center gap-2 rounded-md border border-[var(--border-cyan)] bg-[var(--cyan-glow)] p-2 text-xs text-[var(--text-cyan)]">
-      <Loader2 size={14} className="animate-spin" />
-      <span>{label}</span>
+      <Loader2 size={14} className="animate-spin text-[var(--cyan-primary)]" />
+      <span className="font-medium">{label}</span>
     </div>
   );
 }
@@ -459,15 +462,16 @@ function Section({
   return (
     <div
       data-tour={dataTour}
-      className={`rounded-lg border border-[var(--border-secondary)] bg-[rgba(255,255,255,0.02)] p-2.5 transition md:p-3 ${
+      className={`relative overflow-hidden rounded-lg border border-[var(--border-secondary)] bg-[rgba(255,255,255,0.02)] p-2.5 transition md:p-3 ${
         disabled ? 'pointer-events-none opacity-45' : ''
       }`}
     >
-      <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold text-[var(--text-primary)] md:text-[13px]">
+      <div className="vaca-y2k-grid pointer-events-none absolute inset-0 opacity-30" />
+      <div className="relative z-10 mb-2 flex items-center gap-2 text-[12px] font-semibold text-[var(--text-primary)] md:text-[13px]">
         <span style={{ color: accent }}>{icon}</span>
         {title}
       </div>
-      {children}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }

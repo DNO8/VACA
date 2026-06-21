@@ -182,7 +182,14 @@ export default function Home() {
   const disaster = selected ? getDisaster(selected.id) ?? null : null;
 
   return (
-    <main className="relative h-dvh w-screen overflow-hidden bg-[var(--bg-void)] text-[var(--text-primary)]">
+    <main className="vaca-grain relative h-dvh w-screen overflow-hidden bg-[var(--bg-void)] text-[var(--text-primary)]">
+      {/* Fondo atmosférico Soft Club */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--bg-tertiary),_transparent_60%)] opacity-60" />
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[radial-gradient(ellipse_at_bottom,_var(--cyan-primary),_transparent_70%)] opacity-10" />
+        <div className="absolute right-0 top-1/4 h-96 w-96 rounded-full bg-[var(--gold-primary)] opacity-[0.07] blur-[120px]" />
+      </div>
+
       {/* Globo */}
       <VacaGlobe
         started={started}
@@ -193,7 +200,7 @@ export default function Home() {
       {/* HUD superior */}
       <header className="pointer-events-none absolute left-0 right-0 top-0 z-20 flex items-start justify-between p-3 md:p-4">
         <div data-tour="brand" className="pointer-events-auto flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border-active)] bg-[var(--bg-panel)] backdrop-blur">
+          <div className="vaca-soft-blur flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border-active)] bg-[var(--bg-panel)]">
             <Globe2 size={18} className="text-[var(--gold-primary)]" />
           </div>
           <div className="min-w-0">
@@ -211,7 +218,7 @@ export default function Home() {
             <StatusPill accounts={accounts} setupMsg={setupMsg} />
             <button
               onClick={handleReset}
-              className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] px-2 py-1.5 text-[11px] font-medium text-[var(--text-secondary)] backdrop-blur transition hover:text-[var(--text-primary)] md:px-3 md:py-2 md:text-xs"
+              className="vaca-soft-blur flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] px-2 py-1.5 text-[11px] font-medium text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] md:px-3 md:py-2 md:text-xs"
             >
               <RotateCcw size={12} className="md:hidden" />
               <RotateCcw size={13} className="hidden md:block" />
@@ -304,7 +311,7 @@ export default function Home() {
 function StatusPill({ accounts, setupMsg }: { accounts: DemoAccounts | null; setupMsg: string }) {
   const ok = !!accounts;
   return (
-    <div className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] px-3 py-2 text-xs backdrop-blur">
+    <div className="vaca-soft-blur flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-panel)] px-3 py-2 text-xs">
       <Radio
         size={13}
         className={ok ? 'text-[var(--alert-green)]' : 'animate-pulse text-[var(--gold-primary)]'}

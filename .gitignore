@@ -43,3 +43,5 @@ pnpm-debug.log*
 #markdowns y documentación
 /Markdowns/
 /VACA - documentación/
+
+public/font/*.zip

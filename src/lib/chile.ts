@@ -22,9 +22,9 @@ export interface RegionDisaster {
 }
 
 export const SEVERITY_COLOR: Record<Severity, string> = {
-  critico: '#FF3D3D',
-  alto: '#FF9500',
-  medio: '#F0D060',
+  critico: '#FF6B9D', // Y2K neon pink — alerta máxima
+  alto: '#DBA59E',    // terracota polvorienta
+  medio: '#B8D9C6',   // verde celadón
 };
 
 export const SEVERITY_LABEL: Record<Severity, string> = {

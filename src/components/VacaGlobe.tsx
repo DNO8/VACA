@@ -120,7 +120,7 @@ function VacaGlobe({ started, selectedRegionId, onRegionClick, onReady }: VacaGl
       geo.features.forEach((f: any) => {
         const d = DISASTERS.find((x) => x.regionId === f.properties.regionId);
         f.properties.hasDisaster = d ? 1 : 0;
-        f.properties.color = d ? SEVERITY_COLOR[d.severity] : '#2a3142';
+        f.properties.color = d ? SEVERITY_COLOR[d.severity] : '#1E3240';
         f.id = f.properties.regionId;
       });
 
@@ -156,7 +156,7 @@ function VacaGlobe({ started, selectedRegionId, onRegionClick, onReady }: VacaGl
             'case',
             ['==', ['get', 'hasDisaster'], 1],
             ['get', 'color'],
-            '#3a4050',
+            '#A6C2D4',
           ],
           'line-width': [
             'case',
