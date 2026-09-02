@@ -1,0 +1,105 @@
+name: vaca_app
+description: "VACA - Infraestructura Cívica de Resiliencia. App mobile offline-first para captura FIBE en el Día 0."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Estado / arquitectura
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Persistencia local (offline-first)
+  drift: ^2.19.0
+  drift_flutter: ^0.2.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Identidad segura / hashing
+  flutter_secure_storage: ^9.2.2
+  crypto: ^3.0.5
+  uuid: ^4.5.1
+
+  # Captura de terreno
+  geolocator: ^13.0.1
+  camera: ^0.11.0+2
+  exif: ^3.3.0
+  permission_handler: ^11.3.1
+
+  # Conectividad / transporte
+  connectivity_plus: ^6.0.5
+
+  # Backend
+  supabase_flutter: ^2.6.0
+
+  # Blockchain (Stellar testnet) - SDK de referencia (Soneso)
+  stellar_flutter_sdk: ^1.8.4
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Generación de código
+  build_runner: ^2.4.12
+  drift_dev: ^2.19.0
+  riverpod_generator: ^2.4.3
+
+flutter:
+  uses-material-design: true
+
+  # Recursos (grano, ilustraciones, etc. — se agregan en fases siguientes)
+  # assets:
+  #   - assets/images/
+
+  fonts:
+    # Tipografía de marca (ver SETUP.md: copiar desde /font/Anderson Grotesk a assets/fonts/)
+    - family: AndersonGrotesk
+      fonts:
+        - asset: assets/fonts/AndersonGrotesk-Light.otf
+          weight: 300
+        - asset: assets/fonts/AndersonGrotesk-LightOblique.otf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/AndersonGrotesk.otf
+          weight: 400
+        - asset: assets/fonts/AndersonGrotesk-Oblique.otf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/AndersonGrotesk-Bold.otf
+          weight: 700
+        - asset: assets/fonts/AndersonGrotesk-BoldOblique.otf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/AndersonGrotesk-Ultrabold.otf
+          weight: 800
+        - asset: assets/fonts/AndersonGrotesk-UltraboldOblique.otf
+          weight: 800
+          style: italic
+    # Datos técnicos / hashes (ver SETUP.md: descargar JetBrains Mono a assets/fonts/)
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/JetBrainsMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/JetBrainsMono-Bold.ttf
+          weight: 700
+
+dependency_overrides:
+  # camera_android_camerax 0.6.30 no declara concurrent-futures, aunque
+  # camera-core:1.5.3 referencia CallbackToFutureAdapter.
+  # Upstream corrigio esto en 0.7.4+6 con androidx.concurrent:concurrent-futures:1.2.0.
+  # Vendoreamos 0.6.30 mientras se prueba que 0.7.4+7 compila en este entorno.
+  # See: https://issuetracker.google.com/issues/543937345
+  camera_android_camerax:
+    path: packages/camera_android_camerax

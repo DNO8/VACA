@@ -44,12 +44,62 @@ VACA will have a demonstrable offline‑first mobile MVP (Flutter + SQLite) focu
 
 ### 4.1 In‑Scope Deliverables
 
-| Deliverable | Description (What will be built or produced?) | Why this matters |
-| --- | --- | --- |
-| **Deliverable 1 (Week 1)**<br>Complete Brandboard & Technical Foundation | - Definitive brand identity: logo, colour palette, typography, component library.<br>- Flutter project with Clean Architecture + Riverpod + Drift (SQLite) schema for FIBE M5 damage reports.<br>- Camera + GPS integration: runtime permission handling for Android 10+; camera preview widget; capture photo to local cache with EXIF timestamp; retrieve GPS coordinates via `geolocator`; permission-denied fallback states.<br>- Initial prospecting database: mapping of municipal and governmental actors (Chile and selected LatAm countries). | Branding is essential for credibility with institutional partners. Technical setup reduces friction for the following weeks. The prospecting database ensures disciplined commercial outreach without rushing into premature meetings. |
-| **Deliverable 2 (Week 2)**<br>Offline Data Capture MVP & Beneficiary Wallet Foundation | - **User-oriented UI design and E2E user flow** for the **damnificado / beneficiary flow**: a community operator captures FIBE M5 damage reports (damage level, geolocation, photo) offline on behalf of a beneficiary.<br>- **Fully functional offline form module**: FIBE M5 standard records stored locally in SQLite with photo SHA-256 hashes, GPS coordinates, timestamp, device ID and beneficiary `rutHash`.<br>- **Cloud backend (Supabase)** with `reports` and `evidence` tables, storage bucket for photos, and device-token authentication ready for sync testing.<br>- **Stellar testnet wallet foundation for the beneficiary flow** with three defined use cases:<br>&nbsp;&nbsp;• **CU1 — Operator onboarding**: keypair generation for the community operator, secure storage with `flutter_secure_storage`, friendbot funding, balance visibility.<br>&nbsp;&nbsp;• **CU2 — Beneficiary view**: a beneficiary (or operator on their behalf) queries testnet balance and lists pending Claimable Balances linked to a validated report via `rutHash`.<br>&nbsp;&nbsp;• **CU3 — Simulated aid distribution**: backend creates a demo Claimable Balance on Stellar testnet reserved for a specific beneficiary `rutHash` / public key, closing the local aid loop. | This is the core intelligence layer — capturing structured data without internet is the fundamental differentiator. The wallet foundation and concrete use cases prepare the **beneficiary-side** testnet aid loop and make the demo verifiable. |
-| **Deliverable 3 (Week 3)**<br>Store‑and‑Forward Sync & Security Research | - **Network status UI/UX**: clear feedback for offline, online, sync in progress, retry and success states.<br>- **Implementation of store‑and‑forward synchronisation**: Outbox queue with `SyncQueueItem` table, connectivity detection via `connectivity_plus`, manual sync trigger, retry with exponential backoff, idempotent batch upsert by UUID to Supabase (`POST /reports`).<br>- **Auth Passkeys research**: technical feasibility document for seedless access using WebAuthn/Passkeys in Flutter, including limitations, alternatives and roadmap for production implementation.<br>- **Updated prospecting pipeline** with structured follow-up and status tracking. | The sync protocol transforms isolated reports into a "verdad emergente" (emergent truth). Security research enables privacy‑preserving beneficiary identity without complex seed phrases. |
-| **Deliverable 4 (Week 4)**<br>Beneficiary Aid Loop Closure & Packaging | - **Polished UI/UX and manual QA** for the beneficiary flow: empty-state, error-state and loading-state screens for all core flows; accessibility targets: contrast ratio ≥ 4.5:1, font scaling support up to 200%, touch targets ≥ 48×48 dp; manual QA pass on at least one mid-range Android device (e.g., Samsung Galaxy A14 or equivalent).<br>- **End‑to‑end testing** of the complete **beneficiary flow**: community operator captures offline → local store → manual sync → cloud receipt → backend acknowledgement → Claimable Balance available for the beneficiary.<br>- **Claimable Balance emission and claim demonstration** on Stellar testnet with verifiable transaction hashes (emission + claim).<br>- **Proof of Aid mock**: local badge/certificate referencing a simulated IPFS hash, generated after a successful claim.<br>- **APK build** targeting Android API 26+ (Android 8.0), optimised for low-end devices, with a target install size ≤ 35 MB; manual install and smoke test on at least one mid-range device.<br>- **Consolidated B2G Prospecting Pipeline document** (minimum 15‑20 prospects mapped and contacted) for Month 2 commercial outreach. | The MVP is tangible proof for Stellar and future partners. The beneficiary aid loop demo proves the value proposition: community intelligence + Stellar rails = transparent, dignified aid for the damnificado. |
+#### Deliverable 1 (Week 1) — Complete Brandboard & Technical Foundation
+
+**What will be built or produced?**
+
+- Definitive brand identity: logo, colour palette, typography, component library.
+- Flutter project with Clean Architecture + Riverpod + Drift (SQLite) schema for FIBE M5 damage reports.
+- Camera + GPS integration: runtime permission handling for Android 10+; camera preview widget; capture photo to local cache with EXIF timestamp; retrieve GPS coordinates via `geolocator`; permission-denied fallback states.
+- Initial prospecting database: mapping of municipal and governmental actors (Chile and selected LatAm countries).
+
+**Why this matters**
+
+Branding is essential for credibility with institutional partners. Technical setup reduces friction for the following weeks. The prospecting database ensures disciplined commercial outreach without rushing into premature meetings.
+
+#### Deliverable 2 (Week 2) — Offline Data Capture MVP & Beneficiary Wallet Foundation
+
+**What will be built or produced?**
+
+- **Complete UI & navigation flow (beneficiary)**: the full connected screen flow (UI design) for the **damnificado / beneficiary flow**, taking a community operator from app launch to a saved FIBE M5 report — operator onboarding → Home → select/create emergency event → FIBE capture wizard (Module 1 identity + address + GPS, Module 4 housing, Module 5 damage level + habitability) → camera evidence → save → report list with per-report sync/trust status and a detail view.
+- **Fully functional offline form module**: FIBE M5 standard records stored locally in SQLite with photo SHA-256 hashes, GPS coordinates, timestamp, device ID and beneficiary `rutHash`.
+- **Cloud backend (Supabase)** with `reports` and `evidence` tables, storage bucket for photos, and device-token authentication ready for sync testing.
+- **Stellar testnet wallet foundation for the beneficiary flow** with three defined use cases:
+  - **CU1 — Operator onboarding**: keypair generation for the community operator, secure storage with `flutter_secure_storage`, friendbot funding, balance visibility.
+  - **CU2 — Beneficiary view**: a beneficiary (or operator on their behalf) queries testnet balance and lists pending Claimable Balances linked to a validated report via `rutHash`.
+  - **CU3 — Simulated aid distribution**: backend creates a demo Claimable Balance on Stellar testnet reserved for a specific beneficiary `rutHash` / public key, closing the local aid loop.
+
+**Why this matters**
+
+This is the core intelligence layer — capturing structured data without internet is the fundamental differentiator. The wallet foundation and concrete use cases prepare the **beneficiary-side** testnet aid loop and make the demo verifiable.
+
+#### Deliverable 3 (Week 3) — Store‑and‑Forward Sync & Passkeys Authentication
+
+**What will be built or produced?**
+
+- **Network status UI/UX**: clear feedback for offline, online, sync in progress, retry and success states.
+- **Implementation of store‑and‑forward synchronisation**: Outbox queue with `SyncQueueItem` table, connectivity detection via `connectivity_plus`, manual sync trigger, retry with exponential backoff, idempotent batch upsert by UUID to Supabase (`POST /reports`).
+- **Passkeys authentication (production-ready)**: seedless WebAuthn/Passkeys login built by hand and integrated with the Stellar SDK — passkey registration and authentication on device, secure binding/derivation to the operator's Stellar keypair (no seed phrases), and fallback handling.
+- **Updated prospecting pipeline** with structured follow-up and status tracking.
+
+**Why this matters**
+
+The sync protocol transforms isolated reports into a "verdad emergente" (emergent truth). Production-ready Passkeys authentication enables privacy‑preserving, seedless access for operators and beneficiaries without complex seed phrases.
+
+#### Deliverable 4 (Week 4) — Beneficiary Aid Loop Closure & Packaging
+
+**What will be built or produced?**
+
+- **Polished UI/UX and manual QA** for the beneficiary flow: empty-state, error-state and loading-state screens for all core flows; accessibility targets: contrast ratio ≥ 4.5:1, font scaling support up to 200%, touch targets ≥ 48×48 dp; manual QA pass on at least one mid-range Android device (e.g., Samsung Galaxy A14 or equivalent).
+- **End‑to‑end testing** of the complete **beneficiary flow**: community operator captures offline → local store → manual sync → cloud receipt → backend acknowledgement → Claimable Balance available for the beneficiary.
+- **Claimable Balance emission and claim demonstration** on Stellar testnet with verifiable transaction hashes (emission + claim).
+- **Proof of Aid mock**: local badge/certificate referencing a simulated IPFS hash, generated after a successful claim.
+- **APK build** targeting Android API 26+ (Android 8.0), optimised for low-end devices, with a target install size ≤ 35 MB; manual install and smoke test on at least one mid-range device.
+- **Consolidated B2G Prospecting Pipeline document** (minimum 15‑20 prospects mapped and contacted) for Month 2 commercial outreach.
+
+**Why this matters**
+
+The MVP is tangible proof for Stellar and future partners. The beneficiary aid loop demo proves the value proposition: community intelligence + Stellar rails = transparent, dignified aid for the damnificado.
 
 ### Out‑of‑Scope (Explicitly Not Included)
 
@@ -63,22 +113,25 @@ VACA will have a demonstrable offline‑first mobile MVP (Flutter + SQLite) focu
 
 ---
 
-## 4.2 Deliverable‑Aligned Budget Request (70/30 Split)
+## 4.2 Deliverable‑Aligned Budget Request
 
-| Category | Item | Amount | Rationale |
-| --- | --- | --- | --- |
-| **Operational & Core Team (70%)** | Danilo (Mobile Development) | $1,800 | Flutter MVP, Clean Architecture, Drift/SQLite schema, store‑and‑forward sync engine, Stellar testnet wallet, Claimable Balance integration, backend API contract, APK build. Highest technical load in the sprint. |
-| | Camilo (UI/UX Design) | $1,000 | Brandboard, offline‑first interface design, E2E user flows, network status UI, QA, accessibility for high‑stress environments. |
-| | Marcos (Management & Prospecting) | $700 | Sprint leadership, B2G cold prospecting, commercial validation, structured follow-up, final Pipeline document. |
-| **Technology & Operations (30%)** | Cloud & Backend (Supabase) | $400 | Postgres project, Auth, Storage bucket for evidence, bandwidth and compute for sync testing during the month. |
-| | Security Research (Passkeys) | $250 | Feasibility study, documentation and prototype exploration for seedless WebAuthn/Passkeys access in Flutter. |
-| | Testing Devices & Build Tools | $200 | Mid‑range Android test device, USB cables, certificates, build tooling. |
-| | Domain + Hosting | $100 | Domain registration for landing/download page and hosting for demo backend/landing during the sprint. |
-| | AI / LLM Tools | $200 | GitHub Copilot / Cursor / Claude API for accelerated development, code review and documentation assistance. |
-| | Documentation & Design Tools | $150 | Figma Pro, Notion/Excalidraw, PDF export tools for brandboard and technical memos. |
-| | Office & Connectivity | $150 | Internet backup, communication tools, backup power for uninterrupted sprint work in a distributed team. |
-| | Contingency | $35 | Buffer for unexpected tooling, SDK or service costs. |
-| **Total** | | **$4,985** | Compressed Q1 roadmap into one month, delivering a tangible MVP for validation with balanced human effort and operational infrastructure. |
+**Requested Budget Amount**
+
+$4,985 USD
+
+**Rationale for Budget Request**
+
+- $1,800 Mobile Development (Danilo)
+- $1,000 UI/UX Design (Camilo)
+- $700 Management & Prospecting (Marcos)
+- $400 Cloud & Backend (Supabase)
+- $250 Passkeys Authentication (prod-ready, Stellar SDK)
+- $200 Testing Devices & Build Tools
+- $200 AI / LLM Tools
+- $150 Documentation & Design Tools
+- $150 Office & Connectivity
+- $100 Domain + Hosting
+- $35 Contingency
 
 ---
 
@@ -86,12 +139,69 @@ VACA will have a demonstrable offline‑first mobile MVP (Flutter + SQLite) focu
 
 ### 5.1 Weekly Breakdown
 
-| Week | Planned Work | Expected Output |
-| --- | --- | --- |
-| **Week 1 — Bootstrap & Basic Capture** | **Camilo**: Brandboard (logo, palette, typography, component library).<br>**Danilo**: Flutter project setup, Riverpod, Clean Architecture, Drift schema (`DamageReport`, `Evidence`, `SyncQueueItem`), basic FIBE M5 form, camera + GPS integration.<br>**Marcos**: Start cold prospecting — municipality and provider database building; introductory info sending (no meeting requests). | - Complete brandboard document.<br>- GitHub repository with project structure and Drift schema.<br>- Prospecting database with initial leads (target: 15‑20 prospects identified). |
-| **Week 2 — Offline Capture Complete & Beneficiary Wallet Foundation** | **Camilo**: User-oriented UI design and E2E user flow for the **beneficiary flow**; capture flows; report list and statuses.<br>**Danilo**: Core offline FIBE capture (save with photo + GPS + SHA-256 hash + beneficiary `rutHash`); sync states (`pending`, `synced`, `conflict`); Supabase backend schema; Stellar wallet CU1/CU2/CU3 for the beneficiary flow (keypair, secure storage, friendbot, balance query, demo Claimable Balance emission).<br>**Marcos**: Cloud infrastructure setup (Supabase project, tables, storage); continue prospecting outreach. | - Interactive Figma prototypes with beneficiary E2E user flow.<br>- Functional offline form module in app.<br>- Supabase environment with `reports`/`evidence` tables and storage ready.<br>- Stellar testnet wallet with funded balance and demo beneficiary Claimable Balance use cases. |
-| **Week 3 — Sync to Cloud & Security Research** | **Camilo**: Network status UI (online, offline, sync in progress, error, success, retry).<br>**Danilo**: Store‑and‑forward sync engine (Outbox pattern); connectivity detection; manual sync of pending reports to backend with idempotent batch upsert.<br>**Marcos**: Structured follow-up to prospects; Pipeline document structuring.<br>**Research**: Technical memo on Passkeys/WebAuthn feasibility for Flutter. | - UI/UX for connectivity states and retry flows.<br>- Working sync queue (local → cloud) with manual trigger and retry logic.<br>- Updated prospecting pipeline with follow-up status.<br>- Passkeys feasibility memo. |
-| **Week 4 — Beneficiary Aid Loop Closure & Packaging** | **Camilo**: Visual polish for the beneficiary flow, full QA, empty/error states, accessibility basics, low‑end device optimisation.<br>**Danilo**: Final cloud integration; end‑to‑end test of offline → sync → cloud; Claimable Balance emission and claim demo on Stellar testnet for the beneficiary; Proof of Aid mock; APK build.<br>**Marcos**: MVP packaging for Stellar showcase; final B2G Prospecting Pipeline document. | - Polished, stable MVP APK for the beneficiary flow.<br>- Claimable Balance transaction (emission + claim tx hashes verifiable).<br>- Demo video: community operator captures offline → sync → beneficiary claims aid.<br>- Prospecting Pipeline document with ≥15 prospects mapped and contacted. |
+#### Week 1 — Bootstrap & Basic Capture
+
+**Planned Work**
+
+- **Brandboard & design system**: logo, palette, typography, component library.
+- **Technical foundation**: Flutter project setup, Riverpod, Clean Architecture, Drift schema (`DamageReport`, `Evidence`, `SyncQueueItem`), basic FIBE M5 form.
+- **Camera + GPS integration**: runtime permissions, camera capture, geolocation.
+- **Prospecting**: municipality and provider database building; introductory info sending (no meeting requests).
+
+**Expected Output**
+
+- Complete brandboard document.
+- GitHub repository with project structure and Drift schema.
+- Prospecting database with initial leads (target: 15‑20 prospects identified).
+
+#### Week 2 — Offline Capture Complete & Beneficiary Wallet Foundation
+
+**Planned Work**
+
+- **Complete UI & navigation flow (beneficiary)**: the full set of connected, navigable screens (UI design — not end-to-end testing, which runs in Week 4) taking a community operator from app launch to a locally-saved FIBE report. Path A→B: operator onboarding/identity → Home → create/select an emergency event → FIBE capture wizard (Module 1: beneficiary `rutHash` + address + GPS · Module 4: housing type/occupancy · Module 5: damage level + habitability) → camera screen to attach an evidence photo → save → Report List showing each report with its sync and trust status, plus a Report Detail view — defining exactly which screens exist and what the user does on each.
+- **Offline FIBE capture**: save with photo + GPS + SHA-256 hash + beneficiary `rutHash`; sync states (`pending`, `synced`, `conflict`).
+- **Cloud backend**: Supabase schema (project, tables, storage).
+- **Stellar wallet (CU1/CU2/CU3)**: keypair, secure storage, friendbot, balance query, demo Claimable Balance emission.
+- **Prospecting**: continue outreach.
+
+**Expected Output**
+
+- Interactive Figma prototypes with beneficiary E2E user flow.
+- Functional offline form module in app.
+- Supabase environment with `reports`/`evidence` tables and storage ready.
+- Stellar testnet wallet with funded balance and demo beneficiary Claimable Balance use cases.
+
+#### Week 3 — Sync to Cloud & Passkeys Authentication
+
+**Planned Work**
+
+- **Network status UI**: online, offline, sync in progress, error, success, retry.
+- **Store‑and‑forward sync engine**: Outbox pattern; connectivity detection; manual sync of pending reports with idempotent batch upsert.
+- **Passkeys authentication (prod-ready)**: implement a seedless WebAuthn/Passkeys flow by hand, integrated with the Stellar SDK (registration, authentication, keypair binding, fallback).
+- **Prospecting**: structured follow-up; Pipeline document structuring.
+
+**Expected Output**
+
+- UI/UX for connectivity states and retry flows.
+- Working sync queue (local → cloud) with manual trigger and retry logic.
+- Working, production-ready Passkeys authentication flow integrated with the Stellar SDK.
+- Updated prospecting pipeline with follow-up status.
+
+#### Week 4 — Beneficiary Aid Loop Closure & Packaging
+
+**Planned Work**
+
+- **UI polish & QA (beneficiary flow)**: visual polish, full QA, empty/error states, accessibility basics, low‑end device optimisation.
+- **E2E aid loop**: final cloud integration; end‑to‑end test of offline → sync → cloud; Claimable Balance emission and claim demo on Stellar testnet.
+- **Proof of Aid & packaging**: Proof of Aid mock; APK build.
+- **Commercial**: MVP packaging for Stellar showcase; final B2G Prospecting Pipeline document.
+
+**Expected Output**
+
+- Polished, stable MVP APK for the beneficiary flow.
+- Claimable Balance transaction (emission + claim tx hashes verifiable).
+- Demo video: community operator captures offline → sync → beneficiary claims aid.
+- Prospecting Pipeline document with ≥15 prospects mapped and contacted.
 
 ---
 
@@ -101,12 +211,43 @@ VACA will have a demonstrable offline‑first mobile MVP (Flutter + SQLite) focu
 
 ### 6.1 Planned Evidence to Be Submitted
 
-| Deliverable | Evidence Type | Description |
-| --- | --- | --- |
-| **Deliverable 1 (Week 1)** | Brandboard document + GitHub repo link + prospecting spreadsheet | - PDF with logo, palette, typography, and component library.<br>- GitHub repository with Flutter project, architecture, and Drift schema.<br>- CSV/Excel with at least 15 mapped municipal/governmental contacts. |
-| **Deliverable 2 (Week 2)** | Figma prototypes + screen recording + backend screenshot + Stellar wallet evidence | - Interactive Figma prototypes with E2E user flow.<br>- Short screen recording of offline data entry and local save.<br>- Screenshot of Supabase `reports`/`evidence` tables.<br>- Screenshot of Stellar testnet wallet with funded balance and/or Claimable Balance transaction. |
-| **Deliverable 3 (Week 3)** | App screenshots + sync demo + technical memo + updated pipeline | - Screenshots showing online/offline status and sync UI.<br>- Video demonstrating queued data sync to Supabase upon reconnection.<br>- PDF with Passkeys/WebAuthn feasibility assessment.<br>- Updated prospecting pipeline with follow-up status (≥15 contacts). |
-| **Deliverable 4 (Week 4)** | APK + full demo video + Stellar tx hash + B2G Pipeline document | - Download link to APK (Android).<br>- Complete walkthrough video (3‑5 min): community operator captures offline → sync → beneficiary claims Claimable Balance.<br>- Stellar testnet transaction hashes (emission + claim).<br>- B2G Prospecting Pipeline document (≥15 prospects with contact details, outreach status, and Month 2 strategy). |
+#### Deliverable 1 (Week 1)
+
+**Evidence Type:** Working development build + public repository + brandboard
+
+- **Working build (live demo):** short screen recording of the app compiling (`flutter run`) and launching on a physical Android device, showing the home screen, camera capture, and a captured evidence record with its SHA-256 hash, GPS coordinates and timestamp.
+- **Public GitHub repository** (link + commit hash) with the Flutter project running: Clean Architecture, Riverpod, and the Drift/SQLite schema (`DamageReport`, `Evidence`, `SyncQueueItem`) committed and building.
+- **Brandboard PDF**: logo, colour palette, typography, and reusable component library.
+- **Prospecting spreadsheet** (CSV/Excel) with at least 15 mapped municipal/governmental contacts.
+
+#### Deliverable 2 (Week 2)
+
+**Evidence Type:** Live offline-capture demo + deployed backend + funded Stellar wallet
+
+- **Live demo (video):** device in airplane mode captures a FIBE M5 report offline (damage level, geolocation, photo) and saves it locally, showing the stored record with photo SHA-256 hash, GPS, timestamp and beneficiary `rutHash`.
+- **Deployed cloud backend (working):** live Supabase project with `reports` and `evidence` tables and a storage bucket — link/screenshot of the deployed instance and schema.
+- **Funded Stellar testnet wallet:** operator public key with a verifiable link on a testnet explorer (e.g., stellar.expert/testnet), plus a demo Claimable Balance emission (CU3) with its transaction hash.
+- **Interactive Figma prototype** (shareable link) with the beneficiary E2E user flow.
+
+#### Deliverable 3 (Week 3)
+
+**Evidence Type:** Live sync demo + working development build + live Passkeys authentication demo
+
+- **Live sync demo (video):** capture offline → reconnect → manual sync → data appears in Supabase (before/after view of the cloud tables), showing the network status UI states (offline, syncing, success, retry).
+- **Working development build** with the store-and-forward sync engine, published as a tagged GitHub release / updated repository (link + version).
+- **Live Passkeys authentication demo (video):** production-ready seedless login with WebAuthn/Passkeys integrated with the Stellar SDK — passkey registration + authentication shown end-to-end on device, with the code available in the repository.
+- **Updated prospecting pipeline** with structured follow-up status (≥15 contacts).
+
+#### Deliverable 4 (Week 4)
+
+**Evidence Type:** Full live demo + official production domain + downloadable APK + verifiable on-chain proof
+
+- **Full end-to-end live demo (video, 3‑5 min):** community operator captures offline → local store → manual sync → cloud receipt → beneficiary claims a Claimable Balance → Proof of Aid generated.
+- **Official domain in production:** live landing/download page hosted on the official VACA domain, serving the public APK download and reachable demo backend.
+- **Downloadable APK (public link)** targeting Android API 26+, installable on a mid-range device, with a smoke-test recording of install + launch.
+- **Verifiable Stellar testnet transaction hashes** (Claimable Balance emission + claim) with explorer links anyone can open.
+- **Tagged GitHub release** of the MVP (source + APK artifact).
+- **B2G Prospecting Pipeline document** (≥15 prospects with contact details, outreach status, and Month 2 strategy).
 
 ### 6.2 Evidence Verification Checklist (For Ambassador Use)
 

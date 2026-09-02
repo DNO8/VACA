@@ -1,0 +1,23 @@
+﻿Running Gradle task 'assembleDevRelease'...                     
+flutter : An exception has occurred in the compiler (22.0.2). Please file a bug against the Java compiler via the Java bug reporting page (https://bugreport.java.com) after checking the Bug Database (https://bugs.java.com) for duplicates. 
+Include your program, the following diagnostic, and the parameters passed to the Java compiler in your report. Thank you.
+En línea: 1 Carácter: 1
++ flutter build apk --flavor dev 2>&1 | Out-File -FilePath .\build_outp ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (An exception ha...ort. Thank you.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+com.sun.tools.javac.code.Symbol$CompletionFailure: class file for androidx.concurrent.futures.CallbackToFutureAdapter not found
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':camera_android_camerax:compileReleaseJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 3s
+Running Gradle task 'assembleDevRelease'...                         3,4s
+Gradle task assembleDevRelease failed with exit code 1

@@ -1,11 +1,179 @@
-Brandboard: VACA — Infraestructura Cívica de Resiliencia
-Concepto Central (Brand Essence) "La información es el primer alivio. La comunidad es el primer respondedor."
-VACA no es una app de donaciones. Es una autopista tecnológica de resiliencia que transforma a los ciudadanos en operadores comunitarios espontáneos【problema.md†L11】【visión.md†L3】. Opera donde el Estado aún no ha llegado—en el "Día 0", cuando las telecomunicaciones colapsan y la ayuda fluye a ciegas【problema.md†L6-L9】—y profesionaliza la solidaridad 365 días al año【visión.md†L3】.
-Personalidad de Marca (Brand Archetype) Atributo Descripción Arquetipo El Héroe + El Ciudadano — VACA empodera a la comunidad para actuar, no espera a que otros lo hagan. Adjetivos clave Resiliente, auditable, comunitaria, digna, urgente pero precisa, transparente, descentralizada. Tono de voz Claro y directo en emergencia; cálido y humano en solidaridad diaria; técnico y confiable en la capa institucional.
-Narrativa de Marca (Messaging House) Nivel Mensaje Propósito Dignificar la solidaridad: que cada peso donado rinda más y cada kit entregado sea un acto de dignidad, no un residuo logístico【visión.md†L2】. Misión Cerrar la brecha del "Día 0" reduciendo el tiempo de obtención de datos críticos de días a minutos mediante inteligencia comunitaria【visión.md†L5】. Visión 2030 Ser la infraestructura digital predominante en el Cono Sur para la orquestación de ayuda humanitaria, con transparencia radical como estándar mínimo【visión.md†L4-L6】. Promesa La información fluye antes que el dinero, y el dinero rinde más gracias a la eficiencia programable de Soroban【tecnologia.md†L10】.
-Paleta de Colores (Color Palette) — Actualizada con Soft Club Uso Color Hex Significado Primario - Acción Naranja Resiliencia #FD802E Urgencia y calor humano. El ancla vibrante que rompe la niebla del soft club. Evoca el fuego de los megaincendios y la llamada a la acción inmediata. Se usa con moderación para que impacte. Primario - Confianza Azul Profundo #233D4C Solidez institucional y tecnológica. El fondo nocturno del "club" o el dashboard. Transmite seriedad, blockchain y gobernanza en medio del caos. Secundario - Digital Cielo Polvoriento #A6C2D4 Conectividad atmosférica. Un azul grisáceo y desaturado, típico del Soft Club, que reemplaza al neón cibernético. Representa la red, la sincronización de datos y la niebla digital, con una calidez nostálgica que no fatiga la vista. Secundario - Comunidad Verde Celadón #B8D9C6 Frescura y regeneración. Este verde suave y acuoso conecta lo digital con lo humano, evocando la resiliencia ecológica y el tejido social que se recupera lentamente. Acento - Advertencia Terracota Polvorienta #DBA59E Alerta suave y humana. Un melocotón/coral apagado que reemplaza el amarillo estridente. Advierte sobre "señales tempranas" y niveles de confianza en proceso (Trust Scoring) sin generar pánico, con la sutileza de un aviso en un club de los 90. Acento - Dignidad Blanco Puro #FFFFFF Transparencia radical, claridad, dignidad del damnificado y espacios de respiro. Acento - Glow (Y2K) Rosa Neón #FF6B9D El destello futurista. El único neón puro de la paleta. Se reserva para notificaciones críticas, efectos de "glitch" y botones de alto impacto, conectando el Soft Club con el Y2K.
-Tipografía (Typography) Uso Fuente Justificación Títulos y Marcas Anderson Grotesk (Bold/Black) Tipografía geométrica pero con curvas suaves, muy versátil para el cruce entre lo institucional y lo comunitario. Aporta carácter técnico sin perder calidez. Cuerpo y UI Anderson Grotesk (Regular/Medium) Consistencia tipográfica en toda la experiencia. Legibilidad excepcional en dispositivos móviles de gama baja y en dashboards de alta densidad de datos. Datos / Código / Hashes JetBrains Mono Para visualización de datos on-chain, hashes, métricas del National Emergency Index y lenguaje técnico. Refuerza la identidad auditable y la conexión con Stellar.
-Elementos Visuales (Visual Language) Elemento Descripción Aplicación Islas de Información Círculos o nodos interconectados que representan dispositivos móviles como "islas locales de información" en el Día 0【problema.md†L6】. Iconografía, mapas de calor, animaciones de sincronización. Olas de Confianza Anillos concéntricos que se expanden desde un punto de reporte, simbolizando el Trust Scoring (Nivel 1→2→3)【protocolo_emergencia.md†L7-L11】. Visualización de validación de datos, loading states, progreso de catastro. Riel Financiero Líneas continuas que conectan puntos (donante → fondo → beneficiario), evocando la trazabilidad de Stellar y los Claimable Balances【stellar.md†L5-L8】. Infografías de flujo de ayuda, dashboards de trazabilidad. Nodo Comunitario Representación del "operador comunitario espontáneo" como un punto de luz que se conecta a otros【plataforma.md†L3】. Avatares, marcadores en mapa, visualización de red. Proof of Aid Sello o badge digital que certifica el impacto, vinculado a NFT y evidencia en IPFS【stellar.md†L17-L18】. Certificados de donación, cierre de ciclo de ayuda.
-Iconografía Sugerida (Icon Set) Concepto Icono Contexto Offline-First Dispositivo móvil con símbolo de "nube tachada" o "señal intermitente" App en modo offline, captura en zona cero. Sincronización Flechas circulares o puntos conectándose Protocolo Store-and-Forward, sincronización eventual. Confianza Progresiva Termómetro o barra de nivel (1→2→3) Trust Scoring del reporte. Claimable Balance Sobre o caja con candado abierto Fondos reservados para el beneficiario. Social Yield Planta creciendo desde una moneda Rendimiento DeFi que multiplica el impacto. Mapa de Resiliencia Malla o retícula con puntos de calor National Emergency Index, visualización territorial.
-Moodboard Visual (Dirección Estética) — Y2K Futurism x Gen X Soft Club (Curado) La identidad visual de VACA se construye sobre una dualidad eléctrica y nostálgica: "Hard Grid meets Soft Haze" (La Rejilla Dura se encuentra con la Niebla Suave).
-Inspiración Atributo visual Estética Y2K Futurismo (La Rejilla) Rejillas de datos pixel-perfect, líneas de cibernética, bordes de vidrio (glassmorphism) con líneas muy finas, tipografía grande y audaz (Anderson Grotesk), y una estética de "interfaz de nave espacial". Los elementos de datos (como los mapas de calor y los rieles financieros) usan líneas nítidas y contornos precisos en Naranja y Rosa Neón. Estética Gen X Soft Club (La Niebla) Fondos en degradado muy sutil de Azul Profundo a Cielo Polvoriento. Efectos de desenfoque (blur) extremos en las capas de fondo. Texturas granuladas (grain) de los 90 superpuestas a todo el dashboard. Formas orgánicas y "blobs" fluidos en Verde Celadón y Terracota Polvorienta que flotan detrás de los datos. Luces de neón difusas (no duras) que crean atmósfera. Paleta aplicada en conjunto El Azul Profundo es la pista de baile oscura. El Cielo Polvoriento es el humo de la máquina. El Naranja y el Rosa Neón son los láseres que marcan la urgencia. El Verde Celadón y la Terracota Polvorienta son los asientos de terciopelo desgastado donde la comunidad se sienta a planificar. Texturas y formas Superposición de patrones de "glitch" muy sutiles (en Rosa Neón) solo sobre elementos de advertencia. Las tarjetas UI usan el efecto de frosted glass (cristal esmerilado) típico del Soft Club, pero enmarcadas en líneas de datos parpadeantes típicas del Y2K. Las fotos documentales aparecen en blanco y negro con un tinte sepia, pero intervenidas con marcos de datos en Cielo Polvoriento y marcadores de realidad aumentada en Naranja. 9. Aplicaciones Clave (Key Applications) Formato Elementos destacados Logo Símbolo que integre: (1) una "V" estilizada como nodo de conexión en Naranja Resiliencia, (2) un círculo que evoca una "isla de información", (3) una línea de flujo en Cielo Polvoriento que sugiere el riel financiero. El fondo o variante oscura usa Azul Profundo con textura de grano. App Mobile Interfaz offline-first con barras superiores en Azul Profundo con efectos de vidrio esmerilado. Botones de acción principal en Naranja Resiliencia con glow suave. Indicadores de confianza progresiva usando gradientes de Terracota Polvorienta a Naranja. Fondos de carga con animaciones de "blobs" en Verde Celadón. Vaquita Insights (SaaS) Dashboards con fondo en degradado de Azul Profundo a Cielo Polvoriento y grano superpuesto. Mapas de calor en gradiente Naranja con rejillas Y2K. Gráficos de trazabilidad en Cielo Polvoriento con líneas de neón. Tablas y datos en JetBrains Mono sobre fondos de cristal. Estética de "club de datos" con brillos suaves y atmósfera envolvente. Material Institucional Infografías que expliquen el ciclo de la ayuda usando la paleta completa: Naranja para acción/urgencia, Azul Profundo para institucionalidad, Verde Celadón y Terracota para comunidad y alertas tempranas, con efectos de glassmorphism y acentos de neón. 10. Mensajes Clave (Key Messages) Audiencia Mensaje Damnificados "Tu voz es el primer alivio. Reporta sin internet. Tu comunidad te respalda." Voluntarios "Sé un operador comunitario espontáneo. La información que capturas salva vidas." Municipios / SENAPRED "Inteligencia territorial antes de que el Estado llegue. Datos confiables en minutos, no en días." Donantes / Fundaciones "Cada peso rinde más. Trazabilidad radical desde tu donación hasta la mano del beneficiario." Stellar / Ecosystem "VACA es la autopista de resiliencia de América Latina, construida sobre Stellar y Soroban." 11. Brand Tagline (Opciones) Opción Enfoque "La información es el primer alivio." Comunidad / Día 0 "Solidaridad que rinde más." Social Yield / Eficiencia "De la mano del damnificado a la blockchain." Trazabilidad / Dignidad "Chile resiliente, comunidad conectada." Nacional / Identidad 12. Combinaciones de Color Recomendadas (Accesibilidad) Uso Combinación Contraste CTA Principal (Botones) #FD802E sobre #233D4C Alto (ideal para acción, legible) Texto sobre fondos claros #233D4C sobre #FFFFFF Muy alto (legibilidad perfecta) Texto sobre fondos oscuros #FFFFFF sobre #233D4C Alto (ideal para headers) Acentos digitales (Soft) #A6C2D4 sobre #233D4C Medio (suficiente para acentos visuales, no para texto largo) Alertas (Soft) #DBA59E sobre #233D4C Medio (notorio por su calidez, contrasta bien con el azul) Fondos de sección comunitarios #B8D9C6 con texto #233D4C Alto (perfecto para bloques de comunidad)
+# Brandboard: VACA — Institución cívica de resiliencia
+
+VACA adopta una identidad **celadón institucional** inspirada en la arquitectura clásica. La marca debe transmitir permanencia, orden público, confianza y cuidado, sin convertir la emergencia en un espectáculo visual. Las columnas, pórticos y proporciones grecorromanas funcionan como una gramática de estabilidad; la interfaz operativa permanece sobria, rápida y accesible.
+
+## 1. Esencia de marca
+
+> **La información es el primer alivio. La comunidad es el primer respondedor.**
+
+VACA es una infraestructura cívica para coordinar información y ayuda en contextos de emergencia. Su personalidad combina la solidez de una institución pública confiable con la cercanía de una organización humanitaria.
+
+| Atributo | Expresión |
+| --- | --- |
+| Propósito | Dignificar la solidaridad y reducir el caos informacional. |
+| Personalidad | Serena, institucional, humana, precisa y resiliente. |
+| Tono | Claro y directo en emergencia; cercano en acompañamiento; técnico y verificable ante instituciones. |
+| Promesa | Convertir señales dispersas en coordinación confiable y ayuda trazable. |
+
+## 2. Arquitectura prevista de marca
+
+La estructura organizacional proyectada contempla dos entidades con responsabilidades diferenciadas:
+
+- **Fundación VACA:** titular y custodio de la misión, el producto VACA y su relación con beneficiarios, comunidades e instituciones públicas.
+- **Empresa de software:** proveedor tecnológico encargado del desarrollo, operación, seguridad y evolución de la plataforma bajo acuerdos transparentes con la fundación.
+
+La identidad visual principal pertenece a VACA y debe percibirse como un bien cívico, no como la interfaz comercial de una empresa tecnológica. La empresa puede compartir el sistema base, pero debe usar una expresión más técnica y secundaria para evitar confusión institucional.
+
+## 3. Concepto visual: Clasicismo Cívico Celadón
+
+La dirección visual se construye sobre tres ideas:
+
+1. **Permanencia:** estructuras dóricas, basamentos y ritmos verticales representan resistencia y continuidad operativa.
+2. **Institución humana:** detalles jónicos, curvas contenidas y piedra clara agregan cuidado sin perder autoridad.
+3. **Infraestructura viva:** gradientes, tramas y mapas introducen profundidad digital sin recurrir al futurismo Y2K.
+
+### Referencias principales
+
+| Referencia | Función visual |
+| --- | --- |
+| `estetica/estetica-5.jpg` | Referencia rectora: interior neoclásico, composición vertical, estatuaria, simetría, grano y monocromía celadón. |
+| `estetica/estetica-3.jpg` | Ritmo de columnas, profundidad, perspectiva y presencia institucional. |
+| `estetica/estetica-4.jpg` | Escaleras, balaustradas y continuidad espacial para transiciones y recorridos. |
+| `estetica/estetica-2.jpg` | Puente entre arquitectura institucional y sistemas digitales contemporáneos. |
+| `estetica/gradiente.webp`, `gradiente-2.jpg`, `gradiente-3.jpg` | Fondos atmosféricos y estados de marca en formato vertical. |
+| `estetica/textura.webp`, `textura-2.jpg`, `textura-3.jpg` | Tramas de baja opacidad para profundidad, mapas y superficies editoriales. |
+
+## 4. Gramática arquitectónica
+
+### Orden dórico
+
+Se utiliza en superficies operativas: navegación, botones, tarjetas, listas y alertas. Se traduce en:
+
+- Jerarquías simples y robustas.
+- Bordes definidos y radios moderados.
+- Ritmo vertical regular.
+- Pocos elementos decorativos.
+- Sensación de soporte, estructura y estabilidad.
+
+### Orden jónico
+
+Se reserva para identidad institucional: onboarding, sitio público, documentos, certificados, hitos y pantallas de cierre. Se traduce en:
+
+- Capiteles o volutas reducidos a líneas y curvas abstractas.
+- Marcos editoriales, medallones y sellos.
+- Simetría y espacios amplios.
+- Ornamentación periférica que nunca compite con la información.
+
+Las columnas no deben repetirse como ilustraciones literales alrededor de cada componente. La arquitectura se expresa principalmente mediante proporción, alineación, basamentos, cornisas, divisores y ritmo.
+
+## 5. Paleta cromática
+
+El celadón deja de ser un color secundario y pasa a ser el núcleo de la identidad.
+
+| Token | Hex de referencia | Uso |
+| --- | --- | --- |
+| `celadon/50` | `#F3F7F3` | Fondo operativo claro. |
+| `celadon/100` | `#E2ECE5` | Superficies suaves y estados seleccionados. |
+| `celadon/300` | `#B8D9C6` | Color de marca, ilustraciones y bloques comunitarios. |
+| `celadon/500` | `#7EAD91` | Acentos, gráficos y controles secundarios. |
+| `celadon/700` | `#456B58` | Acción primaria y encabezados sobre claro. |
+| `celadon/900` | `#1F3B30` | Fondo institucional oscuro y texto principal. |
+| `stone/100` | `#E7E7DF` | Piedra clara, divisores y superficies editoriales. |
+| `ivory/50` | `#F8F7F1` | Respiro, formularios y documentos. |
+| `bronze/500` | `#9C8058` | Sello institucional y detalle ceremonial; uso limitado. |
+| `ink/900` | `#17251F` | Texto de máximo contraste. |
+
+Los estados funcionales no se fuerzan dentro de la monocromía:
+
+- **Peligro/SOS:** rojo sobrio y de alto contraste.
+- **Advertencia:** ámbar u ocre.
+- **Información:** azul petróleo.
+- **Éxito:** verde profundo, acompañado siempre por icono y texto.
+
+Los valores definitivos deben verificarse con WCAG antes de implementarse. El color nunca es el único portador de significado.
+
+## 6. Tipografía
+
+- **Anderson Grotesk:** interfaz, títulos y comunicación institucional. Su geometría permite construir orden sin sacrificar legibilidad.
+- **JetBrains Mono:** coordenadas, identificadores, hashes y datos técnicos.
+- **Serif institucional futura:** sólo puede evaluarse para piezas editoriales o ceremoniales después de validar licencia, legibilidad y coherencia. No se usa una tipografía pseudo-griega ni ornamental en la app operativa.
+
+La sensación clásica se obtiene mediante composición, proporción y arquitectura visual, no imitando inscripciones antiguas.
+
+## 7. Gradientes, texturas e imagen
+
+### Gradientes
+
+Los gradientes verticales de `estetica/` aportan atmósfera a splash, onboarding, sitio institucional y cierres de flujo. Deben mantenerse detrás de superficies sólidas cuando exista texto o interacción crítica.
+
+### Texturas
+
+Las tramas se usan con opacidad baja para evitar fatiga visual:
+
+- Mapas y visualizaciones territoriales.
+- Fondos editoriales y certificados.
+- Encabezados institucionales.
+- Estados de sincronización o propagación de señales.
+
+No se aplican sobre formularios densos, botones SOS ni bloques de texto extensos.
+
+### Fotografía e ilustración
+
+- Tratamiento monocromático celadón o piedra.
+- Contraste moderado y grano editorial contenido.
+- Arquitectura, territorio y comunidad antes que imaginería tecnológica abstracta.
+- Estatuaria y columnas sólo como metáforas institucionales; nunca deben representar superioridad, exclusión o distancia frente a las personas afectadas.
+
+## 8. Elementos visuales
+
+| Elemento | Significado | Aplicación |
+| --- | --- | --- |
+| **Pórtico cívico** | Acceso, resguardo y servicio público. | Onboarding, portal institucional, cabeceras. |
+| **Columna/nodo** | Cada persona o dispositivo sostiene la red. | Indicadores de conectividad y confianza. |
+| **Basamento** | Datos y protocolos como fundamento. | Navegación, paneles y resúmenes. |
+| **Sello VACA** | Compromiso y trazabilidad. | Certificados, confirmaciones y documentos. |
+| **Trama territorial** | Información distribuida que converge. | Mapas, sincronización y analítica. |
+| **Ritmo de columnas** | Continuidad institucional. | Grillas, timelines y visualizaciones de proceso. |
+
+## 9. Aplicación por contexto
+
+### App en emergencia
+
+- Superficies sólidas, alto contraste y ornamentación mínima.
+- Acción principal visible sin desplazamiento.
+- Prioridades expresadas con texto, icono y posición, no sólo color.
+- Sin columnas literales, estatuas ni texturas detrás de información crítica.
+
+### Fundación VACA
+
+- Mayor uso de pórticos, sellos, piedra, marcos editoriales y fotografías celadón.
+- Voz humanitaria e institucional.
+- Documentos y campañas centrados en servicio, dignidad y rendición de cuentas.
+
+### Empresa de software
+
+- Conserva celadón, retículas y precisión tipográfica.
+- Reduce referencias ceremoniales y enfatiza infraestructura, seguridad y operación.
+- Nunca desplaza a la fundación como rostro del producto VACA.
+
+## 10. Elementos descartados
+
+La nueva identidad elimina como dirección principal:
+
+- Futurismo Y2K.
+- Rosa neón y brillos eléctricos.
+- Glitch decorativo.
+- Lenguaje de club nocturno.
+- Blobs flotantes.
+- Glassmorphism como superficie dominante.
+- Ornamentación que reduzca legibilidad o banalice una emergencia.
+
+## 11. Criterio de aprobación
+
+Toda pieza debe superar estas preguntas:
+
+1. ¿Se percibe confiable antes que llamativa?
+2. ¿La arquitectura organiza la información en vez de decorarla?
+3. ¿El celadón transmite calma sin reducir el contraste?
+4. ¿Una persona bajo estrés identifica la acción principal inmediatamente?
+5. ¿La pieza puede pertenecer a una fundación cívica seria y seguir pareciendo contemporánea?

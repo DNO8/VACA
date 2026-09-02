@@ -18,6 +18,8 @@ App Mobile Offline-First: Aplicación nativa (Flutter) con base de datos local (
 Protocolo de Sincronización Eventual: Motor de sincronización para consolidar la "Verdad Emergente" al detectar ventanas de conectividad (Starlink, antenas móviles o traslado físico)
 .
 Identidad con Passkeys: Integración de biometría para que beneficiarios vulnerables accedan a sus vouchers de ayuda de forma segura y sin gestionar frases semilla.
+Fase 2.5: Capa de Comunicaciones Mesh — Resiliencia sin Infraestructura (posterior al MVP)
+Foco: Comunicación y sincronización sin internet ni servidores en el "Día 0". Red Bluetooth LE mesh (inspirada en bitchat) con dos funciones: mensajería descentralizada entre operadores/comunidad y sincronización P2P de reportes FIBE por "gossip" (los datos saltan de dispositivo en dispositivo hasta alcanzar un nodo con internet). Reutiliza el diseño idempotente por UUID ya existente, por lo que se incorpora como transporte adicional sin refactor. Requiere un spike técnico previo (validar BLE dual-role en Android y resolver la licencia de bitchat-android). Especificación detallada en Especificaciones/mesh-comunicaciones.md.
 Fase 3: Vaquita Insights — Sostenibilidad SaaS B2G (Q3 2027)
 Foco: Inteligencia Estratégica para el Estado y ONGs. Despliegue del modelo de negocio y el motor de eficiencia financiera
 .
