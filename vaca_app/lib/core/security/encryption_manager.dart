@@ -1,39 +1,55 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
+import 'package:pointycastle/api.dart';
+import 'package:pointycastle/block/aes.dart';
+import 'package:pointycastle/block/modes/gcm.dart';
+import 'package:pointycastle/digests/sha256.dart';
+import 'package:pointycastle/key_derivators/api.dart';
+import 'package:pointycastle/key_derivators/hkdf.dart';
 
 import '../result/result.dart';
 
-/// Gestor de cifrado local.
+/// Gestor de cifrado local con AES-256-GCM usando pointycastle.
 ///
-/// Usa AES-256-GCM delegado a un plugin nativo o a `pointycastle` solo
-/// cuando existan tests. El metodo actual es un placeholder aprobado para
-/// evitar implementar primitivas criptograficas manuales.
+/// Usa HKDF-SHA256 para derivar una clave de 32 bytes a partir de
+/// `keyMaterial` y un salt aleatorio. Cada operacion genera un nonce de 12
+/// bytes aleatorio. El tag de autenticacion de 16 bytes se concatena al
+/// ciphertext.
 class EncryptionManager {
   const EncryptionManager();
 
+  static const int _keyLength = 32;
+  static const int _nonceLength = 12;
+  static const int _tagLength = 16;
+
   /// Cifra `plaintext` con una clave derivada de `keyMaterial`.
-  ///
-  /// Por ahora materializa el ciphertext como base64 del plain con un nonce
-  /// aleatorio. ESTO NO ES PRODUCCION; la fase B1/B2 debe reemplazarlo por
-  /// AES-GCM nativo. Se deja asi para no inventar criptografia y mantener
-  /// la API estable para el resto de la app.
-  Result<SealedData> seal(String plaintext, String keyMaterial) {
+  Result<SealedData> seal(Uint8List plaintext, String keyMaterial) {
     try {
-      final nonce = _nonce(12);
-      final key = _deriveKey(keyMaterial, nonce);
-      final bytes = utf8.encode(plaintext);
-      final combined = Uint8List(nonce.length + bytes.length);
-      combined.setAll(0, nonce);
-      combined.setAll(nonce.length, bytes);
-      final tag = Hmac(sha256, key).convert(combined).bytes.sublist(0, 16);
-      final ciphertext = base64Encode(bytes);
+      final nonce = _secureNonce(_nonceLength);
+      final salt = _secureNonce(16);
+      final key = _deriveKey(keyMaterial, salt);
+
+      final aes = AESEngine();
+      final gcm = GCMBlockCipher(aes);
+      final params = AEADParameters(
+        KeyParameter(key),
+        _tagLength * 8,
+        nonce,
+        Uint8List(0),
+      );
+      gcm.init(true, params);
+
+      final output = Uint8List(plaintext.length + _tagLength);
+      final len = gcm.processBytes(plaintext, 0, plaintext.length, output, 0);
+      gcm.doFinal(output, len);
+
       return Success(
         SealedData(
-          ciphertext: ciphertext,
+          ciphertext: base64Encode(output),
           nonce: base64Encode(nonce),
-          tag: base64Encode(tag),
+          salt: base64Encode(salt),
         ),
       );
     } catch (e) {
@@ -48,84 +64,88 @@ class EncryptionManager {
   }
 
   /// Descifra y verifica `sealedData`.
-  Result<String> unseal(SealedData sealedData, String keyMaterial) {
+  Result<Uint8List> unseal(SealedData sealedData, String keyMaterial) {
     try {
       final nonce = base64Decode(sealedData.nonce);
-      final key = _deriveKey(keyMaterial, nonce);
-      final bytes = base64Decode(sealedData.ciphertext);
-      final combined = Uint8List(nonce.length + bytes.length);
-      combined.setAll(0, nonce);
-      combined.setAll(nonce.length, bytes);
-      final expectedTag = Uint8List.fromList(
-        Hmac(sha256, key).convert(combined).bytes.sublist(0, 16),
-      );
-      final actualTag = base64Decode(sealedData.tag);
-      if (!_constantTimeEquals(expectedTag, actualTag)) {
+      final salt = base64Decode(sealedData.salt);
+      final key = _deriveKey(keyMaterial, salt);
+      final input = base64Decode(sealedData.ciphertext);
+
+      if (input.length < _tagLength) {
         return const Failure(
-          VacaError(code: 'encryption_unseal', message: 'Tag de autenticacion invalido.'),
+          VacaError(
+            code: 'encryption_unseal',
+            message: 'Ciphertext demasiado corto.',
+          ),
         );
       }
-      return Success(utf8.decode(bytes));
+
+      final aes = AESEngine();
+      final gcm = GCMBlockCipher(aes);
+      final params = AEADParameters(
+        KeyParameter(key),
+        _tagLength * 8,
+        nonce,
+        Uint8List(0),
+      );
+      gcm.init(false, params);
+
+      final output = Uint8List(input.length - _tagLength);
+      final len = gcm.processBytes(input, 0, input.length, output, 0);
+      gcm.doFinal(output, len);
+
+      return Success(output);
     } catch (e) {
       return Failure(
         VacaError(
           code: 'encryption_unseal',
-          message: 'No se pudo descifrar el payload.',
+          message: 'No se pudo descifrar el payload o tag invalido.',
           cause: e,
         ),
       );
     }
   }
 
-  Uint8List _deriveKey(String material, Uint8List nonce) {
+  Uint8List _deriveKey(String material, Uint8List salt) {
     final input = utf8.encode(material);
-    final seed = Uint8List(input.length + nonce.length);
-    seed.setAll(0, input);
-    seed.setAll(input.length, nonce);
-    return Uint8List.fromList(sha256.convert(seed).bytes);
+    final hkdf = HKDFKeyDerivator(SHA256Digest());
+    hkdf.init(HkdfParameters(input, _keyLength, salt));
+    return hkdf.process(Uint8List(0));
   }
 
-  Uint8List _nonce(int length) {
+  Uint8List _secureNonce(int length) {
     final nonce = Uint8List(length);
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final bytes = now.toRadixString(16).padLeft(16, '0').codeUnits;
-    for (var i = 0; i < length && i < bytes.length; i++) {
-      nonce[i] = bytes[i] % 256;
+    final random = Random.secure();
+    for (var i = 0; i < length; i++) {
+      nonce[i] = random.nextInt(256);
     }
     return nonce;
   }
-
-  bool _constantTimeEquals(Uint8List a, Uint8List b) {
-    if (a.length != b.length) return false;
-    var result = 0;
-    for (var i = 0; i < a.length; i++) {
-      result |= a[i] ^ b[i];
-    }
-    return result == 0;
-  }
 }
 
-/// Datos cifrados con nonce y tag.
+/// Datos cifrados con nonce y salt.
+///
+/// El tag de autenticacion GCM esta concatenado al ciphertext.
 class SealedData {
   const SealedData({
     required this.ciphertext,
     required this.nonce,
-    required this.tag,
+    required this.salt,
   });
 
   final String ciphertext;
   final String nonce;
-  final String tag;
+  final String salt;
 
   Map<String, dynamic> toJson() => {
         'ciphertext': ciphertext,
         'nonce': nonce,
-        'tag': tag,
+        'salt': salt,
       };
 
   factory SealedData.fromJson(Map<String, dynamic> json) => SealedData(
         ciphertext: json['ciphertext'] as String,
         nonce: json['nonce'] as String,
-        tag: json['tag'] as String,
+        salt: json['salt'] as String,
       );
 }

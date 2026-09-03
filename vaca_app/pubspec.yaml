@@ -35,6 +35,7 @@ dependencies:
 
   # Conectividad / transporte
   connectivity_plus: ^6.0.5
+  dio: ^5.4.0
 
   # Backend
   supabase_flutter: ^2.6.0
@@ -43,6 +44,10 @@ dependencies:
   stellar_flutter_sdk: ^1.8.4
 
   cupertino_icons: ^1.0.8
+  cbor: ^6.5.1
+  ed25519_edwards: ^0.3.2
+  pointycastle: ^3.9.1
+  didit_sdk: ^4.7.4
 
 dev_dependencies:
   flutter_test:

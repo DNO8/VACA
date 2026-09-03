@@ -58,6 +58,12 @@ android {
         implementation("androidx.concurrent:concurrent-futures:1.2.0")
     }
 
+    packaging {
+        resources {
+            pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

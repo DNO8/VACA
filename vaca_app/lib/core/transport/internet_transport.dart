@@ -1,19 +1,30 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 
+import '../result/result.dart';
+import '../security/identity_key_source.dart';
+import 'server_contract.dart';
 import 'transport.dart';
 
 /// Transporte por internet. Única implementación de [Transport] en el MVP.
 ///
-/// En el MVP el envío real de datos lo hace el motor de sincronización contra
-/// Supabase (`POST /reports`, ver flujo-app §F4); esta clase expone la
-/// disponibilidad de red a la capa de transporte y sirve de punto de enganche
-/// para el ruteo inteligente. El envío efectivo se completará en el Deliverable 3.
+/// Comprueba la conectividad y delega el envio real de bundles en
+/// [ServerContract]. Si no hay red, deja el paquete encolado. Si hay red
+/// pero el contrato no esta configurado o rechaza el paquete, falla cerrado.
 class InternetTransport implements Transport {
-  InternetTransport({Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity();
+  InternetTransport({
+    required ServerContract contract,
+    required IdentityKeySource keySource,
+    Connectivity? connectivity,
+  })  : _contract = contract,
+        _keySource = keySource,
+        _connectivity = connectivity ?? Connectivity();
 
+  final ServerContract _contract;
+  final IdentityKeySource _keySource;
   final Connectivity _connectivity;
 
   final _incoming = StreamController<TransportPacket>.broadcast();
@@ -43,16 +54,40 @@ class InternetTransport implements Transport {
         availability: online
             ? TransportAvailability.available
             : TransportAvailability.unavailable,
-        detail: online ? 'Conectado' : 'Sin conexión',
+        detail: online ? 'Conectado' : 'Sin conexion',
       ),
     );
   }
 
   @override
   Future<DeliveryResult> send(TransportPacket packet) async {
-    // TODO(D3): drenar el SyncQueueItem contra Supabase (POST /reports).
-    // Placeholder del MVP: deja el paquete encolado para el motor de sync.
-    return DeliveryResult(packet.id, DeliveryState.queued);
+    final results = await _connectivity.checkConnectivity();
+    final online = results.any((r) => r != ConnectivityResult.none);
+    if (!online) {
+      return DeliveryResult(packet.id, DeliveryState.queued);
+    }
+
+    final originPublicKey = await _originPublicKey();
+    if (originPublicKey == null || originPublicKey.isEmpty) {
+      return DeliveryResult(
+        packet.id,
+        DeliveryState.failed,
+        error: 'origin_public_key_missing',
+      );
+    }
+
+    return _contract.sendBundle(packet.id, packet.payload, originPublicKey);
+  }
+
+  Future<Uint8List?> _originPublicKey() async {
+    final pair = await _keySource.getOrCreateKeyPair();
+    if (pair.isFailure) return null;
+    final publicKeyBase64 = (pair as Success<DeviceKeyPair>).value.publicKey;
+    try {
+      return base64Decode(publicKeyBase64);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

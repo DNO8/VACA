@@ -77,6 +77,7 @@ class IdentityService {
     final local = await getOrCreateLocalProfile();
     final kycResult = await kycAdapter.verify(
       consentVersion: local.consentVersion,
+      devicePublicKey: local.devicePublicKey,
     );
 
     return switch (kycResult) {
@@ -95,7 +96,7 @@ class IdentityService {
             IdentityProfilesCompanion(
               id: Value(local.id),
               opaqueSubjectId: Value(kyc.opaqueSubjectId),
-              identityAssurance: const Value(IdentityAssurance.verified),
+              identityAssurance: Value(kyc.identityAssurance),
               credential: Value(kyc.credential),
               credentialExpiresAt: Value(kyc.credentialExpiresAt),
               updatedAt: Value(now),

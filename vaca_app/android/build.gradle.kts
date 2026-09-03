@@ -19,7 +19,9 @@ subprojects {
     project.evaluationDependsOn(":app")
     configurations.all {
         resolutionStrategy {
-            force("androidx.concurrent:concurrent-futures:1.1.0")
+            // Alinear con el fix upstream de camera_android_camerax 0.7.4+6.
+            // Ver: https://issuetracker.google.com/issues/543937345
+            force("androidx.concurrent:concurrent-futures:1.2.0")
         }
     }
 }

@@ -49,6 +49,10 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>VACA usa la cámara para adjuntar una foto opcional a una señal de incidente. La foto se almacena encriptada en el dispositivo hasta su sincronización.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>El SDK de verificacion de identidad puede usar el microfono durante el flujo de liveness si el proveedor lo requiere.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>El SDK de verificacion de identidad puede acceder a la biblioteca de fotos solo si el usuario selecciona un documento existente.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>VACA usa la ubicación para registrar dónde ocurrió un incidente. Puede corregirse manualmente si el GPS no está disponible.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

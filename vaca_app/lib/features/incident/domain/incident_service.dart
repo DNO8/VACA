@@ -1,18 +1,29 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/bundle/bundle_queue_service.dart';
 import '../../../data/local/database.dart';
 import '../../../data/local/enums.dart';
-import '../domain/incident.dart';
+import '../../../features/identity/domain/identity_service.dart';
+import 'attachment_service.dart';
+import 'incident.dart';
 
 /// Servicio de incidentes offline-first.
 ///
-/// Crea, actualiza y lista incidentes locales. La sincronización se delega
-/// al motor de transporte en fases posteriores.
+/// Crea, actualiza y lista incidentes locales. Al enviar un incidente,
+/// lo convierte en un bundle canonico y lo encola en [BundleQueueService].
 class IncidentService {
-  const IncidentService(this._database);
+  const IncidentService(
+    this._database,
+    this._queue,
+    this._identity,
+    this._attachments,
+  );
 
   final AppDatabase _database;
+  final BundleQueueService _queue;
+  final IdentityService _identity;
+  final AttachmentService _attachments;
 
   /// Crea un incidente local a partir de los datos capturados.
   Future<UserIncident> create({
@@ -81,8 +92,27 @@ class IncidentService {
   }
 
   /// Marca un incidente como enviado al backend.
+  ///
+  /// Crea un bundle canonico, lo persiste en la cola de origen y actualiza
+  /// el estado del incidente a `queued` o `failedRetryable`.
   Future<UserIncident?> submit(String id) async {
-    return _updateStatus(id, IncidentStatus.queued);
+    final incident = await get(id);
+    if (incident == null) return null;
+
+    final profile = await _identity.getOrCreateLocalProfile();
+    final attachments = await _attachments.listForIncident(id);
+
+    final result = await _queue.enqueue(
+      incident,
+      profile,
+      eventType: EventType.created,
+      attachments: attachments,
+    );
+
+    final newStatus = result.isSuccess
+        ? IncidentStatus.queued
+        : IncidentStatus.failedRetryable;
+    return _updateStatus(id, newStatus);
   }
 
   /// Cancela un incidente local.
