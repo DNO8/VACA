@@ -1,10 +1,12 @@
 # VACA Release and Security Readiness
 
-## Release objective
+## Purpose
 
-Prepare production submission candidates for Google Play and Apple App Store by **September 30, 2026**. Store approval and public availability cannot be guaranteed by engineering because review timing and account decisions are external.
+This document defines the permanent security, privacy, packaging, and evidence gates for every VACA release. A dated milestone may select when to run these gates, but it cannot weaken or bypass them. Store approval and public availability cannot be guaranteed by engineering because review timing and account decisions are external.
 
-Two deliverables are distinct:
+The September 30, 2026 target belongs to the current execution handoff; it is not an architectural or policy boundary.
+
+Two release products are distinct:
 
 1. **Public application:** Android and iOS, Internet synchronization, no public BLE relay claim.
 2. **Municipal pilot application:** Android-only flavor with feature-flagged BLE relay and certified gateway configuration.
@@ -135,7 +137,7 @@ Do not mark data as anonymous merely because it is hashed. Exact location, incid
 
 ## User controls
 
-The public MVP must provide:
+The public application must provide:
 
 - Privacy notice before collection.
 - Consent version record.
@@ -181,7 +183,7 @@ The implementation agent must verify current official Google Play requirements a
 ### Permissions
 
 - [ ] Camera requested only at capture.
-- [ ] Foreground location requested only when needed; no background location in public MVP.
+- [ ] Foreground location requested only when needed; no background location in the public application.
 - [ ] Bluetooth permissions excluded from `public` if not used.
 - [ ] Pilot Bluetooth scan/connect/advertise permissions have rationale and runtime handling.
 - [ ] Foreground-service type and notification comply with current Android requirements.
@@ -193,7 +195,7 @@ The implementation agent must verify current official Google Play requirements a
 - [ ] Data Safety answers match actual behavior and SDKs.
 - [ ] Account deletion requirements satisfied when an account exists.
 - [ ] Content rating completed honestly.
-- [ ] Ads declaration accurate; public MVP should contain no ads.
+- [ ] Ads declaration accurate; the public application should contain no ads.
 - [ ] App access/reviewer instructions provided if verification gates content.
 - [ ] Screenshots show public behavior, not unreleased municipal features.
 - [ ] Emergency disclaimer appears in listing and app where legally approved.

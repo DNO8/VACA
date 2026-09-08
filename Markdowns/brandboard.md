@@ -19,8 +19,8 @@ VACA es una infraestructura cívica para coordinar información y ayuda en conte
 
 La estructura organizacional proyectada contempla dos entidades con responsabilidades diferenciadas:
 
-- **Fundación VACA:** titular y custodio de la misión, el producto VACA y su relación con beneficiarios, comunidades e instituciones públicas.
-- **Empresa de software:** proveedor tecnológico encargado del desarrollo, operación, seguridad y evolución de la plataforma bajo acuerdos transparentes con la fundación.
+- **Fundación CAMADA:** titular y custodio de la misión, el producto VACA y su relación con beneficiarios, comunidades e instituciones públicas.
+- **Empresa de software:** proveedor tecnológico encargado del desarrollo, operación, seguridad y evolución de la plataforma bajo acuerdos transparentes con la Fundación CAMADA.
 
 La identidad visual principal pertenece a VACA y debe percibirse como un bien cívico, no como la interfaz comercial de una empresa tecnológica. La empresa puede compartir el sistema base, pero debe usar una expresión más técnica y secundaria para evitar confusión institucional.
 
@@ -144,7 +144,7 @@ No se aplican sobre formularios densos, botones SOS ni bloques de texto extensos
 - Prioridades expresadas con texto, icono y posición, no sólo color.
 - Sin columnas literales, estatuas ni texturas detrás de información crítica.
 
-### Fundación VACA
+### Fundación CAMADA
 
 - Mayor uso de pórticos, sellos, piedra, marcos editoriales y fotografías celadón.
 - Voz humanitaria e institucional.
@@ -154,7 +154,7 @@ No se aplican sobre formularios densos, botones SOS ni bloques de texto extensos
 
 - Conserva celadón, retículas y precisión tipográfica.
 - Reduce referencias ceremoniales y enfatiza infraestructura, seguridad y operación.
-- Nunca desplaza a la fundación como rostro del producto VACA.
+- Nunca desplaza a la Fundación CAMADA como rostro del producto VACA.
 
 ## 10. Elementos descartados
 

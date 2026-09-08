@@ -1,40 +1,63 @@
-Protocolo de Coordinación: Del "Día 0" a la Solidaridad 365
-VACA introduce un protocolo estandarizado que permite orquestar la ayuda humanitaria incluso cuando la infraestructura centralizada colapsa. El protocolo está diseñado para operar en dos estados: Modo Solidaridad 365 (recaudación y apoyo diario) y Modo Emergencia (activación masiva ante desastres).
-1. El Ciclo de Vida de la Ayuda (Store-and-Forward)
-A diferencia de los sistemas tradicionales, VACA no asume conectividad constante. El ciclo de vida se basa en la construcción de una "Verdad Emergente"
-:
-Captura en Isla (Día 0): Los "operadores comunitarios espontáneos" registran daños y necesidades en la App offline-first (SQLite). La información queda contenida localmente en el territorio
-.
-Sincronización Eventual: Al detectar una ventana de conexión (Starlink, radio-enlace o traslado físico del dispositivo), los datos se mergean en la nube para detectar patrones y duplicados
-.
-Validación de Confianza (Trust Scoring): El sistema asigna un confidence_level que evoluciona:
-Nivel 1: Reporte ciudadano único.
-Nivel 2: Consenso comunitario (múltiples reportes sobre el mismo daño).
-Nivel 3: Validación institucional (cruce vía Foundation Adapter con datos de ONGs o el Estado)
-.
-Ejecución Financiera: Una vez alcanzado el umbral de confianza, se activan los Claimable Balances en Stellar (USDC) para los beneficiarios validados
-.
-Cierre y Auditoría: Emisión de Proof of Aid (NFT) para el donante e integración del evento en el National Emergency Index
-.
-2. Disparadores de Activación (Triggers)
-El protocolo se adapta automáticamente según la gravedad detectada por los oráculos oficiales:
-Trigger ALFA (SENAPRED): Ante la detección de un Informe ALFA, VACA activa automáticamente el "Modo Emergencia" en la zona geográfica afectada, priorizando el catastro del Módulo 5 de la Ficha FIBE.
-Trigger Institucional: Cuando una fundación aliada (ej. Hogar de Cristo) activa una campaña específica para un grupo de riesgo, el sistema habilita los rieles de recaudación trazable con Social Yield.
-3. Simbiosis Operativa VACA + Sozu Pay
-Para garantizar la resiliencia y el cumplimiento legal (Ley Fintec 21.521), el protocolo separa la inteligencia de la ejecución:
+# Protocolo de coordinación — VACA
 
-Fase del Protocolo     | Responsable (Capa)     | Acción Técnica
--------------------------------------------------------------------
-Detección y Catastro   | VACA (Coordination)    | Registro offline de RUTs y evidencia fotográfica (IPFS)
-Validación Social      | VACA (Insights)        | Ejecución de Merkle Proofs para proteger la privacidad (Ley 19.628)
-Gestión de Fondos      | Sozu Pay (Financial)   | Colocación en pools de liquidez (Social Yield) para neutralizar comisiones
-Liquidación Final      | Sozu Pay (Financial)   | Desembolso a la CuentaRUT del beneficiario validado por VACA.
+## Alcance
 
-4. Gobernanza del Evento
-El protocolo otorga poder de decisión a los afectados para evitar la "basura humanitaria":
-Priorización Comunitaria: Los damnificados con tokens de gobernanza pueden votar para ajustar el tipo de ayuda (ej. priorizar "Vouchers de Agua" sobre "Ropa") según evolucione la crisis en su cuadrante
-.
-Supervisión Municipal: El municipio actúa como el validador final de las listas de distribución, asegurando que la ayuda sea coherente con la respuesta del COGRID
-.
-Resultado: El protocolo transforma el caos del "Día 0" en una operación logística y financiera profesional, donde la información fluye antes que el dinero y el dinero rinde más gracias a la tecnología programable
-.
+Este protocolo describe cómo una señal pasa de observación local a información disponible para un receptor autorizado. No sustituye protocolos oficiales, no activa automáticamente recursos y no determina beneficios.
+
+## 1. Preparación
+
+1. La persona conoce propósito, límites y canales oficiales.
+2. Registra consentimiento.
+3. El dispositivo crea material de autenticación protegido.
+4. Puede completar KYC o permanecer no verificada.
+5. La app verifica espacio, permisos y configuración sin bloquear el acceso crítico.
+
+## 2. Captura
+
+1. Seleccionar categoría.
+2. Derivar prioridad P0–P4.
+3. Obtener ubicación o registrar fallback manual/no disponible.
+4. Ingresar datos mínimos.
+5. Persistir incidente, evento y bundle en una transacción.
+6. Mostrar `savedLocally`.
+7. Procesar fotografía como adjunto independiente.
+
+## 3. Propagación
+
+La app ofrece bundles al coordinador DTN:
+
+- HTTPS cuando el servidor es alcanzable.
+- Relay BLE en builds municipales autorizados.
+- Cola local mientras no exista enlace elegible.
+
+Cada transferencia respeta expiración, hop limit, copy budget, prioridad, dedupe y límites de recursos.
+
+## 4. Recepción
+
+1. El servidor autentica al origen.
+2. Valida versión, firma, credencial, tamaño, expiración y hash.
+3. Aplica idempotencia y autorización.
+4. Persiste transaccionalmente.
+5. Firma un recibo ligado al bundle.
+6. El origen verifica el recibo antes de mostrar `receivedByServer`.
+
+## 5. Revisión institucional
+
+La institución receptora puede revisar, enriquecer o reconocer la señal en un sistema separado. Este acuse no se infiere del recibo técnico y nunca se presenta como despacho garantizado.
+
+## 6. Actualización, cancelación y cierre
+
+Toda modificación crea un evento append-only. Las cancelaciones se sincronizan de forma idempotente. La expiración detiene propagación, pero la visibilidad y eliminación siguen la política de retención.
+
+## 7. Reglas de seguridad
+
+- KYC no bloquea P0/P1.
+- Prioridad no equivale a verdad.
+- Relay/gateway no descifra payload.
+- No se registran coordenadas, notas, medios, tokens o claves en logs.
+- Estado local, custodia, recibo y acuse institucional se comunican por separado.
+- No existe activación automática de drones, ambulancias, policías, bomberos o ayuda financiera.
+
+## Resultado
+
+El protocolo garantiza trazabilidad técnica de la señal y de su entrega, no el resultado operativo de una emergencia.

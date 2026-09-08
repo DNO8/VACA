@@ -1,27 +1,29 @@
-# VACA Public MVP — Product Specification
+# VACA Public Mobile Product — Permanent Specification
 
 ## Decision
 
-VACA will target a public Android and iOS release candidate for **September 30, 2026**, while the municipal BLE relay remains an Android-only, feature-flagged pilot capability.
+VACA's public product is an Android and iOS offline-first incident-signaling application. The municipal BLE relay is an Android-only, feature-flagged capability for authorized deployments.
 
-The public application is an offline-first incident signaling tool. It does not reproduce an official government assessment, determine aid eligibility, replace emergency telephone services, or claim that a report reached an authority until the application receives an authenticated server receipt.
+This specification is a permanent product baseline, independent of release dates or funding milestones. Delivery plans may stage its implementation but cannot redefine its safety, privacy, domain, or transport semantics.
+
+The public application does not reproduce an official government assessment, determine aid eligibility, replace emergency telephone services, or claim that a report reached an authority until the application receives an authenticated server receipt.
 
 ## Document authority
 
-For implementation conflicts, use this precedence:
+For product and implementation conflicts, use this precedence:
 
-1. `00-swe-1.7-handoff.md`
-2. `01-public-mvp-product-spec.md`
-3. `02-hybrid-dtn-architecture.md`
-4. `03-release-security-readiness.md`
-5. `04-swe-1.7-implementation-backlog.md`
-6. Existing repository documents
+1. Security, privacy, and safety invariants shared by `01-public-mvp-product-spec.md`, `02-hybrid-dtn-architecture.md` and `03-release-security-readiness.md`.
+2. `flujo-app.md` for user-visible behavior and state transitions.
+3. `modelo-datos-fibe.md` for the logical data model; its filename is retained only for compatibility.
+4. `mesh-comunicaciones.md` for Android relay behavior under the normative DTN architecture.
+5. `sistema-diseno-app.md` and `Markdowns/brandboard.md` for visual and content rules.
+6. Dated handoffs and implementation backlogs for sequencing and release evidence only.
 
-The existing FIBE-oriented model and flows are historical inputs and are not authoritative for the public MVP. Do not expose the FIBE name, form, module names, official codes, or official-assessment language in source identifiers, UI copy, analytics, store metadata, or API contracts.
+FIBE-oriented forms and Stellar-oriented aid flows are retired historical inputs. Do not expose FIBE names, modules, official codes, aid eligibility, tokenization, wallets, or official-assessment language in active source identifiers, UI copy, analytics, store metadata, or API contracts.
 
 ## Product outcomes
 
-The MVP must allow a person to:
+The public mobile product must allow a person to:
 
 1. Prepare their identity and device before a disaster when connectivity exists.
 2. Create a minimal incident signal without Internet.
@@ -42,7 +44,7 @@ The MVP must allow a person to:
 | Relay node | Stores and forwards encrypted bundles without reading their payload. |
 | Municipal pilot gateway | Receives encrypted bundles and uploads them to the authorized server. |
 | Authorized server | Authenticates, deduplicates, stores, acknowledges, and routes incident signals. |
-| Institutional operator | Reviews signals using systems outside this mobile MVP. |
+| Institutional operator | Reviews signals using systems outside the public mobile application. |
 
 ## Scope
 
@@ -286,7 +288,7 @@ expired → verificationPending → verified
 - Reduced-motion preferences are respected.
 - Touch targets are at least 48×48 dp.
 
-## MVP acceptance criteria
+## Product acceptance criteria
 
 - Android and iOS applications launch and complete the public incident flow.
 - A signal can be created in airplane mode, survives restart, and later syncs through HTTPS.

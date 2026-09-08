@@ -270,13 +270,13 @@ La implementación actual todavía conserva tokens de la identidad anterior. La 
 
 ## 11. Expresión organizacional
 
-### Fundación VACA
+### Fundación CAMADA
 
 Utiliza la expresión institucional completa: celadón, piedra, pórticos, marcos, sellos y fotografía editorial. Debe transmitir misión pública, cercanía y responsabilidad.
 
 ### Empresa de software
 
-Comparte tokens y precisión estructural, pero reduce estatuaria y ornamento. Su expresión enfatiza infraestructura, seguridad, mantenimiento y capacidad técnica. No reemplaza visualmente a la fundación como titular proyectado del producto VACA.
+Comparte tokens y precisión estructural, pero reduce estatuaria y ornamento. Su expresión enfatiza infraestructura, seguridad, mantenimiento y capacidad técnica. No reemplaza visualmente a la Fundación CAMADA como titular proyectado del producto VACA.
 
 ---
 
@@ -308,4 +308,4 @@ La interfaz y la marca dejan de utilizar como dirección:
 - [ ] Las fotos de evidencia no tienen filtros que alteren el contenido.
 - [ ] Reduce-motion y TalkBack están contemplados.
 - [ ] La UI mantiene rendimiento aceptable en Android de gama baja.
-- [ ] Fundación y empresa se distinguen sin fragmentar la identidad de VACA.
+- [ ] Fundación CAMADA y empresa se distinguen sin fragmentar la identidad de VACA.

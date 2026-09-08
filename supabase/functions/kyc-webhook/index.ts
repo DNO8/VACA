@@ -13,6 +13,21 @@ function jsonResponse(body: Record<string, unknown>, status: number): Response {
   });
 }
 
+function shortenFloats(obj: unknown): unknown {
+  if (Array.isArray(obj)) return obj.map(shortenFloats);
+  if (obj !== null && typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      result[key] = shortenFloats(value);
+    }
+    return result;
+  }
+  if (typeof obj === 'number' && Number.isInteger(obj)) {
+    return Math.trunc(obj);
+  }
+  return obj;
+}
+
 function sortKeys(obj: unknown): unknown {
   if (Array.isArray(obj)) return obj.map(sortKeys);
   if (obj !== null && typeof obj === 'object') {
@@ -61,7 +76,7 @@ async function verifySignatureV2(
 
   try {
     const parsed = JSON.parse(rawBody);
-    const canonical = JSON.stringify(sortKeys(parsed));
+    const canonical = JSON.stringify(sortKeys(shortenFloats(parsed)));
     const key = await importHmacKey(secret);
     return await crypto.subtle.verify(
       'HMAC',

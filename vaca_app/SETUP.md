@@ -1,81 +1,116 @@
-# VACA App — Setup (Deliverable 1)
+# VACA app — Configuración de desarrollo
 
-Andamiaje del proyecto Flutter (Clean Architecture + Riverpod + Drift). Este repositorio se creó **manualmente** (el entorno donde se generó no tenía Flutter instalado), por lo que faltan las carpetas de plataforma (`android/`, etc.) y el código generado por Drift/Riverpod. Estos pasos las hidratan.
+## Fuentes normativas
 
-> Referencias de diseño e ingeniería: `../Especificaciones/modelo-datos-fibe.md`, `../Especificaciones/sistema-diseno-app.md`, `../Especificaciones/flujo-app.md`, `../Especificaciones/mesh-comunicaciones.md`.
+- `../Especificaciones/01-public-mvp-product-spec.md`
+- `../Especificaciones/flujo-app.md`
+- `../Especificaciones/modelo-datos-fibe.md` — nombre conservado por compatibilidad.
+- `../Especificaciones/02-hybrid-dtn-architecture.md`
+- `../Especificaciones/mesh-comunicaciones.md`
+- `../Especificaciones/03-release-security-readiness.md`
+- `../Especificaciones/sistema-diseno-app.md`
 
-## 0. Prerrequisitos
-- Flutter SDK ≥ 3.22 (Dart ≥ 3.4). Instalación: https://docs.flutter.dev/get-started/install/windows
-- Android SDK (API 26+; target reciente) + un dispositivo/emulador Android.
-- Verificar: `flutter doctor`
+Los handoffs y backlogs fechados no redefinen el producto.
 
-## 1. Hidratar las carpetas de plataforma
-Desde la carpeta `vaca_app/` (no borra `lib/` ni `pubspec.yaml` existentes):
+## Prerrequisitos
+
+- Flutter y Dart compatibles con `pubspec.yaml`.
+- Android SDK/API configurado para el target vigente.
+- macOS, Xcode y cuenta autorizada para archives iOS.
+- Dispositivo/emulador Android; iPhone/simulador para validación iOS.
+- Supabase CLI y Docker sólo cuando se ejecuten pruebas locales del backend.
+
+Verificar:
 
 ```powershell
-flutter create . --org cl.vaca --project-name vaca_app --platforms android
+flutter doctor -v
 ```
 
-> Si `flutter create` regenera `pubspec.yaml`, restaurarlo desde control de versiones (git) para conservar dependencias y fuentes.
+## Dependencias y código generado
 
-## 2. Colocar las fuentes
-Crear `assets/fonts/` y copiar:
-
-```powershell
-mkdir assets\fonts
-copy "..\font\Anderson Grotesk\*.otf" assets\fonts\
-```
-
-Descargar **JetBrains Mono** (OFL, gratuita — https://www.jetbrains.com/lp/mono/ o Google Fonts) y colocar en `assets/fonts/`:
-- `JetBrainsMono-Regular.ttf`
-- `JetBrainsMono-Medium.ttf`
-- `JetBrainsMono-Bold.ttf`
-
-## 3. Instalar dependencias
 ```powershell
 flutter pub get
-```
-
-## 4. Generar código (Drift + Riverpod)
-```powershell
 dart run build_runner build --delete-conflicting-outputs
 ```
-Esto genera `database.g.dart` (Drift) y los `*.g.dart` de Riverpod. Repetir tras cambios de esquema, o usar `watch`:
+
+No edites manualmente `database.g.dart`. Toda evolución de esquema requiere migración y regeneración verificable.
+
+## Flavors
+
+```text
+dev             desarrollo local
+public          aplicación pública Android/iOS
+municipalPilot  despliegue Android administrado con BLE
+```
+
+Todo release debe recibir `FLAVOR` mediante `dart-define` y fallar cerrado si falta configuración obligatoria.
+
+Ejemplo local:
+
 ```powershell
-dart run build_runner watch --delete-conflicting-outputs
+flutter run --flavor dev --dart-define=FLAVOR=dev
 ```
 
-## 5. Permisos Android
-Tras `flutter create`, agregar a `android/app/src/main/AndroidManifest.xml`:
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.INTERNET" />
-<!-- Mesh (fase posterior): BLUETOOTH_SCAN / BLUETOOTH_ADVERTISE / BLUETOOTH_CONNECT -->
-```
-En `android/app/build.gradle`: `minSdkVersion 26`.
+No coloques en el cliente:
 
-## 6. Ejecutar
+- Secretos de Didit/KYC.
+- Service-role keys.
+- Claves privadas de recibos.
+- Claves simétricas globales capaces de descifrar payloads.
+
+La anon/publishable key de Supabase puede identificar el proyecto, pero no reemplaza autenticación ni autorización.
+
+## Fuentes
+
+Las familias declaradas en `pubspec.yaml` deben existir bajo `assets/fonts/` para que la app funcione offline.
+
+## Permisos
+
+### Público
+
+- Cámara bajo demanda.
+- Ubicación en uso bajo demanda.
+- Internet y estado de red.
+- Sin permisos BLE de relay/gateway.
+
+### Municipal pilot
+
+Añade permisos Bluetooth y foreground service sólo en el source set/flavor autorizado. Debe mostrar notificación y control de detención.
+
+### iOS
+
+Mantener purpose strings, privacy manifest y capabilities alineados con el comportamiento real. El build público no declara relay BLE.
+
+## Verificación
+
 ```powershell
-flutter run
+dart format --output=none --set-exit-if-changed lib test
+dart run build_runner build --delete-conflicting-outputs
+dart analyze
+flutter test
+flutter test integration_test
+flutter build appbundle --release --flavor public --dart-define=FLAVOR=public
+flutter build apk --release --flavor municipalPilot --dart-define=FLAVOR=municipalPilot
 ```
 
-## Estructura del proyecto
-```
+El build iOS se valida en macOS/Xcode. Las pruebas físicas y del backend no se sustituyen por compilación.
+
+## Estructura
+
+```text
 lib/
-  main.dart                     # entrypoint + ProviderScope
-  app.dart                      # MaterialApp + tema
   core/
-    theme/                      # tokens de diseño (colores, tipografía, spacing, radios, tema)
-    transport/                  # interfaz Transport/MeshTransport + InternetTransport (stub)
-    permissions/                # PermissionService (cámara + GPS)
-    utils/                      # hashing SHA-256 (rutHash, hash de archivos)
-  data/
-    local/                      # Drift: enums, tablas, base de datos
-  domain/                       # (fases siguientes) entidades y contratos de repositorio
-  features/                     # (fases siguientes) captura FIBE, wallet, sync, etc.
+    bundle/       codec, cifrado, firma, outbox y scheduler
+    config/       flavors y configuración tipada
+    security/     almacenamiento y claves
+    transport/    adapters de enlace y contrato del servidor
+    theme/        sistema visual
+  data/local/     Drift y migraciones
+  features/
+    identity/     perfil y KYC boundary
+    incident/     dominio y pantallas
+    capture/      cámara y metadata
+../supabase/
+  migrations/
+  functions/
 ```
-
-## Estado de verificación
-Los archivos fuente **no se compilaron** en el entorno de origen (sin Flutter). Ejecutar los pasos 3–4 puede requerir ajustar versiones de paquetes en `pubspec.yaml` según lo que resuelva `pub get`. Los archivos `*.g.dart` referenciados por `part` existirán recién tras el paso 4.

@@ -1,42 +1,45 @@
-Modelo de Plataforma: El Ecosistema VACA
-VACA no es simplemente una herramienta de recaudación; es una infraestructura cívica modular diseñada para operar en el colapso y escalar hacia la reconstrucción
-. La plataforma articula tres capas de valor que transforman la información comunitaria en ayuda humanitaria digna, trazable y financieramente eficiente
-.
-1. Dinámica de Operación: "Community-First"
-A diferencia de los sistemas tradicionales donde el ciudadano es un espectador, en VACA el usuario es un "operador comunitario espontáneo"
-.
-Inteligencia de Terreno: La plataforma permite que los mismos afectados y vecinos generen el primer mapa de daños antes de la llegada de la infraestructura estatal
-.
-Verdad Emergente: La plataforma no busca una verdad absoluta inmediata, sino una "confianza progresiva" basada en el consenso de múltiples reportes sincronizados desde dispositivos móviles aislados
-.
-2. Estructura de Capas (Multiproducto)
-VACA se organiza en tres subsistemas especializados que operan de forma sincrónica
-:
-Community Coordination Layer (El Sensor):
-Aplicación mobile-first y offline-first optimizada para el "Día 0"
-.
-Gestión de voluntarios y catastros ciudadanos sincronizables
-.
-Aid Distribution Layer (El Sistema Circulatorio):
-Riel financiero sobre la red Stellar para la distribución de USDC y vouchers tokenizados
-.
-Arquitectura non-custodial que utiliza Claimable Balances para asegurar que el dinero solo llegue al RUT validado
-.
-Vaquita Insights (El Cerebro Analítico):
-Capa analítica para gobiernos y ONGs (SaaS B2G)
-.
-Generación del National Emergency Index (NEI) para auditar vulnerabilidades territoriales históricas
-.
-3. Simbiosis Modular y Rieles Externos
-La plataforma está diseñada para la interoperabilidad, permitiendo que VACA se enfoque en la inteligencia mientras delega la ejecución financiera pesada en socios regulados:
-Foundation Adapter: Módulo que conecta la plataforma con las bases de datos de verdad de las ONGs (ej. Hogar de Cristo) mediante Merkle Proofs para validar beneficiarios con privacidad radical
-.
-Alianza Sozu Pay: Integración con rieles financieros auditados para la gestión de Social Yield (rendimiento DeFi) y liquidación directa a la CuentaRUT de BancoEstado.
-4. Eficiencia Operativa: Social Yield
-La plataforma introduce una lógica de "Rendimiento Social" inédita en la gestión humanitaria
-:
-Neutralización de Costos: Las donaciones en tránsito generan intereses en protocolos DeFi (8% APY aprox.) para cubrir las comisiones bancarias de salida, asegurando que la ayuda llegue íntegra y gratuita al damnificado.
-Multiplicador de Impacto: En proyectos de largo plazo, el rendimiento permite financiar raciones o kits adicionales sin pedir nuevos aportes al donante.
-Resumen de Diferenciación
-Mientras que otras plataformas se detienen en la transferencia de dinero, VACA unifica el catastro offline, la validación institucional y la trazabilidad blockchain, convirtiendo el desorden de la solidaridad tradicional en una autopista de resiliencia nacional resiliente y auditable
-.
+# Modelo de plataforma — Ecosistema VACA
+
+VACA se organiza como capacidades interoperables con fronteras claras. La aplicación ciudadana es gratuita y no se convierte en un canal de decisiones financieras o de elegibilidad.
+
+## 1. Aplicación pública
+
+Android e iOS permiten preparar identidad, capturar señales offline, adjuntar evidencia opcional, actualizar/cancelar y verificar entrega al servidor.
+
+La persona puede operar sin KYC para señales críticas. La interfaz comunica estados honestos y deriva hacia canales oficiales cuando estén disponibles.
+
+## 2. Despliegue municipal
+
+Un flavor Android administrado añade relay BLE y gateway certificado. Sus permisos, servicio y trust roots no aparecen en el producto público.
+
+El piloto extiende la ruta de entrega; no cambia el modelo de incidente ni otorga autoridad automática al dispositivo.
+
+## 3. Backend autorizado
+
+Proporciona:
+
+- Identidad y credenciales opacas.
+- Ingesta de bundles.
+- Eventos append-only e idempotencia.
+- Recibos firmados.
+- Almacenamiento privado de adjuntos.
+- Retención, eliminación y auditoría.
+- Integraciones institucionales por rol.
+
+## 4. Operación institucional
+
+Municipios y organizaciones acceden a herramientas separadas para revisar señales autorizadas, coordinar acciones y emitir acuses institucionales.
+
+La plataforma no afirma que una señal generó despacho, atención o beneficio salvo que el sistema responsable emita evidencia explícita.
+
+## 5. VACA Insights
+
+La capa analítica utiliza datos agregados o seudonimizados con controles de acceso. Mide operación, cobertura, latencia y resiliencia sin publicar coordenadas exactas ni construir decisiones automatizadas sobre personas.
+
+## 6. Integraciones futuras
+
+Nuevos canales financieros, logísticos o institucionales son productos/adapters independientes sujetos a evaluación legal y técnica. No forman parte del núcleo de captura y no pueden alterar prioridad, verdad o elegibilidad a partir de KYC o señales comunitarias.
+
+## Regla de plataforma
+
+Cada capacidad debe poder evolucionar sin obligar a la aplicación pública a adoptar permisos, secretos o dependencias de otra capa.

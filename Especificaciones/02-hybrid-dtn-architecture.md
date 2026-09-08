@@ -2,7 +2,9 @@
 
 ## Decision
 
-VACA uses a transport-independent Delay-Tolerant Networking layer. BLE is the first offline convergence adapter for the Android municipal pilot. Internet over HTTPS is the required public transport for Android and iOS. Wi-Fi Direct, Wi-Fi Aware, LoRa, satellite, MQTT, and specialized QUIC transports remain future adapters.
+This document defines the permanent transport architecture of VACA. Release plans may deliver adapters in stages, but they cannot replace the canonical bundle, persistence, confidentiality, bounds, or receipt semantics defined here.
+
+VACA uses a transport-independent Delay-Tolerant Networking layer. BLE is the first offline convergence adapter for authorized Android municipal deployments. Internet over HTTPS is the required public transport for Android and iOS. Wi-Fi Direct, Wi-Fi Aware, LoRa, satellite, MQTT, and specialized QUIC transports are not active adapters.
 
 Do not implement or describe the system as Bluetooth SIG Mesh. The pilot is a custom, application-level DTN using BLE discovery and authenticated store-carry-forward relay.
 

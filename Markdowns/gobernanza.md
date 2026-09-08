@@ -1,29 +1,57 @@
-Gobernanza: El Tejido Social de la Resiliencia
-VACA opera bajo un modelo de Gobernanza Híbrida Descentralizada. Nuestro objetivo es devolver el poder de decisión a los afectados (Bottom-up) mientras garantizamos el cumplimiento de los protocolos nacionales de emergencia y el deber fiduciario de las instituciones (Top-down).
-1. Gobernanza Comunitaria (Voz del Damnificado)
-Para combatir la "basura humanitaria" y el desorden logístico, VACA otorga a los afectados validados un rol activo en la priorización de su propia recuperación
-:
-Tokens de Priorización: Los beneficiarios reciben tokens no transferibles asociados al evento de emergencia. Estos permiten votar en decisiones críticas como:
-Tipo de Ayuda: ¿Qué es más urgente en este cuadrante hoy: agua, materiales de construcción o kits de higiene?
-.
-Organización de Voluntariado: Validación de las zonas que requieren mayor apoyo manual (remoción de escombros o despeje de rutas)
-.
-Verdad Emergente: La confianza del sistema no emana de una autoridad central, sino del consenso de múltiples reportes ciudadanos sincronizados desde la App Offline-First, elevando el confidence_level de la información
-.
-2. Supervisión Institucional y Legal
-VACA no reemplaza la institucionalidad, sino que actúa como su oráculo tecnológico, alineándose con la Ley 21.364 (SINAPRED)
-:
-Validación de Oráculo (Municipalidades): Los municipios y el COGRID mantienen la potestad final de validar las listas de beneficiarios y confirmar los eventos de distribución masiva
-.
-Foundation Adapter: Permite que instituciones como el Hogar de Cristo conecten sus criterios de priorización (ej. niños en riesgo social) a la lógica de los smart contracts mediante Merkle Proofs, protegiendo la privacidad según la Ley 19.628.
-3. Gobernanza Financiera: El Modelo VACA + Sozu
-Para proteger la integridad del patrimonio de las fundaciones y cumplir con la Ley Fintec (21.521), la gobernanza financiera se divide en dos capas:
-Capa de Inteligencia (VACA): Define las reglas programáticas de "quién y cuánto" recibe según el nivel de daño detectado en terreno.
-Capa de Ejecución (Sozu Pay): Actúa como el riel financiero regulado. Los directores de las fundaciones no "invierten" discrecionalmente; utilizan una infraestructura de Marca Blanca donde el Social Yield se reinvierte automáticamente para cubrir costos operativos y maximizar la ayuda.
-4. Transparencia Radical y Auditoría (Proof of Aid)
-La gobernanza se sostiene sobre la confianza inmutable de la red Stellar:
-Auditoría Pública: Cada flujo de fondos es rastreable on-chain, permitiendo que donantes y organismos fiscalizadores (SII/CMF) verifiquen que el 100% de la ayuda llegó al RUT validado
-.
-Certificados de Impacto (NFT): El cierre de cada ciclo de gobernanza emite un comprobante inmutable del beneficio entregado, vinculando la donación inicial con la evidencia fotográfica del impacto en IPFS
-.
-Resultado: Una estructura de gobernanza resiliente que permite a Chile pasar de una solidaridad reactiva y desordenada a un sistema de inteligencia humanitaria profesionalizada, donde la tecnología garantiza que la ayuda sea digna, oportuna y auditable.
+# Gobernanza — VACA
+
+## Propósito
+
+La gobernanza protege la misión pública, los derechos de las personas y la separación entre operación tecnológica y autoridad institucional.
+
+## 1. Responsabilidades
+
+| Actor | Responsabilidad |
+| --- | --- |
+| Fundación CAMADA | Custodiar misión, políticas, alianzas y relación pública del producto VACA. |
+| Equipo tecnológico | Desarrollar, operar y asegurar la plataforma bajo acuerdos verificables. |
+| Personas usuarias | Crear, actualizar, cancelar y eliminar sus señales dentro de las reglas del servicio. |
+| Instituciones autorizadas | Revisar señales y emitir decisiones o acuses dentro de su mandato. |
+| Proveedores | Procesar funciones acotadas mediante contratos, controles y supervisión. |
+
+## 2. Principios
+
+- VACA complementa y no reemplaza la institucionalidad de emergencia.
+- Una señal comunitaria no produce automáticamente despacho, beneficio o decisión pública.
+- KYC no determina verdad, urgencia ni elegibilidad.
+- El acceso a ubicación y evidencia sigue mínimo privilegio y necesidad operacional.
+- Toda integración posee propietario, alcance, retención, auditoría y mecanismo de revocación.
+- Los cambios de política se versionan y requieren consentimiento cuando corresponda.
+
+## 3. Decisiones de producto y arquitectura
+
+Las especificaciones permanentes gobiernan comportamiento, seguridad y datos. Los backlogs de entrega no pueden modificar esas reglas silenciosamente.
+
+Los cambios relevantes deben registrar:
+
+1. Problema y evidencia.
+2. Decisión y alternativas.
+3. Impacto en seguridad, privacidad y accesibilidad.
+4. Propietario y criterios de aceptación.
+5. Migración y rollback.
+
+## 4. Gobernanza de datos
+
+- Inventario y clasificación de datos aprobados.
+- Retención mínima necesaria.
+- Eliminación y excepciones legales documentadas.
+- Acceso por rol y auditoría sin payload sensible.
+- Evaluación de proveedores y transferencias de datos.
+- Prohibición de comercializar datos personales o ubicaciones de emergencia.
+
+## 5. Transparencia
+
+La plataforma informa con precisión:
+
+- Qué se recopiló y para qué.
+- Si una señal está local, en custodia, recibida o reconocida.
+- Qué institución puede acceder.
+- Cómo solicitar soporte, corrección o eliminación.
+- Qué limitaciones operativas existen.
+
+La transparencia se basa en registros y recibos verificables, no en tokens, NFTs ni afirmaciones inmutables por defecto.

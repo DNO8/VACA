@@ -1,35 +1,61 @@
-Infraestructura Tecnológica: Resiliencia y Transparencia
-Vaquita utiliza una arquitectura modular diseñada para operar en el colapso (Día 0) y escalar hacia una transparencia radical mediante rieles financieros modernos. El stack tecnológico está optimizado para la resiliencia en terreno y la auditoría inmutable en la nube
-.
-1. Capa de Captura: Mobile Offline-First
-Diseñada para el escenario donde las telecomunicaciones fallan. No es una Web App, sino una aplicación nativa capaz de ser el nodo primario de información
-.
-Stack: Desarrollada en Flutter para garantizar consistencia en dispositivos Android de gama baja, predominantes en el territorio
-.
-Persistencia Local (SQLite): Cada dispositivo funciona como una "isla de información", almacenando reportes de daños (basados en el estándar FIBE), fotos y georreferenciación de forma local y segura
-.
-Protocolo de Sincronización Eventual: Al detectar conectividad (antenas móviles, Starlink o traslado físico), el sistema utiliza colas de sincronización en segundo plano para mergear los datos con el backend central
-.
-2. Capa de Inteligencia: Verdad Emergente (Trust Scoring)
-VACA procesa el caos de los datos sincronizados para generar información accionable antes del arribo del Estado
-.
-Merge de Datasets: Algoritmos que detectan duplicados y patrones espaciales. Si múltiples usuarios reportan el mismo incidente en un radio geográfico, el sistema eleva automáticamente el nivel de confianza del reporte
-.
-Niveles de Confianza Progresiva: Cada reporte evoluciona:
-Nivel 1: Registro único no confirmado.
-Nivel 2: Confirmación por consenso comunitario.
-Nivel 3: Validación mediante Foundation Adapter (cruces con bases de datos de ONGs o municipios)
-.
-3. Capa de Ejecución: Stellar & Soroban
-La red Stellar actúa como el sistema circulatorio del protocolo, gestionando activos y reglas de distribución sin custodia humana
-.
-Soroban Smart Contracts (Rust): Implementan la lógica de negocio, desde la validación de beneficiarios mediante Merkle Proofs (privacidad Ley 19.628) hasta las estrategias de Social Yield
-.
-Claimable Balances: Primitiva nativa que permite reservar USDC para un RUT específico. El beneficiario puede reclamar su ayuda cuando recupere la señal y acceda a su wallet, eliminando el riesgo de custodia por parte de la fundación
-.
-Social Yield (DeFi): Integración con protocolos como Blend o Defindex para que los fondos en tránsito generen rendimientos sociales que neutralicen los costos de transferencia (off-ramp).
-4. Capa de Integración: Simbiosis VACA + Sozu
-División funcional de responsabilidades técnicas para garantizar cumplimiento legal (Ley Fintec 21.521):
-VACA (Cerebro): Administra la lógica de priorización, el catastro offline y la validación de niveles de daño.
-Sozu (Rieles): Provee la infraestructura de wallet autocustodial, los flujos de on/off-ramp hacia la CuentaRUT y la auditoría financiera del rendimiento DeFi.
-Resultado: Una arquitectura de "Store-and-Forward" aplicada a la ayuda humanitaria, donde la información fluye antes que el dinero, y el dinero rinde más gracias a la eficiencia programable de Soroban.
+# Infraestructura tecnológica — VACA
+
+## Criterios
+
+El stack se selecciona por soporte, seguridad, operación offline y mantenibilidad. Las versiones concretas viven en los manifiestos del repositorio; este documento describe responsabilidades permanentes.
+
+## 1. Aplicación
+
+| Área | Tecnología / frontera | Responsabilidad |
+| --- | --- | --- |
+| UI multiplataforma | Flutter/Dart | Android e iOS públicos. |
+| Estado | Riverpod | Inyección y estado de aplicación. |
+| Persistencia | Drift/SQLite | Incidentes, eventos, outbox y recibos. |
+| Almacenamiento seguro | Keystore/Keychain mediante adapter | Credenciales y material de clave protegido. |
+| Captura | APIs de cámara y ubicación | Evidencia opcional y ubicación con fallback. |
+| Red | Cliente HTTPS con timeouts | Entrega al servidor autorizado. |
+
+La persistencia estructurada sensible y los archivos requieren protección en reposo; guardar sólo claves en secure storage no cifra automáticamente la base o las fotografías.
+
+## 2. Protocolo y seguridad
+
+- CBOR canónico o representación determinista revisada.
+- AEAD para confidencialidad e integridad de payload.
+- Firma Ed25519 o construcción aprobada equivalente.
+- Envoltura hacia una clave pública/raíz del servidor; no claves simétricas globales dentro del cliente.
+- Hash del ciphertext ligado a firma y recibo.
+- Límites de versión, tamaño, profundidad, fragmentos, reintentos y almacenamiento.
+
+No se implementan primitivas criptográficas propias.
+
+## 3. Backend
+
+Supabase Postgres, Storage y Edge Functions constituyen la implementación de referencia actual, no una dependencia del dominio.
+
+Controles obligatorios:
+
+- Auth real de usuario/dispositivo.
+- RLS y grants mínimos.
+- Service role sólo en backend.
+- Ingesta transaccional e idempotente.
+- Storage privado con autorizaciones breves.
+- KYC y secretos exclusivamente server-side.
+- Recibos firmados y raíces rotables.
+- Rate limits, replay protection y auditoría sin payload sensible.
+
+## 4. Relay municipal
+
+Kotlin/Android administra BLE central/peripheral, foreground service, sesiones autenticadas, caché durable y routing. Flutter consume una API estable de alto nivel.
+
+El relay usa bundles cifrados y no recibe claves privadas del destinatario.
+
+## 5. Calidad y operación
+
+- Formato y análisis estático.
+- Tests unitarios, widget, integración y migraciones.
+- Pruebas de tamper, dedupe, autorización y reinicio.
+- Builds por flavor.
+- Scans de secretos, dependencias, licencias y configuración.
+- Escenarios físicos Android/iPhone y piloto de tres dispositivos.
+
+Ningún proveedor, SDK o versión se asume vigente sin verificar su documentación oficial al implementarlo.

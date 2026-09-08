@@ -1,32 +1,51 @@
-La Solución: VACA (Vaquita de Ayuda y Coordinación Activa)
-VACA es una infraestructura cívica descentralizada y permanente, diseñada para transformar la generosidad ciudadana en una autopista tecnológica de resiliencia nacional.
-A diferencia de las plataformas tradicionales, VACA opera bajo un modelo de simbiosis financiera y operativa que profesionaliza la solidaridad diaria y activa una inteligencia masiva ante catástrofes.
-1. Inteligencia del "Día 0": Community Coordination Layer
-El núcleo de la solución para las horas críticas posteriores a un desastre es el empoderamiento de los ciudadanos como "operadores comunitarios espontáneos"
-.
-App Mobile Offline-First: Los usuarios capturan datos de daños (basados en el Módulo 5 de la Ficha FIBE) y necesidades sociales sin necesidad de internet, utilizando bases de datos locales (SQLite)
-.
-Sincronización Eventual: Los datos se sincronizan automáticamente con la nube mediante cualquier ventana de conectividad (antenas móviles, Starlink o traslado físico del dispositivo)
-.
-Confianza Progresiva (Trust Score): El sistema genera una "verdad emergente" cruzando múltiples reportes comunitarios y validaciones de oráculos institucionales antes de la llegada del catastro oficial
-.
-2. Riel Financiero Trazable: Aid Distribution Layer
-VACA utiliza la red Stellar para gestionar donaciones en activos digitales (USDC) y vouchers de ayuda con costos ínfimos y liquidación en segundos
-.
-Arquitectura Non-Custodial: La fundación no custodia los fondos. Se utilizan Claimable Balances para que el dinero solo sea reclamado por el RUT o wallet validado, mitigando riesgos fiduciarios y cumpliendo con la Ley Fintec (21.521)
-.
-Tokenización de Insumos: Las donaciones se digitalizan en activos (ej. ITEM-AGUA) para garantizar la trazabilidad exacta desde el donante hasta la mano del beneficiario
-.
-Proof of Aid (NFTs): Los donantes reciben certificados inmutables de impacto, restaurando la confianza mediante evidencia técnica de la entrega de ayuda.
-3. Social Yield: El Multiplicador de Impacto
-El protocolo implementa una estrategia automatizada de eficiencia financiera mediante contratos inteligentes de Soroban.
-Neutralización de Costos: Las donaciones en tránsito generan rendimientos (aprox. 8% APY) en protocolos DeFi descentralizados (Defindex/Blend). Este interés cubre las comisiones de salida (off-ramp), haciendo que la ayuda sea gratuita e íntegra para el beneficiario.
-Wealth Multiplier: En proyectos de largo plazo (niñez o rehabilitación), los fondos crecen en el tiempo, permitiendo aumentar el estándar de la ayuda entregada sin requerir nuevos aportes del donante.
-4. Capa Analítica e Integración: Vaquita Insights
-VACA ofrece inteligencia de datos para la toma de decisiones estratégicas a través de un modelo SaaS B2G/B2B
-.
-Foundation Adapter: Módulo que actúa como oráculo de verdad, permitiendo a instituciones como el Hogar de Cristo conectar sus propias bases de datos de beneficiarios mediante Merkle Proofs para proteger la privacidad (Ley 19.628).
-National Emergency Index (NEI): Métrica dinámica que audita vulnerabilidades territoriales históricas y eficiencia de respuesta regional
-.
-Resumen del Valor
-VACA no espera al desastre: profesionaliza la solidaridad 365 días al año, asegurando que la información sea más rápida que el caos y que el dinero rinda más que en la banca tradicional
+# Solución — VACA
+
+VACA es una infraestructura cívica offline-first para registrar y entregar señales de incidentes con estados honestos, privacidad y tolerancia a interrupciones.
+
+## 1. Aplicación pública
+
+La aplicación Android/iOS permite:
+
+- Preparar identidad y consentimiento.
+- Continuar como persona no verificada.
+- Crear señales P0–P4 sin Internet.
+- Registrar ubicación disponible, conteo acotado, nota breve y fotografía opcional.
+- Conservar la señal antes de cualquier transmisión.
+- Actualizar, cancelar y eliminar datos mediante flujos explícitos.
+- Ver la diferencia entre guardado local, cola, relay, recibo del servidor y acuse institucional.
+
+VACA no reproduce formularios oficiales, no determina elegibilidad, no reemplaza teléfonos de emergencia y no promete despacho de recursos.
+
+## 2. Entrega resiliente
+
+Cada evento produce un bundle canónico, cifrado y firmado. El outbox durable intenta entregar por los enlaces autorizados:
+
+1. HTTPS en la aplicación pública.
+2. BLE DTN en despliegues municipales Android autorizados.
+
+Los reintentos son idempotentes. Relays y gateways conservan copias cifradas sin claves de descifrado. Sólo un recibo firmado del servidor confirma entrega.
+
+## 3. Identidad proporcional
+
+KYC es un adapter externo de aseguramiento de identidad. Sus secretos y respuestas completas permanecen en backend. La app recibe una credencial opaca, revocable y con vencimiento.
+
+KYC no demuestra la verdad del incidente y nunca bloquea el guardado local de P0/P1.
+
+## 4. Servidor autorizado
+
+El backend:
+
+- Autentica dispositivos y usuarios.
+- Valida firmas, credenciales, límites y expiración.
+- Deduplica por `messageId + payloadHash`.
+- Persiste eventos y adjuntos privados.
+- Firma recibos ligados al payload aceptado.
+- Aplica autorización por rol, retención y eliminación.
+
+## 5. Capa institucional
+
+Herramientas institucionales pueden visualizar señales autorizadas, coordinar revisión y producir analítica agregada. El acuse institucional es posterior y distinto del recibo técnico.
+
+## Diferenciador
+
+VACA no depende de una tecnología financiera ni de un proveedor de identidad. Su valor central es que la información crítica pueda sobrevivir, avanzar y demostrar dónde se encuentra sin exponer su contenido a intermediarios.
