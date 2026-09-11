@@ -106,96 +106,114 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Identidad y datos')),
-      body: FutureBuilder<UserIdentityProfile>(
-        future: _profile,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const EmptyState(kind: EmptyStateKind.loading);
-          }
-          final profile = snapshot.data!;
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            children: [
-              _IdentitySummary(profile: profile),
-              const SizedBox(height: AppSpacing.lg),
-              const Text('Preparación', style: AppTypography.h2),
-              const SizedBox(height: AppSpacing.sm),
-              VacaButton(
-                label: profile.identityAssurance == IdentityAssurance.verified
-                    ? 'Identidad verificada'
-                    : 'Verificar identidad',
-                icon: Icons.verified_user_outlined,
-                loading: _verifying,
-                onPressed:
-                    profile.identityAssurance == IdentityAssurance.verified
-                        ? null
-                        : _verify,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              const Text('Herramientas de prueba', style: AppTypography.h2),
-              const SizedBox(height: AppSpacing.sm),
-              Card(
-                child: ListTile(
-                  minVerticalPadding: AppSpacing.md,
-                  leading: const Icon(Icons.account_balance_wallet_outlined),
-                  title: const Text('Wallet Stellar testnet'),
-                  subtitle: const Text(
-                    'Cuenta de desarrollo aislada de señales y ayuda.',
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: widget.onOpenWallet,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              const Text('Privacidad', style: AppTypography.h2),
-              const SizedBox(height: AppSpacing.sm),
-              Card(
-                child: Column(
+      body: Column(
+        children: [
+          const VacaHero(
+            asset: 'assets/images/estetica-5.jpg',
+            title: 'Identidad y datos',
+            subtitle: 'PRIVACIDAD · CONTROL LOCAL',
+            height: 190,
+            alignment: Alignment(0, 0.35),
+          ),
+          Expanded(
+            child: FutureBuilder<UserIdentityProfile>(
+              future: _profile,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const EmptyState(kind: EmptyStateKind.loading);
+                }
+                final profile = snapshot.data!;
+                return ListView(
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.policy_outlined),
-                      title: const Text('Consentimiento'),
-                      subtitle: Text('Versión ${profile.consentVersion}'),
+                    _IdentitySummary(profile: profile),
+                    const SizedBox(height: AppSpacing.lg),
+                    const Text('Preparación', style: AppTypography.h2),
+                    const SizedBox(height: AppSpacing.sm),
+                    VacaButton(
+                      label: profile.identityAssurance ==
+                              IdentityAssurance.verified
+                          ? 'Identidad verificada'
+                          : 'Verificar identidad',
+                      icon: Icons.verified_user_outlined,
+                      loading: _verifying,
+                      onPressed: profile.identityAssurance ==
+                              IdentityAssurance.verified
+                          ? null
+                          : _verify,
                     ),
-                    const Divider(height: 1),
-                    const ListTile(
-                      leading: Icon(Icons.support_agent_outlined),
-                      title: Text('Soporte'),
-                      subtitle: Text('URL pública pendiente de aprobación.'),
+                    const SizedBox(height: AppSpacing.xl),
+                    const Text(
+                      'Herramientas de prueba',
+                      style: AppTypography.h2,
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      enabled: !_deleting,
-                      leading: const Icon(
-                        Icons.cloud_off_outlined,
-                        color: AppColors.danger,
+                    const SizedBox(height: AppSpacing.sm),
+                    Card(
+                      child: ListTile(
+                        minVerticalPadding: AppSpacing.md,
+                        leading:
+                            const Icon(Icons.account_balance_wallet_outlined),
+                        title: const Text('Wallet Stellar testnet'),
+                        subtitle: const Text(
+                          'Cuenta de desarrollo aislada de señales y ayuda.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: widget.onOpenWallet,
                       ),
-                      title: const Text('Solicitar eliminación remota'),
-                      subtitle: const Text(
-                        'Firma la solicitud con la clave de este dispositivo.',
-                      ),
-                      onTap: () => _requestRemoteDeletion(profile),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      enabled: !_deleting,
-                      leading: const Icon(
-                        Icons.delete_forever_outlined,
-                        color: AppColors.danger,
+                    const SizedBox(height: AppSpacing.xl),
+                    const Text('Privacidad', style: AppTypography.h2),
+                    const SizedBox(height: AppSpacing.sm),
+                    Card(
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.policy_outlined),
+                            title: const Text('Consentimiento'),
+                            subtitle: Text('Versión ${profile.consentVersion}'),
+                          ),
+                          const Divider(height: 1),
+                          const ListTile(
+                            leading: Icon(Icons.support_agent_outlined),
+                            title: Text('Soporte'),
+                            subtitle:
+                                Text('URL pública pendiente de aprobación.'),
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            enabled: !_deleting,
+                            leading: const Icon(
+                              Icons.cloud_off_outlined,
+                              color: AppColors.danger,
+                            ),
+                            title: const Text('Solicitar eliminación remota'),
+                            subtitle: const Text(
+                              'Firma la solicitud con la clave de este dispositivo.',
+                            ),
+                            onTap: () => _requestRemoteDeletion(profile),
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            enabled: !_deleting,
+                            leading: const Icon(
+                              Icons.delete_forever_outlined,
+                              color: AppColors.danger,
+                            ),
+                            title: const Text('Eliminar datos locales'),
+                            subtitle: const Text(
+                              'Borra señales, adjuntos, recibos, identidad y claves.',
+                            ),
+                            onTap: _deleteLocalData,
+                          ),
+                        ],
                       ),
-                      title: const Text('Eliminar datos locales'),
-                      subtitle: const Text(
-                        'Borra señales, adjuntos, recibos, identidad y claves.',
-                      ),
-                      onTap: _deleteLocalData,
                     ),
                   ],
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

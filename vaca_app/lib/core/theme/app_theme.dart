@@ -219,8 +219,31 @@ abstract final class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: isDark ? AppColors.neutral800 : AppColors.ivory,
-        indicatorColor: AppColors.celadon100,
-        labelTextStyle: const WidgetStatePropertyAll(AppTypography.caption),
+        indicatorColor: isDark ? AppColors.celadon700 : AppColors.celadon100,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: isDark
+                ? selected
+                    ? AppColors.white
+                    : AppColors.celadon300
+                : selected
+                    ? AppColors.celadon900
+                    : AppColors.stone600,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return AppTypography.caption.copyWith(
+            color: isDark
+                ? selected
+                    ? AppColors.white
+                    : AppColors.celadon300
+                : selected
+                    ? AppColors.celadon900
+                    : AppColors.stone600,
+          );
+        }),
       ),
     );
   }

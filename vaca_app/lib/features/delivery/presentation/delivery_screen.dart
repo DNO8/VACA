@@ -35,54 +35,73 @@ class DeliveryScreen extends ConsumerWidget {
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
     return Scaffold(
       appBar: AppBar(title: const Text('Entrega')),
-      body: StreamBuilder<List<OriginBundle>>(
-        stream: query.watch(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const EmptyState(kind: EmptyStateKind.loading);
-          }
-          final bundles = snapshot.data!;
-          if (bundles.isEmpty) {
-            return const EmptyState(
-              kind: EmptyStateKind.empty,
-              title: 'Bandeja vacía',
-              message:
-                  'Las señales guardadas aparecerán aquí cuando tengan un paquete de entrega.',
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            itemCount: bundles.length,
-            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-            itemBuilder: (context, index) {
-              final bundle = bundles[index];
-              return Card(
-                child: ListTile(
-                  minVerticalPadding: AppSpacing.md,
-                  onTap: bundle.state == DeliveryState.delivered
-                      ? () => _openReceipt(context, ref, bundle)
-                      : null,
-                  leading:
-                      Icon(_icon(bundle.state), color: _color(bundle.state)),
-                  title: Text(_label(bundle.state), style: AppTypography.h3),
-                  subtitle: Text(
-                    '${bundle.incidentId.substring(0, 8)} · ${bundle.createdAt.toLocal()}',
-                    style: AppTypography.dataSm,
-                  ),
-                  trailing: bundle.state == DeliveryState.queued ||
-                          bundle.state == DeliveryState.failed
-                      ? IconButton(
-                          tooltip: 'Reintentar entrega',
-                          onPressed: () =>
-                              ref.read(bundleSchedulerProvider).processQueue(),
-                          icon: const Icon(Icons.refresh),
-                        )
-                      : null,
-                ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity:
+                  Theme.of(context).brightness == Brightness.dark ? 0.12 : 0.06,
+              child: Image.asset(
+                'assets/images/textura-3.jpg',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          StreamBuilder<List<OriginBundle>>(
+            stream: query.watch(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const EmptyState(kind: EmptyStateKind.loading);
+              }
+              final bundles = snapshot.data!;
+              if (bundles.isEmpty) {
+                return const EmptyState(
+                  kind: EmptyStateKind.empty,
+                  title: 'Bandeja vacía',
+                  message:
+                      'Las señales guardadas aparecerán aquí cuando tengan un paquete de entrega.',
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                itemCount: bundles.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final bundle = bundles[index];
+                  return Card(
+                    child: ListTile(
+                      minVerticalPadding: AppSpacing.md,
+                      onTap: bundle.state == DeliveryState.delivered
+                          ? () => _openReceipt(context, ref, bundle)
+                          : null,
+                      leading: Icon(
+                        _icon(bundle.state),
+                        color: _color(bundle.state),
+                      ),
+                      title:
+                          Text(_label(bundle.state), style: AppTypography.h3),
+                      subtitle: Text(
+                        '${bundle.incidentId.substring(0, 8)} · ${bundle.createdAt.toLocal()}',
+                        style: AppTypography.dataSm,
+                      ),
+                      trailing: bundle.state == DeliveryState.queued ||
+                              bundle.state == DeliveryState.failed
+                          ? IconButton(
+                              tooltip: 'Reintentar entrega',
+                              onPressed: () => ref
+                                  .read(bundleSchedulerProvider)
+                                  .processQueue(),
+                              icon: const Icon(Icons.refresh),
+                            )
+                          : null,
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ],
       ),
     );
   }

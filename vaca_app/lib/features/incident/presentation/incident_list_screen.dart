@@ -26,9 +26,15 @@ class IncidentListScreen extends ConsumerWidget {
     final attachments = ref.watch(attachmentServiceProvider);
     final transport = ref.watch(transportProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Señales')),
       body: Column(
         children: [
+          const VacaHero(
+            asset: 'assets/images/estetica-4.jpg',
+            title: 'Coordinación local',
+            subtitle: 'SEÑALES · OFFLINE-FIRST',
+            height: 180,
+            alignment: Alignment(0, 0.3),
+          ),
           StreamBuilder<TransportStatus>(
             stream: transport.status,
             builder: (context, snapshot) => NetworkStatusBanner(

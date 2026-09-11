@@ -1,5 +1,6 @@
 // Component library de VACA (Modo Operación). Ver sistema-diseno-app.md §6.
 export 'empty_state.dart';
+export 'institutional_surface.dart';
 export 'network_status_banner.dart';
 export 'report_card.dart';
 export 'sync_status_badge.dart';

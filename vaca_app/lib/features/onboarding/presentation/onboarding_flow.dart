@@ -118,58 +118,62 @@ class _Intro extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.celadon900,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
-          child: Column(
-            children: [
-              const Spacer(),
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.celadon700,
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.celadon300),
+      body: VacaAssetBackground(
+        asset: 'assets/images/gradiente-2.jpg',
+        overlayAsset: 'assets/images/gradiente-3.jpg',
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: Column(
+              children: [
+                const Spacer(),
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.celadon700,
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(color: AppColors.celadon300),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_outlined,
+                    color: AppColors.celadon300,
+                    size: 40,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.account_balance_outlined,
-                  color: AppColors.celadon300,
-                  size: 40,
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'VACA',
+                  style: AppTypography.display.copyWith(
+                    color: AppColors.white,
+                    letterSpacing: 6,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(
-                'VACA',
-                style: AppTypography.display.copyWith(
-                  color: AppColors.white,
-                  letterSpacing: 6,
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Vaquita de Ayuda y Coordinación Activa',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.dataSm.copyWith(
+                    color: AppColors.celadon300,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Vaquita de Ayuda y Coordinación Activa',
-                textAlign: TextAlign.center,
-                style: AppTypography.dataSm.copyWith(
-                  color: AppColors.celadon300,
+                const SizedBox(height: AppSpacing.xxl),
+                Text(
+                  'La información es el primer alivio.\nLa comunidad es el primer respondedor.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.bodyLg.copyWith(color: AppColors.white),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              Text(
-                'La información es el primer alivio.\nLa comunidad es el primer respondedor.',
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyLg.copyWith(color: AppColors.white),
-              ),
-              const Spacer(),
-              VacaButton(label: 'Iniciar', onPressed: onNext),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'v0.1.0 · offline-first',
-                style: AppTypography.dataSm.copyWith(
-                  color: AppColors.celadon300,
+                const Spacer(),
+                VacaButton(label: 'Iniciar', onPressed: onNext),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'v0.1.0 · offline-first',
+                  style: AppTypography.dataSm.copyWith(
+                    color: AppColors.celadon300,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -191,82 +195,97 @@ class _Disclaimer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: onBack,
-          tooltip: 'Volver',
-          icon: const Icon(Icons.arrow_back),
-        ),
-        title: const Text('Aviso importante'),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          children: [
-            const Text(
-              'VACA es una herramienta de coordinación comunitaria. No reemplaza los servicios de emergencia oficiales.',
-              style: AppTypography.bodyLg,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF2F2),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppColors.danger, width: 1.5),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      body: Column(
+        children: [
+          VacaHero(
+            asset: 'assets/images/estetica-4.jpg',
+            title: 'Aviso importante',
+            subtitle: 'PASO 1 DE 3 · SEGURIDAD',
+            height: 240,
+            alignment: const Alignment(0, 0.35),
+            onBack: onBack,
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              children: [
+                const Text(
+                  'VACA es una herramienta de coordinación comunitaria. No reemplaza los servicios de emergencia oficiales.',
+                  style: AppTypography.bodyLg,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF2F2),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: AppColors.danger, width: 1.5),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.emergency, color: AppColors.danger),
-                      SizedBox(width: AppSpacing.xs),
-                      Expanded(
-                        child: Text(
-                          'Emergencia inmediata',
-                          style: AppTypography.h3,
+                      Row(
+                        children: [
+                          Icon(Icons.emergency, color: AppColors.danger),
+                          SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              'Emergencia inmediata',
+                              style: TextStyle(
+                                fontFamily: AppTypography.brandFont,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                                height: 24 / 18,
+                                color: AppColors.danger,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Si existe riesgo vital, utiliza 131 (SAMU), 132 (Bomberos) o 133 (Carabineros), según corresponda, siempre que sea posible y seguro hacerlo.',
+                        style: TextStyle(
+                          fontFamily: AppTypography.brandFont,
+                          fontSize: 14,
+                          height: 20 / 14,
+                          color: AppColors.ink,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Si existe riesgo vital, utiliza 131 (SAMU), 132 (Bomberos) o 133 (Carabineros), según corresponda, siempre que sea posible y seguro hacerlo.',
-                    style: AppTypography.body,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                const _Fact(
+                  icon: Icons.phone_in_talk_outlined,
+                  text: 'Utiliza canales oficiales cuando estén disponibles.',
+                ),
+                const _Fact(
+                  icon: Icons.save_outlined,
+                  text:
+                      'Guardar una señal localmente no confirma recepción institucional.',
+                ),
+                const _Fact(
+                  icon: Icons.verified_outlined,
+                  text:
+                      'La recepción se confirma sólo con un recibo verificado del servidor.',
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                VacaButton(
+                  label: 'Entendido, continuar',
+                  onPressed: onContinue,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                VacaButton(
+                  label: 'Registrar emergencia sin verificar identidad',
+                  icon: Icons.emergency_outlined,
+                  variant: VacaButtonVariant.destructive,
+                  onPressed: onEmergency,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.xl),
-            const _Fact(
-              icon: Icons.phone_in_talk_outlined,
-              text: 'Utiliza canales oficiales cuando estén disponibles.',
-            ),
-            const _Fact(
-              icon: Icons.save_outlined,
-              text:
-                  'Guardar una señal localmente no confirma recepción institucional.',
-            ),
-            const _Fact(
-              icon: Icons.verified_outlined,
-              text:
-                  'La recepción se confirma sólo con un recibo verificado del servidor.',
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            VacaButton(
-              label: 'Entendido, continuar',
-              onPressed: onContinue,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            VacaButton(
-              label: 'Registrar emergencia sin verificar identidad',
-              icon: Icons.emergency_outlined,
-              variant: VacaButtonVariant.destructive,
-              onPressed: onEmergency,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -341,7 +360,12 @@ class _Permissions extends StatelessWidget {
               ),
               child: const Text(
                 'Al continuar, aceptas el tratamiento descrito en la Política de Privacidad vigente. Los datos se procesan primero en tu dispositivo.',
-                style: AppTypography.body,
+                style: TextStyle(
+                  fontFamily: AppTypography.brandFont,
+                  fontSize: 14,
+                  height: 20 / 14,
+                  color: AppColors.ink,
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -426,52 +450,55 @@ class _IdentityChoice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: onBack,
-          tooltip: 'Volver',
-          icon: const Icon(Icons.arrow_back),
-        ),
-        title: const Text('Preparar identidad'),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          children: [
-            const Text('Configura tu identidad', style: AppTypography.h1),
-            const SizedBox(height: AppSpacing.xs),
-            const Text(
-              'La verificación es opcional y nunca impide guardar una señal urgente.',
-              style: AppTypography.bodyLg,
+      body: Column(
+        children: [
+          VacaHero(
+            asset: 'assets/images/estetica-5.jpg',
+            title: 'Configura tu identidad',
+            subtitle: 'PASO 3 DE 3 · IDENTIDAD',
+            height: 280,
+            alignment: const Alignment(0, -0.25),
+            onBack: onBack,
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                const Text(
+                  'La verificación es opcional y nunca impide guardar una señal urgente.',
+                  style: AppTypography.bodyLg,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                const _IdentityCard(
+                  icon: Icons.verified_user_outlined,
+                  title: 'Identidad verificada',
+                  detail:
+                      'Requiere Internet y una sesión KYC creada por el backend.',
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                const _IdentityCard(
+                  icon: Icons.person_outline,
+                  title: 'Continuar sin verificar',
+                  detail:
+                      'Las señales quedan marcadas como identidad no verificada.',
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                VacaButton(
+                  label: 'Verificar identidad',
+                  loading: busy,
+                  onPressed: busy ? null : onVerify,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                VacaButton(
+                  label: 'Continuar sin verificar',
+                  variant: VacaButtonVariant.secondary,
+                  onPressed: busy ? null : onUnverified,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.xl),
-            const _IdentityCard(
-              icon: Icons.verified_user_outlined,
-              title: 'Identidad verificada',
-              detail:
-                  'Requiere Internet y una sesión KYC creada por el backend.',
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const _IdentityCard(
-              icon: Icons.person_outline,
-              title: 'Continuar sin verificar',
-              detail:
-                  'Las señales quedan marcadas como identidad no verificada.',
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            VacaButton(
-              label: 'Verificar identidad',
-              loading: busy,
-              onPressed: busy ? null : onVerify,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            VacaButton(
-              label: 'Continuar sin verificar',
-              variant: VacaButtonVariant.secondary,
-              onPressed: busy ? null : onUnverified,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -161,6 +161,34 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
             style: AppTypography.bodyLg,
           ),
           const SizedBox(height: AppSpacing.xl),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: SizedBox(
+              height: 190,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    'assets/images/mapa-3.jpg',
+                    fit: BoxFit.cover,
+                  ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Color(0x731F3B30),
+                    ),
+                  ),
+                  const Center(
+                    child: Icon(
+                      Icons.location_pin,
+                      color: AppColors.white,
+                      size: 44,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           Card(
             child: ListTile(
               leading: const Icon(Icons.location_on_outlined),

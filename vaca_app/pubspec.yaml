@@ -63,9 +63,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Recursos (grano, ilustraciones, etc. — se agregan en fases siguientes)
-  # assets:
-  #   - assets/images/
+  assets:
+    - assets/images/
 
   fonts:
     # Tipografía de marca (ver SETUP.md: copiar desde /font/Anderson Grotesk a assets/fonts/)

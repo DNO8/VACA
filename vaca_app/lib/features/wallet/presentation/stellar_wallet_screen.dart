@@ -91,7 +91,12 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                     Expanded(
                       child: Text(
                         'STELLAR TESTNET · XLM de prueba sin valor real y sin relación con señales, identidad o acceso a ayuda.',
-                        style: AppTypography.body,
+                        style: TextStyle(
+                          fontFamily: AppTypography.brandFont,
+                          fontSize: 14,
+                          height: 20 / 14,
+                          color: AppColors.ink,
+                        ),
                       ),
                     ),
                   ],

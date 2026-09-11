@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/institutional_surface.dart';
 import '../../../data/local/database.dart';
 
 class ReceiptScreen extends StatelessWidget {
@@ -15,33 +16,11 @@ class ReceiptScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            decoration: BoxDecoration(
-              color: AppColors.celadon900,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.verified,
-                  color: AppColors.celadon300,
-                  size: 52,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Recepción verificada',
-                  style: AppTypography.h2.copyWith(color: AppColors.white),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'El servidor autorizado aceptó este paquete. Esto no equivale a atención institucional.',
-                  textAlign: TextAlign.center,
-                  style:
-                      AppTypography.body.copyWith(color: AppColors.celadon300),
-                ),
-              ],
-            ),
+          const VacaHero(
+            asset: 'assets/images/textura-2.jpg',
+            title: 'Recepción verificada',
+            subtitle: 'RECIBO CRIPTOGRÁFICO · NO EQUIVALE A ATENCIÓN',
+            height: 260,
           ),
           const SizedBox(height: AppSpacing.xl),
           _ReceiptField(label: 'Recibo', value: receipt.receiptId),
