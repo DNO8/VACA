@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/bundle/bundle_queue_service.dart';
+import '../../../core/result/result.dart';
 import '../../../data/local/database.dart';
 import '../../../data/local/enums.dart';
 import '../../../features/identity/domain/identity_service.dart';
@@ -77,11 +80,86 @@ class IncidentService {
     );
   }
 
+  Future<Result<UserIncident>> createAndEnqueue({
+    required IncidentCategory category,
+    required IncidentPriority priority,
+    int? peopleCount,
+    String? shortNote,
+    double? latitude,
+    double? longitude,
+    double? accuracyMeters,
+    required LocationSource locationSource,
+    PendingAttachment? attachment,
+  }) async {
+    final profile = await _identity.getOrCreateLocalProfile();
+    try {
+      late UserIncident incident;
+      await _database.transaction(() async {
+        incident = await create(
+          reporterProfileId: profile.id,
+          category: category,
+          priority: priority,
+          peopleCount: peopleCount,
+          shortNote: shortNote,
+          latitude: latitude,
+          longitude: longitude,
+          accuracyMeters: accuracyMeters,
+          locationSource: locationSource,
+          identityAssurance: profile.identityAssurance,
+        );
+        final attachments = <Attachment>[];
+        if (attachment != null) {
+          final file = File(attachment.localPath);
+          final sizeBytes = await file.length();
+          final row = Attachment(
+            id: const Uuid().v4(),
+            incidentId: incident.id,
+            kind: attachment.kind,
+            localPath: attachment.localPath,
+            sha256: attachment.sha256,
+            sizeBytes: sizeBytes,
+            capturedAt: attachment.capturedAt,
+            syncStatus: AttachmentSyncStatus.pending,
+          );
+          await _database.into(_database.attachments).insert(row);
+          attachments.add(row);
+        }
+        final queued = await _queue.enqueue(
+          incident,
+          profile,
+          eventType: EventType.created,
+          attachments: attachments,
+        );
+        if (queued case Failure(error: final error)) {
+          throw _AtomicCaptureFailure(error);
+        }
+      });
+      return Success(incident);
+    } on _AtomicCaptureFailure catch (failure) {
+      return Failure(failure.error);
+    } catch (error) {
+      return Failure(
+        VacaError(
+          code: 'incident_atomic_create',
+          message: 'No se pudo guardar la señal y su bandeja de salida.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
   /// Lista todos los incidentes locales ordenados por creacion descendente.
   Future<List<UserIncident>> list() async {
-    final rows = await _database.select(_database.incidents).get();
+    final rows = await _orderedIncidents().get();
     return rows.map(_toDomain).toList();
   }
+
+  Stream<List<UserIncident>> watch() =>
+      _orderedIncidents().watch().map((rows) => rows.map(_toDomain).toList());
+
+  Selectable<Incident> _orderedIncidents() =>
+      _database.select(_database.incidents)
+        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
 
   /// Recupera un incidente por id.
   Future<UserIncident?> get(String id) async {
@@ -115,22 +193,112 @@ class IncidentService {
     return _updateStatus(id, newStatus);
   }
 
+  Future<Result<UserIncident>> updateNote(String id, String note) async {
+    final incident = await get(id);
+    if (incident == null) {
+      return const Failure(
+        VacaError(code: 'incident_not_found', message: 'Señal no encontrada.'),
+      );
+    }
+    final profile = await _identity.getOrCreateLocalProfile();
+    final previous = await _latestBundle(id);
+    final now = DateTime.now();
+    final updated = UserIncident(
+      id: incident.id,
+      reporterProfileId: incident.reporterProfileId,
+      category: incident.category,
+      priority: incident.priority,
+      peopleCount: incident.peopleCount,
+      shortNote: note,
+      latitude: incident.latitude,
+      longitude: incident.longitude,
+      accuracyMeters: incident.accuracyMeters,
+      locationSource: incident.locationSource,
+      createdAt: incident.createdAt,
+      updatedAt: now,
+      status: IncidentStatus.queued,
+      identityAssurance: incident.identityAssurance,
+    );
+    try {
+      await _database.transaction(() async {
+        final queued = await _queue.enqueue(
+          updated,
+          profile,
+          eventType: EventType.updated,
+          replacesMessageId: previous?.id,
+        );
+        if (queued case Failure(error: final error)) {
+          throw _AtomicCaptureFailure(error);
+        }
+        await (_database.update(_database.incidents)
+              ..where((row) => row.id.equals(id)))
+            .write(
+          IncidentsCompanion(
+            shortNote: Value(note),
+            status: const Value(IncidentStatus.queued),
+            updatedAt: Value(now),
+          ),
+        );
+      });
+      return Success(updated);
+    } on _AtomicCaptureFailure catch (failure) {
+      return Failure(failure.error);
+    }
+  }
+
   /// Cancela un incidente local.
-  Future<UserIncident?> cancel(String id) async {
-    return _updateStatus(id, IncidentStatus.cancelledLocally);
+  Future<Result<UserIncident>> cancel(String id) async {
+    final incident = await get(id);
+    if (incident == null) {
+      return const Failure(
+        VacaError(code: 'incident_not_found', message: 'Señal no encontrada.'),
+      );
+    }
+    final profile = await _identity.getOrCreateLocalProfile();
+    final previous = await _latestBundle(id);
+    try {
+      late UserIncident updated;
+      await _database.transaction(() async {
+        final queued = await _queue.enqueue(
+          incident,
+          profile,
+          eventType: EventType.cancelled,
+          replacesMessageId: previous?.id,
+        );
+        if (queued case Failure(error: final error)) {
+          throw _AtomicCaptureFailure(error);
+        }
+        updated = (await _updateStatus(
+          id,
+          IncidentStatus.cancellationQueued,
+        ))!;
+      });
+      return Success(updated);
+    } on _AtomicCaptureFailure catch (failure) {
+      return Failure(failure.error);
+    }
+  }
+
+  Future<OriginBundle?> _latestBundle(String incidentId) {
+    return (_database.select(_database.originBundles)
+          ..where((row) => row.incidentId.equals(incidentId))
+          ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+          ..limit(1))
+        .getSingleOrNull();
   }
 
   Future<UserIncident?> _updateStatus(String id, IncidentStatus status) async {
     final existing = await get(id);
     if (existing == null) return null;
     final now = DateTime.now();
-    await _database.update(_database.incidents).replace(
-          IncidentsCompanion(
-            id: Value(id),
-            status: Value(status),
-            updatedAt: Value(now),
-          ),
-        );
+    await (_database.update(_database.incidents)
+          ..where((row) => row.id.equals(id)))
+        .write(
+      IncidentsCompanion(
+        status: Value(status),
+        updatedAt: Value(now),
+      ),
+    );
     return existing.copyWith(status: status, updatedAt: now);
   }
 
@@ -150,4 +318,24 @@ class IncidentService {
         status: row.status,
         identityAssurance: row.identityAssurance,
       );
+}
+
+class PendingAttachment {
+  const PendingAttachment({
+    required this.kind,
+    required this.localPath,
+    required this.sha256,
+    required this.capturedAt,
+  });
+
+  final AttachmentKind kind;
+  final String localPath;
+  final String sha256;
+  final DateTime capturedAt;
+}
+
+class _AtomicCaptureFailure implements Exception {
+  const _AtomicCaptureFailure(this.error);
+
+  final VacaError error;
 }

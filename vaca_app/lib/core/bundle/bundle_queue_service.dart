@@ -8,6 +8,7 @@ import '../../data/local/enums.dart';
 import '../../features/identity/domain/identity_profile.dart';
 import '../../features/incident/domain/incident.dart';
 import '../result/result.dart';
+import '../transport/transport.dart' show DeliveryReceipt;
 import 'bundle_codec.dart';
 import 'bundle_models.dart';
 
@@ -35,6 +36,7 @@ class BundleQueueService {
     UserIdentityProfile profile, {
     required EventType eventType,
     List<Attachment> attachments = const [],
+    String? replacesMessageId,
   }) async {
     final manifest = attachments.map(_toManifestEntry).toList();
 
@@ -43,6 +45,7 @@ class BundleQueueService {
       profile,
       eventType: eventType,
       attachmentManifest: manifest,
+      replacesMessageId: replacesMessageId,
     );
     if (bundleResult.isFailure) {
       return Failure((bundleResult as Failure<Bundle>).error);
@@ -62,9 +65,12 @@ class BundleQueueService {
 
     try {
       await _database.transaction(() async {
-        final canonicalHeader = base64Encode(_codec.encodeProtectedHeader(bundle.header));
+        final canonicalHeader =
+            base64Encode(_codec.encodeProtectedHeader(bundle.header));
         final payloadHashBytes = bundle.header.payloadHash;
-        final payloadHashHex = payloadHashBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+        final payloadHashHex = payloadHashBytes
+            .map((b) => b.toRadixString(16).padLeft(2, '0'))
+            .join();
 
         await _database.into(_database.incidentEvents).insert(
               IncidentEventsCompanion.insert(
@@ -120,7 +126,7 @@ class BundleQueueService {
       ..where((b) => b.state.equals(DeliveryState.queued.index))
       ..where((b) => b.expiresAt.isBiggerThan(Variable(DateTime.now())))
       ..orderBy([
-        (b) => OrderingTerm.desc(b.priority),
+        (b) => OrderingTerm.asc(b.priority),
         (b) => OrderingTerm.asc(b.createdAt),
       ])
       ..limit(limit);
@@ -131,13 +137,14 @@ class BundleQueueService {
   Future<Result<void>> markSent(String bundleId) async {
     try {
       final now = DateTime.now();
-      await _database.update(_database.originBundles).replace(
-            OriginBundlesCompanion(
-              id: Value(bundleId),
-              state: const Value(DeliveryState.sent),
-              lastAttemptAt: Value(now),
-            ),
-          );
+      await (_database.update(_database.originBundles)
+            ..where((row) => row.id.equals(bundleId)))
+          .write(
+        OriginBundlesCompanion(
+          state: const Value(DeliveryState.sent),
+          lastAttemptAt: Value(now),
+        ),
+      );
       return const Success(null);
     } catch (e) {
       return Failure(
@@ -152,25 +159,60 @@ class BundleQueueService {
 
   /// Marca un bundle como entregado.
   Future<Result<void>> markDelivered(
-    String bundleId, {
-    String? receiptId,
-  }) async {
+    String bundleId,
+    DeliveryReceipt receipt,
+  ) async {
     try {
       final now = DateTime.now();
-      await _database.update(_database.originBundles).replace(
-            OriginBundlesCompanion(
-              id: Value(bundleId),
-              state: const Value(DeliveryState.delivered),
-              lastAttemptAt: Value(now),
-              serverReceiptId: Value(receiptId),
-            ),
-          );
+      final bundle = await (_database.select(_database.originBundles)
+            ..where((row) => row.id.equals(bundleId)))
+          .getSingle();
+      await _database.transaction(() async {
+        await (_database.update(_database.originBundles)
+              ..where((row) => row.id.equals(bundleId)))
+            .write(
+          OriginBundlesCompanion(
+            state: const Value(DeliveryState.delivered),
+            lastAttemptAt: Value(now),
+            serverReceiptId: Value(receipt.receiptId),
+          ),
+        );
+        await _database.into(_database.serverReceipts).insert(
+              ServerReceiptsCompanion.insert(
+                id: const Uuid().v4(),
+                receiptId: receipt.receiptId,
+                messageId: bundleId,
+                payloadHash: _toHex(receipt.payloadHash),
+                serverReceivedAt: receipt.serverReceivedAt,
+                serverKeyId: receipt.serverKeyId,
+                signature: base64Encode(receipt.signature),
+                verifiedAt: Value(now),
+              ),
+            );
+        await (_database.update(_database.incidents)
+              ..where((row) => row.id.equals(bundle.incidentId)))
+            .write(
+          IncidentsCompanion(
+            status: const Value(IncidentStatus.receivedByServer),
+            updatedAt: Value(now),
+          ),
+        );
+        await _database.into(_database.tombstones).insertOnConflictUpdate(
+              TombstonesCompanion.insert(
+                messageId: bundleId,
+                expiresAt: receipt.serverReceivedAt.add(
+                  const Duration(days: 30),
+                ),
+                createdAt: now,
+              ),
+            );
+      });
       return const Success(null);
     } catch (e) {
       return Failure(
         VacaError(
           code: 'bundle_mark_delivered',
-          message: 'No se pudo marcar el bundle como entregado.',
+          message: 'No se pudo persistir el recibo verificado.',
           cause: e,
         ),
       );
@@ -198,14 +240,15 @@ class BundleQueueService {
       final newState =
           newCopyBudget <= 0 ? DeliveryState.failed : DeliveryState.queued;
 
-      await _database.update(_database.originBundles).replace(
-            OriginBundlesCompanion(
-              id: Value(bundleId),
-              state: Value(newState),
-              lastAttemptAt: Value(now),
-              copyBudget: Value(newCopyBudget),
-            ),
-          );
+      await (_database.update(_database.originBundles)
+            ..where((bundle) => bundle.id.equals(bundleId)))
+          .write(
+        OriginBundlesCompanion(
+          state: Value(newState),
+          lastAttemptAt: Value(now),
+          copyBudget: Value(newCopyBudget),
+        ),
+      );
 
       await _database.into(_database.deliveryAttempts).insert(
             DeliveryAttemptsCompanion.insert(
@@ -230,6 +273,28 @@ class BundleQueueService {
       );
     }
   }
+
+  Future<List<Attachment>> attachmentsForBundle(String bundleId) async {
+    final bundle = await (_database.select(_database.originBundles)
+          ..where((row) => row.id.equals(bundleId)))
+        .getSingleOrNull();
+    if (bundle == null) return const [];
+    return (_database.select(_database.attachments)
+          ..where((row) => row.incidentId.equals(bundle.incidentId)))
+        .get();
+  }
+
+  Future<void> updateAttachmentStatus(
+    String attachmentId,
+    AttachmentSyncStatus status,
+  ) async {
+    await (_database.update(_database.attachments)
+          ..where((row) => row.id.equals(attachmentId)))
+        .write(AttachmentsCompanion(syncStatus: Value(status)));
+  }
+
+  String _toHex(List<int> bytes) =>
+      bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
 
   BundleAttachmentManifestEntry _toManifestEntry(Attachment a) =>
       BundleAttachmentManifestEntry(

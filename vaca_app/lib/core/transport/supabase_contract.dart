@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
 import '../bundle/bundle_signer.dart';
+import '../security/device_request_signer.dart';
 import 'server_contract.dart';
 import 'transport.dart';
 
@@ -23,22 +25,26 @@ class SupabaseServerContract implements ServerContract {
     String? supabaseUrl,
     String? supabaseAnonKey,
     String? serverReceiptPublicKeyBase64,
+    DeviceRequestSigner? requestSigner,
     Dio? httpClient,
   })  : _supabaseUrl = supabaseUrl,
         _supabaseAnonKey = supabaseAnonKey,
         _serverReceiptPublicKey = _decodeKey(serverReceiptPublicKeyBase64),
+        _requestSigner = requestSigner,
         _http = httpClient ?? Dio();
 
   final BundleSigner _signer;
   final String? _supabaseUrl;
   final String? _supabaseAnonKey;
   final Uint8List? _serverReceiptPublicKey;
+  final DeviceRequestSigner? _requestSigner;
   final Dio _http;
 
   @override
   Future<DeliveryResult> sendBundle(
     String messageId,
     Uint8List payload,
+    Uint8List payloadHash,
     Uint8List originPublicKey,
   ) async {
     final supabaseUrl = _supabaseUrl;
@@ -81,13 +87,33 @@ class SupabaseServerContract implements ServerContract {
           );
         }
 
+        final receiptId = data['receipt_id'] as String?;
         final receiptMessageId = data['message_id'] as String?;
+        final receiptHashBase64 = data['payload_hash'] as String?;
+        final receiptHash = _decodeBytes(receiptHashBase64);
+        final receivedAtValue = data['server_received_at'] as String?;
+        final receivedAt = DateTime.tryParse(receivedAtValue ?? '');
+        final serverKeyId = data['server_key_id'] as String?;
         final receiptSignature = _decodeBytes(data['signature'] as String?);
-        if (receiptMessageId == null || receiptSignature == null) {
+        if (receiptId == null ||
+            receiptMessageId == null ||
+            receiptHashBase64 == null ||
+            receiptHash == null ||
+            receivedAt == null ||
+            serverKeyId == null ||
+            receiptSignature == null) {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
             error: 'receipt_incomplete',
+          );
+        }
+        if (receiptMessageId != messageId ||
+            !_constantTimeEquals(receiptHash, payloadHash)) {
+          return DeliveryResult(
+            messageId,
+            DeliveryState.failed,
+            error: 'receipt_binding_invalid',
           );
         }
 
@@ -99,13 +125,18 @@ class SupabaseServerContract implements ServerContract {
             error: 'server_public_key_missing',
           );
         }
-
+        final canonicalReceipt = [
+          receiptId,
+          receiptMessageId,
+          receiptHashBase64,
+          receivedAtValue,
+          serverKeyId,
+        ].join('\n');
         final verify = await _signer.verify(
-          Uint8List.fromList(utf8.encode(receiptMessageId)),
+          Uint8List.fromList(utf8.encode(canonicalReceipt)),
           receiptSignature,
           serverPublicKey,
         );
-
         if (verify.isFailure) {
           return DeliveryResult(
             messageId,
@@ -113,7 +144,6 @@ class SupabaseServerContract implements ServerContract {
             error: 'receipt_verify_error',
           );
         }
-
         if (!verify.valueOrNull!) {
           return DeliveryResult(
             messageId,
@@ -122,7 +152,18 @@ class SupabaseServerContract implements ServerContract {
           );
         }
 
-        return DeliveryResult(messageId, DeliveryState.delivered);
+        return DeliveryResult(
+          messageId,
+          DeliveryState.delivered,
+          receipt: DeliveryReceipt(
+            receiptId: receiptId,
+            messageId: receiptMessageId,
+            payloadHash: receiptHash,
+            serverReceivedAt: receivedAt,
+            serverKeyId: serverKeyId,
+            signature: receiptSignature,
+          ),
+        );
       }
 
       if (status == 401 || status == 403 || status == 409) {
@@ -177,6 +218,13 @@ class SupabaseServerContract implements ServerContract {
       return null;
     }
 
+    final signer = _requestSigner;
+    if (signer == null) return null;
+    final signed = await signer.sign(
+      'attachment-authorize',
+      [bundleId, contentHash],
+    );
+    if (signed.isFailure) return null;
     final endpoint = '$supabaseUrl/functions/v1/attachment-authorize';
     try {
       final response = await _http.post<dynamic>(
@@ -189,6 +237,7 @@ class SupabaseServerContract implements ServerContract {
           headers: {
             'Authorization': 'Bearer $supabaseAnonKey',
             'Content-Type': 'application/json',
+            ...signed.valueOrNull!,
           },
         ),
       );
@@ -200,6 +249,29 @@ class SupabaseServerContract implements ServerContract {
     }
   }
 
+  @override
+  Future<bool> uploadAttachment(String uploadUrl, String localPath) async {
+    try {
+      final file = File(localPath);
+      final length = await file.length();
+      if (length <= 0 || length > 10 * 1024 * 1024) return false;
+      final response = await _http.put<void>(
+        uploadUrl,
+        data: await file.readAsBytes(),
+        options: Options(
+          headers: {
+            Headers.contentLengthHeader: length,
+            Headers.contentTypeHeader: 'application/octet-stream',
+          },
+        ),
+      );
+      final status = response.statusCode ?? 0;
+      return status >= 200 && status < 300;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Uint8List? _decodeKey(String? base64Key) {
     if (base64Key == null || base64Key.isEmpty) return null;
     try {
@@ -207,6 +279,15 @@ class SupabaseServerContract implements ServerContract {
     } catch (_) {
       return null;
     }
+  }
+
+  static bool _constantTimeEquals(Uint8List left, Uint8List right) {
+    if (left.length != right.length) return false;
+    var difference = 0;
+    for (var index = 0; index < left.length; index++) {
+      difference |= left[index] ^ right[index];
+    }
+    return difference == 0;
   }
 
   static Uint8List? _decodeBytes(String? base64Value) {

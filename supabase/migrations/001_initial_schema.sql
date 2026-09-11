@@ -98,6 +98,9 @@ create table if not exists public.idempotency_keys (
 create table if not exists public.server_receipts (
     id uuid primary key default gen_random_uuid(),
     message_id text not null unique,
+    payload_hash text not null,
+    server_received_at timestamptz not null,
+    server_key_id text not null,
     receipt_signature text not null,
     created_at timestamptz not null default now()
 );

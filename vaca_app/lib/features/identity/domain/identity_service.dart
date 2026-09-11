@@ -46,7 +46,8 @@ class IdentityService {
     final keyResult = await keySource.getOrCreateKeyPair();
     final publicKey = switch (keyResult) {
       Success(value: final pair) => pair.publicKey,
-      Failure(error: final error) => throw StateError(error.message ?? error.code),
+      Failure(error: final error) =>
+        throw StateError(error.message ?? error.code),
     };
 
     final id = const Uuid().v4();
@@ -72,6 +73,56 @@ class IdentityService {
     );
   }
 
+  Future<UserIdentityProfile> acceptConsent(String version) async {
+    final local = await getOrCreateLocalProfile();
+    final now = DateTime.now();
+    await (database.update(database.identityProfiles)
+          ..where((row) => row.id.equals(local.id)))
+        .write(
+      IdentityProfilesCompanion(
+        consentVersion: Value(version),
+        updatedAt: Value(now),
+      ),
+    );
+    return UserIdentityProfile(
+      id: local.id,
+      opaqueSubjectId: local.opaqueSubjectId,
+      identityAssurance: local.identityAssurance,
+      credential: local.credential,
+      credentialExpiresAt: local.credentialExpiresAt,
+      devicePublicKey: local.devicePublicKey,
+      consentVersion: version,
+      createdAt: local.createdAt,
+      updatedAt: now,
+    );
+  }
+
+  Future<Result<void>> deleteLocalData() async {
+    try {
+      await database.transaction(() async {
+        await database.delete(database.deliveryAttempts).go();
+        await database.delete(database.serverReceipts).go();
+        await database.delete(database.tombstones).go();
+        await database.delete(database.originBundles).go();
+        await database.delete(database.incidentEvents).go();
+        await database.delete(database.attachments).go();
+        await database.delete(database.incidents).go();
+        await database.delete(database.identityProfiles).go();
+      });
+      final secureDelete = await secureStorage.deleteAll();
+      if (secureDelete case Failure(error: final error)) return Failure(error);
+      return const Success(null);
+    } catch (error) {
+      return Failure(
+        VacaError(
+          code: 'identity_local_deletion',
+          message: 'No se pudieron eliminar todos los datos locales.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
   /// Intenta verificar la identidad con KYC.
   Future<Result<UserIdentityProfile>> verifyWithKyc() async {
     final local = await getOrCreateLocalProfile();
@@ -92,22 +143,26 @@ class IdentityService {
   ) async {
     try {
       final now = DateTime.now();
-      await database.update(database.identityProfiles).replace(
-            IdentityProfilesCompanion(
-              id: Value(local.id),
-              opaqueSubjectId: Value(kyc.opaqueSubjectId),
-              identityAssurance: Value(kyc.identityAssurance),
-              credential: Value(kyc.credential),
-              credentialExpiresAt: Value(kyc.credentialExpiresAt),
-              updatedAt: Value(now),
-            ),
-          );
+      final assurance = kyc.credential == null
+          ? IdentityAssurance.unverified
+          : kyc.identityAssurance;
+      await (database.update(database.identityProfiles)
+            ..where((row) => row.id.equals(local.id)))
+          .write(
+        IdentityProfilesCompanion(
+          opaqueSubjectId: Value(kyc.opaqueSubjectId),
+          identityAssurance: Value(assurance),
+          credential: Value(kyc.credential),
+          credentialExpiresAt: Value(kyc.credentialExpiresAt),
+          updatedAt: Value(now),
+        ),
+      );
 
       return Success(
         UserIdentityProfile(
           id: local.id,
           opaqueSubjectId: kyc.opaqueSubjectId,
-          identityAssurance: IdentityAssurance.verified,
+          identityAssurance: assurance,
           credential: kyc.credential,
           credentialExpiresAt: kyc.credentialExpiresAt,
           devicePublicKey: local.devicePublicKey,

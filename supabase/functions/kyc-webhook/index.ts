@@ -4,7 +4,7 @@
 // opaca del dispositivo. La clave publica del dispositivo viaja en
 // metadata.device_public_key.
 
-import { createClient } from 'npm:@supabase/supabase-js';
+import { createClient } from 'npm:@supabase/supabase-js@2.115.0';
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
   const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   const webhookSecret = Deno.env.get('KYC_WEBHOOK_SECRET');
 
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
+  if (!supabaseUrl || !supabaseServiceRoleKey || !webhookSecret) {
     return jsonResponse({ error: 'server_not_configured' }, 503);
   }
 
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
   const signatureSimple = req.headers.get('x-signature-simple') || '';
   const timestamp = req.headers.get('x-timestamp') || '';
 
-  if (webhookSecret && (signatureV2 || signatureSimple)) {
+  if (signatureV2 || signatureSimple) {
     let verified = false;
     if (signatureV2) {
       verified = await verifySignatureV2(webhookSecret, rawBody, signatureV2, timestamp);

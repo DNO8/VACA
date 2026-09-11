@@ -43,7 +43,7 @@ class BundleCodec {
   final int defaultTtlSeconds;
   final int maxPayloadBytes;
 
-  static const int protocolVersion = 1;
+  static const int protocolVersion = 2;
 
   /// Crea un bundle desde un incidente y su perfil de identidad.
   Future<Result<Bundle>> createBundle(
@@ -99,8 +99,9 @@ class BundleCodec {
     final messageType = _mapMessageType(incident.category);
     final priority = _mapPriority(incident.priority);
 
-    final originCredentialRef =
-        Uint8List.fromList(utf8.encode(profile.opaqueSubjectId ?? 'unverified'));
+    final originCredentialRef = Uint8List.fromList(
+      utf8.encode(profile.opaqueSubjectId ?? 'unverified'),
+    );
 
     final header = BundleHeader(
       protocolVersion: protocolVersion,
@@ -120,6 +121,8 @@ class BundleCodec {
       fragmentCount: 1,
       keyId: effectiveKeyId,
       nonce: sealedValue.nonce,
+      wrapNonce: sealedValue.wrapNonce,
+      ephemeralPublicKey: sealedValue.ephemeralPublicKey,
       signature: Uint8List(0),
     );
 
@@ -181,8 +184,10 @@ class BundleCodec {
       }
 
       final header = _headerFromMap(headerMap);
-      final ciphertext = Uint8List.fromList(List<int>.from(ciphertextList as List));
-      final wrappedKey = Uint8List.fromList(List<int>.from(wrappedKeyList as List));
+      final ciphertext =
+          Uint8List.fromList(List<int>.from(ciphertextList as List));
+      final wrappedKey =
+          Uint8List.fromList(List<int>.from(wrappedKeyList as List));
 
       if (ciphertext.length != header.payloadLength) {
         return const Failure(
@@ -203,7 +208,8 @@ class BundleCodec {
           );
         }
         final protected = encodeProtectedHeader(header);
-        final signedMessage = _buildSignedMessage(protected, header.payloadHash);
+        final signedMessage =
+            _buildSignedMessage(protected, header.payloadHash);
         final verify = await _signer.verify(
           signedMessage,
           header.signature,
@@ -226,13 +232,16 @@ class BundleCodec {
         ciphertext,
         wrappedKey,
         header.nonce,
+        header.wrapNonce,
+        header.ephemeralPublicKey,
         header.keyId,
       );
       if (payloadRead.isFailure) {
         return Failure((payloadRead as Failure<Uint8List>).error);
       }
       final payloadBytes = payloadRead.valueOrNull!;
-      final computedHash = Uint8List.fromList(sha256.convert(payloadBytes).bytes);
+      final computedHash =
+          Uint8List.fromList(sha256.convert(payloadBytes).bytes);
       if (!_constantTimeEquals(computedHash, header.payloadHash)) {
         return const Failure(
           VacaError(
@@ -242,7 +251,13 @@ class BundleCodec {
         );
       }
 
-      return Success(Bundle(header: header, ciphertext: ciphertext, wrappedKey: wrappedKey));
+      return Success(
+        Bundle(
+          header: header,
+          ciphertext: ciphertext,
+          wrappedKey: wrappedKey,
+        ),
+      );
     } catch (e) {
       return Failure(
         VacaError(
@@ -289,6 +304,8 @@ class BundleCodec {
       bundle.ciphertext,
       bundle.wrappedKey,
       bundle.header.nonce,
+      bundle.header.wrapNonce,
+      bundle.header.ephemeralPublicKey,
       bundle.header.keyId,
     );
     if (payloadRead.isFailure) {
@@ -318,7 +335,10 @@ class BundleCodec {
     return _signer.sign(signedMessage);
   }
 
-  Uint8List _buildSignedMessage(Uint8List protectedCbor, Uint8List payloadHash) {
+  Uint8List _buildSignedMessage(
+    Uint8List protectedCbor,
+    Uint8List payloadHash,
+  ) {
     final combined = Uint8List(protectedCbor.length + payloadHash.length);
     combined.setAll(0, protectedCbor);
     combined.setAll(protectedCbor.length, payloadHash);
@@ -358,6 +378,8 @@ class BundleCodec {
       CborString('F'): CborSmallInt(header.fragmentCount),
       CborString('k'): CborString(header.keyId),
       CborString('n'): CborBytes(header.nonce),
+      CborString('N'): CborBytes(header.wrapNonce),
+      CborString('K'): CborBytes(header.ephemeralPublicKey),
     });
   }
 
@@ -379,6 +401,8 @@ class BundleCodec {
     final fragmentCount = _readInt(map, 'F', 'fragmentCount')!;
     final keyId = _readString(map, 'k', 'keyId')!;
     final nonce = _readBytes(map, 'n', 'nonce')!;
+    final wrapNonce = _readBytes(map, 'N', 'wrapNonce')!;
+    final ephemeralPublicKey = _readBytes(map, 'K', 'ephemeralPublicKey')!;
     final signature = _readBytes(map, 's', 'signature')!;
 
     return BundleHeader(
@@ -399,6 +423,8 @@ class BundleCodec {
       fragmentCount: fragmentCount,
       keyId: keyId,
       nonce: nonce,
+      wrapNonce: wrapNonce,
+      ephemeralPublicKey: ephemeralPublicKey,
       signature: signature,
     );
   }

@@ -39,6 +39,15 @@ class AttachmentService {
     return query.getSingle();
   }
 
+  Stream<AttachmentSyncStatus?> watchStatus(String incidentId) {
+    final query = _database.select(_database.attachments)
+      ..where((row) => row.incidentId.equals(incidentId))
+      ..limit(1);
+    return query.watch().map(
+          (rows) => rows.isEmpty ? null : rows.first.syncStatus,
+        );
+  }
+
   /// Lista adjuntos de un incidente.
   Future<List<Attachment>> listForIncident(String incidentId) async {
     final query = _database.select(_database.attachments)

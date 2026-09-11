@@ -3,17 +3,21 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/local/database.dart';
+import '../features/identity/data/account_deletion_service.dart';
 import '../features/identity/data/didit_kyc_adapter.dart';
 import '../features/identity/data/kyc_adapter.dart';
 import '../features/identity/domain/identity_service.dart';
 import '../features/incident/domain/attachment_service.dart';
 import '../features/incident/domain/incident_service.dart';
+import '../features/onboarding/domain/onboarding_service.dart';
+import '../features/wallet/domain/stellar_wallet_service.dart';
 import 'bundle/bundle_cipher.dart';
 import 'bundle/bundle_codec.dart';
 import 'bundle/bundle_queue_service.dart';
 import 'bundle/bundle_scheduler.dart';
 import 'bundle/bundle_signer.dart';
 import 'permissions/permission_service.dart';
+import 'security/device_request_signer.dart';
 import 'security/identity_key_source.dart';
 import 'security/secure_storage.dart';
 import 'transport/internet_transport.dart';
@@ -51,11 +55,15 @@ final serverContractProvider = Provider<ServerContract>((ref) {
   );
 
   final signer = ref.watch(bundleSignerProvider);
+  final requestSigner = DeviceRequestSigner(
+    ref.watch(identityKeySourceProvider),
+  );
   return SupabaseServerContract(
     signer,
     supabaseUrl: supabaseUrl,
     supabaseAnonKey: supabaseAnonKey,
     serverReceiptPublicKeyBase64: serverReceiptPublicKey,
+    requestSigner: requestSigner,
   );
 });
 
@@ -77,6 +85,14 @@ final secureStorageProvider = Provider<SecureStorage>((ref) {
   return const SecureStorage();
 });
 
+final onboardingServiceProvider = Provider<OnboardingService>((ref) {
+  return OnboardingService(ref.watch(secureStorageProvider));
+});
+
+final stellarWalletServiceProvider = Provider<StellarWalletService>((ref) {
+  return StellarWalletService(ref.watch(secureStorageProvider));
+});
+
 /// Fuente de claves de dispositivo.
 final identityKeySourceProvider = Provider<IdentityKeySource>((ref) {
   final storage = ref.watch(secureStorageProvider);
@@ -85,14 +101,31 @@ final identityKeySourceProvider = Provider<IdentityKeySource>((ref) {
 
 /// Adapter de KYC.
 ///
-/// Si estan definidos `DIDIT_API_KEY` y `DIDIT_WORKFLOW_ID`, se usa
-/// [DiditKycAdapter]; si no, el stub desconfigurado.
-final kycAdapterProvider = Provider<KycAdapter>((ref) {
-  const apiKey = String.fromEnvironment('DIDIT_API_KEY');
-  const workflowId = String.fromEnvironment('DIDIT_WORKFLOW_ID');
+/// Si Supabase está configurado, la creación de sesión Didit ocurre en una
+/// Edge Function autenticada; ningún secreto del proveedor entra al cliente.
+final accountDeletionServiceProvider = Provider<AccountDeletionService>((ref) {
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  return AccountDeletionService(
+    requestSigner: DeviceRequestSigner(
+      ref.watch(identityKeySourceProvider),
+    ),
+    supabaseUrl: supabaseUrl,
+    supabaseAnonKey: supabaseAnonKey,
+  );
+});
 
-  if (apiKey.isNotEmpty && workflowId.isNotEmpty) {
-    return const DiditKycAdapter();
+final kycAdapterProvider = Provider<KycAdapter>((ref) {
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
+    return DiditKycAdapter(
+      requestSigner: DeviceRequestSigner(
+        ref.watch(identityKeySourceProvider),
+      ),
+      supabaseUrl: supabaseUrl,
+      supabaseAnonKey: supabaseAnonKey,
+    );
   }
 
   return const UnconfiguredKycAdapter();
@@ -114,16 +147,16 @@ final identityServiceProvider = Provider<IdentityService>((ref) {
 
 /// Fuente de claves de destinatario para bundles.
 ///
-/// En produccion la clave AES-256 del servidor se provee via dart-define
-/// `SERVER_BUNDLE_KEY` (base64 de 32 bytes) y nunca se embebe en el repo.
-/// Mientras tanto, falla cerrado.
+/// En produccion la clave publica X25519 del servidor se provee via dart-define
+/// `SERVER_BUNDLE_PUBLIC_KEY` (base64 de 32 bytes). La clave privada permanece
+/// exclusivamente en el servidor autorizado.
 final bundleKeySourceProvider = Provider<BundleKeySource>((ref) {
-  const envKey = String.fromEnvironment('SERVER_BUNDLE_KEY');
+  const envKey = String.fromEnvironment('SERVER_BUNDLE_PUBLIC_KEY');
   if (envKey.isNotEmpty) {
     try {
       final key = base64Decode(envKey);
       if (key.length == 32) {
-        return StaticBundleKeySource(key);
+        return PublicBundleKeySource(key);
       }
     } catch (_) {
       // Falla cerrado si la clave no es base64 valida o no mide 32 bytes.
@@ -166,9 +199,11 @@ final bundleQueueServiceProvider = Provider<BundleQueueService>((ref) {
 final bundleSchedulerProvider = Provider<BundleScheduler>((ref) {
   final queue = ref.watch(bundleQueueServiceProvider);
   final transport = ref.watch(transportProvider);
+  final contract = ref.watch(serverContractProvider);
   return BundleScheduler(
     queue: queue,
     transport: transport,
+    serverContract: contract,
   );
 });
 

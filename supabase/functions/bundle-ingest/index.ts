@@ -6,10 +6,10 @@
 // Los helpers de _shared/ estan inliniados porque el editor web de Supabase
 // no soporta imports relativos; se mantienen en _shared para deploy por CLI.
 
-import { createClient } from 'npm:@supabase/supabase-js';
-import { Decoder, Encoder } from 'npm:cbor-x';
-import { ed25519 } from 'npm:@noble/curves/ed25519';
-import { gcm } from 'npm:@noble/ciphers/aes';
+import { createClient } from 'npm:@supabase/supabase-js@2.115.0';
+import { Decoder, Encoder } from 'npm:cbor-x@1.6.5';
+import { ed25519, x25519 } from 'npm:@noble/curves@2.3.0/ed25519.js';
+import { gcm } from 'npm:@noble/ciphers@2.3.0/aes.js';
 
 // Helpers de codificacion/decodificacion base64.
 
@@ -113,16 +113,36 @@ function verifyBundleSignature(
   return ed25519.verify(signature, signedMessage, originPublicKey);
 }
 
-function decryptBundlePayload(
+async function decryptBundlePayload(
   header: Map<unknown, unknown>,
   ciphertext: Uint8Array,
   wrappedKey: Uint8Array,
-  bundleKey: Uint8Array,
-): Uint8Array {
+  recipientPrivateKey: Uint8Array,
+): Promise<Uint8Array> {
   const nonce = header.get('n') as Uint8Array;
+  const wrapNonce = header.get('N') as Uint8Array;
+  const ephemeralPublicKey = header.get('K') as Uint8Array;
   if (!nonce || nonce.length !== 12) throw new Error('nonce_invalido');
+  if (!wrapNonce || wrapNonce.length !== 12) throw new Error('wrap_nonce_invalido');
+  if (!ephemeralPublicKey || ephemeralPublicKey.length !== 32) {
+    throw new Error('ephemeral_key_invalida');
+  }
 
-  const contentKey = gcm(bundleKey, nonce, new Uint8Array(0)).decrypt(wrappedKey);
+  const sharedSecret = x25519.getSharedSecret(recipientPrivateKey, ephemeralPublicKey);
+  const hkdfKey = await crypto.subtle.importKey('raw', sharedSecret, 'HKDF', false, ['deriveBits']);
+  const wrapKey = new Uint8Array(
+    await crypto.subtle.deriveBits(
+      {
+        name: 'HKDF',
+        hash: 'SHA-256',
+        salt: wrapNonce,
+        info: new TextEncoder().encode('vaca:bundle-wrap:v2'),
+      },
+      hkdfKey,
+      256,
+    ),
+  );
+  const contentKey = gcm(wrapKey, wrapNonce, new Uint8Array(0)).decrypt(wrappedKey);
   return gcm(contentKey, nonce, new Uint8Array(0)).decrypt(ciphertext);
 }
 
@@ -166,8 +186,16 @@ function decodePayloadJson(bytes: Uint8Array): {
   };
 }
 
-function signReceipt(messageId: string, privateKey: Uint8Array): Uint8Array {
-  return ed25519.sign(new TextEncoder().encode(messageId), privateKey);
+function signReceipt(
+  receiptId: string,
+  messageId: string,
+  payloadHash: string,
+  serverReceivedAt: string,
+  serverKeyId: string,
+  privateKey: Uint8Array,
+): Uint8Array {
+  const canonical = [receiptId, messageId, payloadHash, serverReceivedAt, serverKeyId].join('\n');
+  return ed25519.sign(new TextEncoder().encode(canonical), privateKey);
 }
 
 function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
@@ -175,6 +203,13 @@ function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
   out.set(a, 0);
   out.set(b, a.length);
   return out;
+}
+
+function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let difference = 0;
+  for (let i = 0; i < a.length; i++) difference |= a[i] ^ b[i];
+  return difference === 0;
 }
 
 const decoder = new Decoder({
@@ -209,10 +244,17 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const bundleKeyB64 = Deno.env.get('SERVER_BUNDLE_KEY');
+  const bundlePrivateKeyB64 = Deno.env.get('SERVER_BUNDLE_PRIVATE_KEY');
   const receiptPrivateKeyB64 = Deno.env.get('SERVER_RECEIPT_PRIVATE_KEY');
+  const receiptKeyId = Deno.env.get('SERVER_RECEIPT_KEY_ID');
 
-  if (!supabaseUrl || !supabaseServiceRoleKey || !bundleKeyB64 || !receiptPrivateKeyB64) {
+  if (
+    !supabaseUrl ||
+    !supabaseServiceRoleKey ||
+    !bundlePrivateKeyB64 ||
+    !receiptPrivateKeyB64 ||
+    !receiptKeyId
+  ) {
     return jsonResponse({ error: 'server_not_configured' }, 503);
   }
 
@@ -221,16 +263,19 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'origin_public_key_missing' }, 400);
   }
 
-  let bundleKey: Uint8Array;
+  let bundlePrivateKey: Uint8Array;
   let receiptPrivateKey: Uint8Array;
   let originPublicKey: Uint8Array;
 
   try {
-    bundleKey = decodeBase64(bundleKeyB64);
+    bundlePrivateKey = decodeBase64(bundlePrivateKeyB64);
     receiptPrivateKey = decodeBase64(receiptPrivateKeyB64);
     originPublicKey = decodeBase64(originPublicKeyB64);
   } catch (_e) {
     return jsonResponse({ error: 'invalid_base64_key' }, 400);
+  }
+  if (bundlePrivateKey.length !== 32 || receiptPrivateKey.length !== 32 || originPublicKey.length !== 32) {
+    return jsonResponse({ error: 'invalid_key_length' }, 400);
   }
 
   const body = new Uint8Array(await req.arrayBuffer());
@@ -245,7 +290,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'bundle_decode_failed', detail: String(e) }, 400);
   }
 
-  if (bundle.version !== 1) {
+  if (bundle.version !== 2) {
     return jsonResponse({ error: 'unsupported_protocol_version', version: bundle.version }, 400);
   }
 
@@ -261,7 +306,19 @@ Deno.serve(async (req) => {
 
   let payload;
   try {
-    const plaintext = decryptBundlePayload(bundle.header, bundle.ciphertext, bundle.wrappedKey, bundleKey);
+    const plaintext = await decryptBundlePayload(
+      bundle.header,
+      bundle.ciphertext,
+      bundle.wrappedKey,
+      bundlePrivateKey,
+    );
+    const expectedPayloadHash = bundle.header.get('H') as Uint8Array;
+    const actualPayloadHash = new Uint8Array(
+      await crypto.subtle.digest('SHA-256', plaintext),
+    );
+    if (!expectedPayloadHash || !equalBytes(expectedPayloadHash, actualPayloadHash)) {
+      throw new Error('payload_hash_invalido');
+    }
     payload = decodePayloadJson(plaintext);
   } catch (e) {
     return jsonResponse({ error: 'decryption_failed', detail: String(e) }, 400);
@@ -285,15 +342,28 @@ Deno.serve(async (req) => {
   // Idempotencia: si ya existe el message_id, devolvemos el recibo anterior.
   const { data: existingReceipt } = await supabase
     .from('server_receipts')
-    .select('message_id, receipt_signature')
+    .select('id, message_id, payload_hash, server_received_at, server_key_id, receipt_signature')
     .eq('message_id', messageId)
     .maybeSingle();
 
   if (existingReceipt) {
+    if (existingReceipt.payload_hash !== encodeBase64(payloadHash)) {
+      return jsonResponse({ error: 'idempotency_conflict' }, 409);
+    }
     const sig = typeof existingReceipt.receipt_signature === 'string'
       ? existingReceipt.receipt_signature
       : encodeBase64(existingReceipt.receipt_signature);
-    return jsonResponse({ message_id: messageId, signature: sig }, 200);
+    return jsonResponse(
+      {
+        receipt_id: existingReceipt.id,
+        message_id: existingReceipt.message_id,
+        payload_hash: existingReceipt.payload_hash,
+        server_received_at: existingReceipt.server_received_at,
+        server_key_id: existingReceipt.server_key_id,
+        signature: sig,
+      },
+      200,
+    );
   }
 
   const category = categoryByIndex[payload.categoryIndex] ?? 'other';
@@ -394,15 +464,39 @@ Deno.serve(async (req) => {
     );
 
     // Firma y devuelve recibo.
-    const receiptSignature = signReceipt(messageId, receiptPrivateKey);
+    const receiptId = crypto.randomUUID();
+    const payloadHashB64 = encodeBase64(payloadHash);
+    const serverReceivedAt = new Date().toISOString();
+    const receiptSignature = signReceipt(
+      receiptId,
+      messageId,
+      payloadHashB64,
+      serverReceivedAt,
+      receiptKeyId,
+      receiptPrivateKey,
+    );
     const receiptSignatureB64 = encodeBase64(receiptSignature);
 
     await supabase.from('server_receipts').insert({
+      id: receiptId,
       message_id: messageId,
+      payload_hash: payloadHashB64,
+      server_received_at: serverReceivedAt,
+      server_key_id: receiptKeyId,
       receipt_signature: receiptSignatureB64,
     });
 
-    return jsonResponse({ message_id: messageId, signature: receiptSignatureB64 }, 200);
+    return jsonResponse(
+      {
+        receipt_id: receiptId,
+        message_id: messageId,
+        payload_hash: payloadHashB64,
+        server_received_at: serverReceivedAt,
+        server_key_id: receiptKeyId,
+        signature: receiptSignatureB64,
+      },
+      200,
+    );
   } catch (e) {
     console.error('ingest_error', e);
     return jsonResponse({ error: 'ingest_failed', detail: String(e) }, 500);

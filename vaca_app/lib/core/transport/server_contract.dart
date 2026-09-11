@@ -21,6 +21,7 @@ abstract class ServerContract {
   Future<DeliveryResult> sendBundle(
     String messageId,
     Uint8List payload,
+    Uint8List payloadHash,
     Uint8List originPublicKey,
   );
 
@@ -32,4 +33,6 @@ abstract class ServerContract {
     String bundleId,
     String contentHash,
   );
+
+  Future<bool> uploadAttachment(String uploadUrl, String localPath);
 }

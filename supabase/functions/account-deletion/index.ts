@@ -3,7 +3,8 @@
 // Recibe una solicitud de borrado de cuenta, valida el portador y programa
 // la eliminacion de la identidad y los incidentes asociados.
 
-import { createClient } from 'npm:@supabase/supabase-js';
+import { createClient } from 'npm:@supabase/supabase-js@2.115.0';
+import { authenticateDeviceRequest } from '../_shared/device-auth.ts';
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -19,21 +20,14 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
-
-  if (!supabaseUrl || !supabaseServiceRoleKey || !anonKey) {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
     return jsonResponse({ error: 'server_not_configured' }, 503);
-  }
-
-  const auth = req.headers.get('authorization') || '';
-  if (!auth.startsWith('Bearer ') || auth.slice(7) !== anonKey) {
-    return jsonResponse({ error: 'unauthorized' }, 401);
   }
 
   let body: Record<string, unknown> = {};
   try {
     body = await req.json();
-  } catch (_e) {
+  } catch (_error) {
     return jsonResponse({ error: 'invalid_json' }, 400);
   }
 
@@ -45,34 +39,31 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: { persistSession: false },
   });
+  const authenticatedKey = await authenticateDeviceRequest(
+    req,
+    supabase,
+    'account-deletion',
+    [devicePublicKey],
+  );
+  if (authenticatedKey !== devicePublicKey) {
+    return jsonResponse({ error: 'unauthorized' }, 401);
+  }
 
-  // Eliminacion en cascada controlada: primero incidentes, luego identidad.
-  // Las FK con on delete cascade se encargan del resto.
   const { data: identity, error: identityError } = await supabase
     .from('identities')
     .select('id')
     .eq('device_public_key', devicePublicKey)
     .maybeSingle();
+  if (identityError) return jsonResponse({ error: 'lookup_failed' }, 500);
+  if (!identity) return jsonResponse({ deleted: false, reason: 'not_found' }, 404);
 
-  if (identityError) {
-    return jsonResponse({ error: 'lookup_failed' }, 500);
-  }
-  if (!identity) {
-    return jsonResponse({ deleted: false, reason: 'not_found' }, 404);
-  }
-
-  // Borra incidentes asociados a eventos firmados con esta clave.
   const { error: deleteError } = await supabase.rpc('delete_identity_data', {
     p_device_public_key: devicePublicKey,
   });
-
   if (deleteError) {
     console.error('deletion_error', deleteError);
-    return jsonResponse(
-      { error: 'deletion_failed', detail: deleteError.message },
-      500,
-    );
+    return jsonResponse({ error: 'deletion_failed' }, 500);
   }
 
-  return jsonResponse({ deleted: true, device_public_key: devicePublicKey }, 200);
+  return jsonResponse({ deleted: true }, 200);
 });

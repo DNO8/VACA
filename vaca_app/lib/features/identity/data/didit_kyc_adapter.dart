@@ -2,6 +2,7 @@ import 'package:didit_sdk/sdk_flutter.dart';
 import 'package:dio/dio.dart';
 
 import '../../../core/result/result.dart';
+import '../../../core/security/device_request_signer.dart';
 import '../../../data/local/enums.dart';
 import 'kyc_adapter.dart';
 
@@ -12,56 +13,59 @@ import 'kyc_adapter.dart';
 /// maneja el flujo de captura. La autoridad final de la identidad es el
 /// webhook a `kyc-webhook` en Supabase.
 ///
-/// Requiere `--dart-define`:
-/// - `DIDIT_API_KEY`
-/// - `DIDIT_WORKFLOW_ID`
+/// Requiere `SUPABASE_URL` y `SUPABASE_ANON_KEY`. Las credenciales Didit
+/// permanecen en la Edge Function `kyc-session`.
 class DiditKycAdapter implements KycAdapter {
-  const DiditKycAdapter({Dio? httpClient}) : _httpClient = httpClient;
+  const DiditKycAdapter({
+    required DeviceRequestSigner requestSigner,
+    required String supabaseUrl,
+    required String supabaseAnonKey,
+    Dio? httpClient,
+  })  : _requestSigner = requestSigner,
+        _supabaseUrl = supabaseUrl,
+        _supabaseAnonKey = supabaseAnonKey,
+        _httpClient = httpClient;
 
+  final DeviceRequestSigner _requestSigner;
+  final String _supabaseUrl;
+  final String _supabaseAnonKey;
   final Dio? _httpClient;
-
-  static const String _baseUrl = 'https://verification.didit.me/v3';
-  static const String _callbackUrl = 'myapp://kyc-callback';
 
   @override
   Future<Result<KycResult>> verify({
     required String consentVersion,
     required String devicePublicKey,
   }) async {
-    const apiKey = String.fromEnvironment('DIDIT_API_KEY');
-    const workflowId = String.fromEnvironment('DIDIT_WORKFLOW_ID');
-
-    if (apiKey.isEmpty || workflowId.isEmpty) {
+    if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
       return const Failure(
         VacaError(
           code: 'kyc_unconfigured',
-          message:
-              'KYC no esta configurado. Se requieren DIDIT_API_KEY y DIDIT_WORKFLOW_ID.',
+          message: 'KYC no está configurado en este entorno.',
         ),
       );
     }
 
-    final vendorData = diditVendorDataFor(devicePublicKey, consentVersion);
+    final signed = await _requestSigner.sign(
+      'kyc-session',
+      [devicePublicKey, consentVersion],
+    );
+    if (signed case Failure(error: final error)) return Failure(error);
 
     try {
       final dio = _httpClient ?? Dio();
       final response = await dio.post<dynamic>(
-        '$_baseUrl/session/',
+        '$_supabaseUrl/functions/v1/kyc-session',
         options: Options(
           headers: {
-            'x-api-key': apiKey,
+            'Authorization': 'Bearer $_supabaseAnonKey',
             'Content-Type': 'application/json',
+            ...signed.valueOrNull!,
           },
           validateStatus: (status) => status != null && status < 500,
         ),
         data: {
-          'workflow_id': workflowId,
-          'vendor_data': vendorData,
-          'callback': _callbackUrl,
-          'callback_method': 'both',
-          'metadata': {
-            'device_public_key': devicePublicKey,
-          },
+          'device_public_key': devicePublicKey,
+          'consent_version': consentVersion,
         },
       );
 

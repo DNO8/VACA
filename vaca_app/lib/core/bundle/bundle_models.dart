@@ -77,7 +77,8 @@ class BundlePayload {
         'accuracyMeters': accuracyMeters,
         'locationSourceIndex': locationSourceIndex,
         'identityAssuranceIndex': identityAssuranceIndex,
-        'attachmentManifest': attachmentManifest.map((e) => e.toJson()).toList(),
+        'attachmentManifest':
+            attachmentManifest.map((e) => e.toJson()).toList(),
         'replacesMessageId': replacesMessageId,
       };
 
@@ -92,7 +93,11 @@ class BundlePayload {
         locationSourceIndex: json['locationSourceIndex'] as int,
         identityAssuranceIndex: json['identityAssuranceIndex'] as int,
         attachmentManifest: (json['attachmentManifest'] as List<dynamic>?)
-                ?.map((e) => BundleAttachmentManifestEntry.fromJson(e as Map<String, dynamic>))
+                ?.map(
+                  (e) => BundleAttachmentManifestEntry.fromJson(
+                    e as Map<String, dynamic>,
+                  ),
+                )
                 .toList() ??
             const [],
         replacesMessageId: json['replacesMessageId'] as String?,
@@ -148,6 +153,8 @@ class BundleHeader {
     required this.fragmentCount,
     required this.keyId,
     required this.nonce,
+    required this.wrapNonce,
+    required this.ephemeralPublicKey,
     required this.signature,
   });
 
@@ -168,6 +175,8 @@ class BundleHeader {
   final int fragmentCount;
   final String keyId;
   final Uint8List nonce;
+  final Uint8List wrapNonce;
+  final Uint8List ephemeralPublicKey;
   final Uint8List signature;
 
   BundleHeader copyWith({
@@ -191,6 +200,8 @@ class BundleHeader {
         fragmentCount: fragmentCount,
         keyId: keyId,
         nonce: nonce,
+        wrapNonce: wrapNonce,
+        ephemeralPublicKey: ephemeralPublicKey,
         signature: signature ?? this.signature,
       );
 
@@ -213,6 +224,8 @@ class BundleHeader {
         'payloadHash': payloadHash,
         'keyId': keyId,
         'nonce': nonce,
+        'wrapNonce': wrapNonce,
+        'ephemeralPublicKey': ephemeralPublicKey,
       };
 }
 

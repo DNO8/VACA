@@ -59,6 +59,18 @@ class _FakeDioAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+final _payloadHash = Uint8List.fromList(List.filled(32, 9));
+
+String _receiptJson({String messageId = 'msg-1', Uint8List? payloadHash}) =>
+    jsonEncode({
+      'receipt_id': 'receipt-1',
+      'message_id': messageId,
+      'payload_hash': base64Encode(payloadHash ?? _payloadHash),
+      'server_received_at': '2026-09-11T12:00:00.000Z',
+      'server_key_id': 'receipt-key-1',
+      'signature': base64Encode(Uint8List(64)),
+    });
+
 void main() {
   final serverReceiptPublicKey = base64Encode(Uint8List(32));
 
@@ -70,6 +82,7 @@ void main() {
       final result = await contract.sendBundle(
         'msg-1',
         Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
         Uint8List.fromList([4, 5, 6]),
       );
 
@@ -100,10 +113,7 @@ void main() {
 
     test('returns delivered when receipt verifies', () async {
       final signer = _FakeBundleSigner(verifyResult: true);
-      final receipt = jsonEncode({
-        'message_id': 'msg-1',
-        'signature': base64Encode(Uint8List(64)),
-      });
+      final receipt = _receiptJson();
       final dio = buildDio(
         ResponseBody.fromString(
           receipt,
@@ -125,18 +135,74 @@ void main() {
       final result = await contract.sendBundle(
         'msg-1',
         Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
         Uint8List.fromList([4, 5, 6]),
       );
 
       expect(result.state, DeliveryState.delivered);
+      expect(result.receipt?.messageId, 'msg-1');
+      expect(result.receipt?.payloadHash, _payloadHash);
+    });
+
+    test('rejects a receipt bound to another message', () async {
+      final contract = SupabaseServerContract(
+        _FakeBundleSigner(verifyResult: true),
+        supabaseUrl: 'https://mock.supabase.co',
+        supabaseAnonKey: 'fake-anon-key',
+        serverReceiptPublicKeyBase64: serverReceiptPublicKey,
+        httpClient: buildDio(
+          ResponseBody.fromString(
+            _receiptJson(messageId: 'msg-other'),
+            200,
+            headers: {
+              Headers.contentTypeHeader: [Headers.jsonContentType],
+            },
+          ),
+        ),
+      );
+
+      final result = await contract.sendBundle(
+        'msg-1',
+        Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
+        Uint8List.fromList([4, 5, 6]),
+      );
+
+      expect(result.state, DeliveryState.failed);
+      expect(result.error, 'receipt_binding_invalid');
+    });
+
+    test('rejects a receipt bound to another payload hash', () async {
+      final contract = SupabaseServerContract(
+        _FakeBundleSigner(verifyResult: true),
+        supabaseUrl: 'https://mock.supabase.co',
+        supabaseAnonKey: 'fake-anon-key',
+        serverReceiptPublicKeyBase64: serverReceiptPublicKey,
+        httpClient: buildDio(
+          ResponseBody.fromString(
+            _receiptJson(payloadHash: Uint8List(32)),
+            200,
+            headers: {
+              Headers.contentTypeHeader: [Headers.jsonContentType],
+            },
+          ),
+        ),
+      );
+
+      final result = await contract.sendBundle(
+        'msg-1',
+        Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
+        Uint8List.fromList([4, 5, 6]),
+      );
+
+      expect(result.state, DeliveryState.failed);
+      expect(result.error, 'receipt_binding_invalid');
     });
 
     test('fails with server_public_key_missing when key is absent', () async {
       final signer = _FakeBundleSigner();
-      final receipt = jsonEncode({
-        'message_id': 'msg-1',
-        'signature': base64Encode(Uint8List(64)),
-      });
+      final receipt = _receiptJson();
       final dio = buildDio(
         ResponseBody.fromString(
           receipt,
@@ -157,6 +223,7 @@ void main() {
       final result = await contract.sendBundle(
         'msg-1',
         Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
         Uint8List.fromList([4, 5, 6]),
       );
 
@@ -166,10 +233,7 @@ void main() {
 
     test('fails with receipt_signature_invalid when verify is false', () async {
       final signer = _FakeBundleSigner(verifyResult: false);
-      final receipt = jsonEncode({
-        'message_id': 'msg-1',
-        'signature': base64Encode(Uint8List(64)),
-      });
+      final receipt = _receiptJson();
       final dio = buildDio(
         ResponseBody.fromString(
           receipt,
@@ -191,6 +255,7 @@ void main() {
       final result = await contract.sendBundle(
         'msg-1',
         Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
         Uint8List.fromList([4, 5, 6]),
       );
 
@@ -219,6 +284,7 @@ void main() {
       final result = await contract.sendBundle(
         'msg-1',
         Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
         Uint8List.fromList([4, 5, 6]),
       );
 
@@ -249,6 +315,7 @@ void main() {
       final result = await contract.sendBundle(
         'msg-1',
         Uint8List.fromList([1, 2, 3]),
+        _payloadHash,
         Uint8List.fromList([4, 5, 6]),
       );
 

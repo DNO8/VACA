@@ -76,7 +76,12 @@ class InternetTransport implements Transport {
       );
     }
 
-    return _contract.sendBundle(packet.id, packet.payload, originPublicKey);
+    return _contract.sendBundle(
+      packet.id,
+      packet.payload,
+      packet.payloadHash,
+      originPublicKey,
+    );
   }
 
   Future<Uint8List?> _originPublicKey() async {

@@ -2,11 +2,13 @@
 // Supabase Edge Function: attachment-authorize
 // Genera una URL firmada de subida para un adjunto de un bundle.
 
-import { createClient } from 'npm:@supabase/supabase-js';
+import { createClient } from 'npm:@supabase/supabase-js@2.115.0';
+import { authenticateDeviceRequest } from '../_shared/device-auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, content-type, x-device-public-key, x-device-signature, x-device-timestamp, x-device-nonce',
 };
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
@@ -17,33 +19,23 @@ function jsonResponse(body: Record<string, unknown>, status: number): Response {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method !== 'POST') return jsonResponse({ error: 'method_not_allowed' }, 405);
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
-
-  if (!supabaseUrl || !supabaseServiceRoleKey || !anonKey) {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
     return jsonResponse({ error: 'server_not_configured' }, 503);
-  }
-
-  const auth = req.headers.get('authorization') || '';
-  if (!auth.startsWith('Bearer ') || auth.slice(7) !== anonKey) {
-    return jsonResponse({ error: 'unauthorized' }, 401);
   }
 
   let body: Record<string, unknown> = {};
   try {
     body = await req.json();
-  } catch (_e) {
+  } catch (_error) {
     return jsonResponse({ error: 'invalid_json' }, 400);
   }
-
   const bundleId = String(body.bundle_id ?? '');
   const contentHash = String(body.content_hash ?? '');
-
   if (!bundleId || !contentHash) {
     return jsonResponse({ error: 'missing_bundle_or_content' }, 400);
   }
@@ -51,37 +43,42 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: { persistSession: false },
   });
+  const publicKey = await authenticateDeviceRequest(
+    req,
+    supabase,
+    'attachment-authorize',
+    [bundleId, contentHash],
+  );
+  if (!publicKey) return jsonResponse({ error: 'unauthorized' }, 401);
 
   const { data: bundle } = await supabase
     .from('origin_bundles')
-    .select('incident_id')
+    .select('incident_id, origin_public_key')
     .eq('message_id', bundleId)
     .maybeSingle();
-
-  const incidentId = bundle?.incident_id;
-  if (!incidentId) {
-    return jsonResponse({ error: 'bundle_not_found' }, 404);
+  if (!bundle?.incident_id) return jsonResponse({ error: 'bundle_not_found' }, 404);
+  if (bundle.origin_public_key !== publicKey) {
+    return jsonResponse({ error: 'forbidden' }, 403);
   }
 
-  const path = `${incidentId}/${contentHash}`;
+  const { data: attachment } = await supabase
+    .from('attachments')
+    .select('content_hash')
+    .eq('incident_id', bundle.incident_id)
+    .eq('content_hash', contentHash)
+    .maybeSingle();
+  if (!attachment) return jsonResponse({ error: 'attachment_not_found' }, 404);
 
+  const path = `${bundle.incident_id}/${contentHash}`;
   const { data: signed, error } = await supabase.storage
     .from('incident-attachments')
     .createSignedUploadUrl(path);
+  if (error || !signed) return jsonResponse({ error: 'signed_url_failed' }, 500);
 
-  if (error || !signed) {
-    console.error('signed_url_error', error);
-    return jsonResponse(
-      { error: 'signed_url_failed', detail: error?.message },
-      500,
-    );
-  }
-
-  // Registra (o actualiza) el path de almacenamiento del adjunto.
   await supabase
     .from('attachments')
     .update({ storage_path: path })
-    .eq('incident_id', incidentId)
+    .eq('incident_id', bundle.incident_id)
     .eq('content_hash', contentHash);
 
   return jsonResponse({ upload_url: signed.signedUrl }, 200);

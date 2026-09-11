@@ -33,11 +33,13 @@ class TransportPacket {
   const TransportPacket({
     required this.id,
     required this.payload,
+    required this.payloadHash,
     this.recipientId,
   });
 
   final String id;
   final Uint8List payload;
+  final Uint8List payloadHash;
 
   /// Destinatario para mensajes directos; null para broadcast/gossip.
   final String? recipientId;
@@ -47,10 +49,35 @@ class TransportPacket {
 enum DeliveryState { queued, sent, delivered, failed }
 
 class DeliveryResult {
-  const DeliveryResult(this.packetId, this.state, {this.error});
+  const DeliveryResult(
+    this.packetId,
+    this.state, {
+    this.error,
+    this.receipt,
+  });
+
   final String packetId;
   final DeliveryState state;
   final Object? error;
+  final DeliveryReceipt? receipt;
+}
+
+class DeliveryReceipt {
+  const DeliveryReceipt({
+    required this.receiptId,
+    required this.messageId,
+    required this.payloadHash,
+    required this.serverReceivedAt,
+    required this.serverKeyId,
+    required this.signature,
+  });
+
+  final String receiptId;
+  final String messageId;
+  final Uint8List payloadHash;
+  final DateTime serverReceivedAt;
+  final String serverKeyId;
+  final Uint8List signature;
 }
 
 /// Contrato base de un transporte.

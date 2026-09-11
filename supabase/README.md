@@ -30,7 +30,7 @@ supabase/
 3. El contrato realiza un `POST` a `https://<supabase>/functions/v1/bundle-ingest`.
 4. La Edge Function:
    - Verifica la firma Ed25519 del dispositivo.
-   - Descifra el payload con `SERVER_BUNDLE_KEY` (AES-256-GCM).
+   - Deriva una clave envolvente con X25519/HKDF y descifra el payload AES-256-GCM con `SERVER_BUNDLE_PRIVATE_KEY`.
    - Valida idempotencia con `message_id`.
    - Persiste incidente, evento, adjuntos y bundle origen.
    - Firma un recibo con `SERVER_RECEIPT_PRIVATE_KEY`.
@@ -54,8 +54,12 @@ supabase db reset
 # Configurar secretos del servidor (no incluir espacios en los valores base64).
 supabase secrets set SUPABASE_ANON_KEY="..."
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY="..."
-supabase secrets set SERVER_BUNDLE_KEY="..."
+supabase secrets set SERVER_BUNDLE_PRIVATE_KEY="..."
 supabase secrets set SERVER_RECEIPT_PRIVATE_KEY="..."
+supabase secrets set SERVER_RECEIPT_KEY_ID="receipt-key-2026-01"
+supabase secrets set DIDIT_API_KEY="..."
+supabase secrets set DIDIT_WORKFLOW_ID="..."
+supabase secrets set DIDIT_CALLBACK_URL="..."
 supabase secrets set KYC_WEBHOOK_SECRET="..."
 
 # Desplegar funciones.
@@ -64,16 +68,13 @@ supabase functions deploy
 
 ## Generacion de claves
 
-El cliente y el servidor comparten `SERVER_BUNDLE_KEY` (32 bytes, base64). El par de claves Ed25519 del servidor puede generarse con cualquier herramienta que produzca 32 bytes en base64; el cliente solo necesita la clave publica.
+El servidor conserva `SERVER_BUNDLE_PRIVATE_KEY` y el cliente recibe únicamente `SERVER_BUNDLE_PUBLIC_KEY` (X25519, 32 bytes base64). El par Ed25519 de recibos es independiente; el cliente recibe sólo `SERVER_RECEIPT_PUBLIC_KEY`.
 
-Ejemplo con Node/Deno:
+Generar ambos pares desde el proyecto Flutter:
 
-```ts
-import { ed25519 } from 'npm:@noble/curves/ed25519';
-const priv = ed25519.utils.randomPrivateKey();
-const pub = ed25519.getPublicKey(priv);
-console.log('private:', btoa(String.fromCharCode(...priv)));
-console.log('public:', btoa(String.fromCharCode(...pub)));
+```bash
+cd vaca_app
+dart run tool/generate_server_keys.dart
 ```
 
 ## Notas tecnicas

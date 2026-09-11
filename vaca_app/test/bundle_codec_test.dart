@@ -112,7 +112,8 @@ void main() {
       final bundle = bundleResult.valueOrNull!;
 
       final tampered = bundle.copyWith(
-        ciphertext: Uint8List.fromList(List.filled(bundle.ciphertext.length, 0)),
+        ciphertext:
+            Uint8List.fromList(List.filled(bundle.ciphertext.length, 0)),
       );
       final encoded = await codec.encodeBundle(tampered);
 
@@ -175,6 +176,8 @@ void main() {
         sealedValue.ciphertext,
         sealedValue.wrappedKey,
         sealedValue.nonce,
+        sealedValue.wrapNonce,
+        sealedValue.ephemeralPublicKey,
         'test-key',
       );
       expect(unsealed.valueOrNull, payload);
@@ -185,9 +188,38 @@ void main() {
         tampered,
         sealedValue.wrappedKey,
         sealedValue.nonce,
+        sealedValue.wrapNonce,
+        sealedValue.ephemeralPublicKey,
         'test-key',
       );
       expect(tamperedResult.isFailure, isTrue);
+    });
+
+    test('seals with a public key but cannot unseal without the private key',
+        () async {
+      final privateKey = Uint8List.fromList(List.filled(32, 0x7c));
+      final material =
+          await StaticBundleKeySource(privateKey).resolveKey('server-v2');
+      final publicCipher = AesGcmBundleCipher(
+        PublicBundleKeySource(material.valueOrNull!.publicKey),
+      );
+      final sealed = await publicCipher.seal(
+        Uint8List.fromList(utf8.encode('private payload')),
+        'server-v2',
+      );
+
+      expect(sealed.isSuccess, isTrue);
+      final value = sealed.valueOrNull!;
+      final unsealed = await publicCipher.unseal(
+        value.ciphertext,
+        value.wrappedKey,
+        value.nonce,
+        value.wrapNonce,
+        value.ephemeralPublicKey,
+        'server-v2',
+      );
+      expect(unsealed.isFailure, isTrue);
+      expect(unsealed.errorOrNull?.code, 'bundle_private_key_unavailable');
     });
 
     test('fails closed with missing key', () async {
