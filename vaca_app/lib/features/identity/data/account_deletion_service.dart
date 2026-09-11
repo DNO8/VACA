@@ -39,7 +39,7 @@ class AccountDeletionService {
         data: {'device_public_key': devicePublicKey},
         options: Options(
           headers: {
-            'Authorization': 'Bearer $_supabaseAnonKey',
+            'apikey': _supabaseAnonKey,
             'Content-Type': 'application/json',
             ...signed.valueOrNull!,
           },

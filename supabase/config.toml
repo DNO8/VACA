@@ -31,3 +31,18 @@ port = 54328
 
 [functions]
 port = 54329
+
+[functions.bundle-ingest]
+verify_jwt = false
+
+[functions.attachment-authorize]
+verify_jwt = false
+
+[functions.account-deletion]
+verify_jwt = false
+
+[functions.kyc-session]
+verify_jwt = false
+
+[functions.kyc-webhook]
+verify_jwt = false

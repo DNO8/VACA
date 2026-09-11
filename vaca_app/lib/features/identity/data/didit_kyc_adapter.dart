@@ -57,7 +57,7 @@ class DiditKycAdapter implements KycAdapter {
         '$_supabaseUrl/functions/v1/kyc-session',
         options: Options(
           headers: {
-            'Authorization': 'Bearer $_supabaseAnonKey',
+            'apikey': _supabaseAnonKey,
             'Content-Type': 'application/json',
             ...signed.valueOrNull!,
           },

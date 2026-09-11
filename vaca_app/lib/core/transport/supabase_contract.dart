@@ -67,7 +67,7 @@ class SupabaseServerContract implements ServerContract {
         data: payload,
         options: Options(
           headers: {
-            'Authorization': 'Bearer $supabaseAnonKey',
+            'apikey': supabaseAnonKey,
             'Content-Type': 'application/octet-stream',
             'X-Origin-Public-Key': base64Encode(originPublicKey),
             'X-Message-Id': messageId,
@@ -235,7 +235,7 @@ class SupabaseServerContract implements ServerContract {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer $supabaseAnonKey',
+            'apikey': supabaseAnonKey,
             'Content-Type': 'application/json',
             ...signed.valueOrNull!,
           },
