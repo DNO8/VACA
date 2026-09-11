@@ -60,6 +60,7 @@ dev_dependencies:
   drift_dev: ^2.19.0
   riverpod_generator: ^2.4.3
   flutter_launcher_icons: 0.14.4
+  image: 4.9.2
 
 flutter:
   uses-material-design: true
@@ -104,14 +105,14 @@ flutter:
 flutter_launcher_icons:
   android: "ic_launcher"
   ios: true
-  image_path_android: "assets/images/icono-app-claro-v2.webp"
-  image_path_ios: "assets/images/icono-app-claro-v2.webp"
-  image_path_ios_dark_transparent: "assets/images/icono-app-oscuro-v2.webp"
+  image_path_android: "assets/images/launcher-source-light.png"
+  image_path_ios: "assets/images/launcher-source-light.png"
+  image_path_ios_dark_transparent: "assets/images/launcher-source-dark.png"
   remove_alpha_ios: true
   background_color_ios: "#F3F7F3"
   adaptive_icon_background: "#F3F7F3"
-  adaptive_icon_foreground: "assets/images/icono-app-claro-v2.webp"
-  adaptive_icon_foreground_inset: 8
+  adaptive_icon_foreground: "assets/images/launcher-source-adaptive.png"
+  adaptive_icon_foreground_inset: 0
   min_sdk_android: 26
 
 dependency_overrides:
