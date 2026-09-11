@@ -526,7 +526,7 @@ class _IdentityChoice extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               VacaButton(
-                label: 'Continuar sin verificar',
+                label: 'Continuar como invitado',
                 variant: VacaButtonVariant.secondary,
                 onPressed: busy ? null : onUnverified,
               ),
