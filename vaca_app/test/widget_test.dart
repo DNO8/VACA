@@ -123,7 +123,7 @@ void main() {
       lightAssets.where(
         (image) =>
             image.image ==
-            const AssetImage('assets/images/icono-app-claro-v2.webp'),
+            const AssetImage('assets/images/icono-app-claro-v2.png'),
       ),
       isNotEmpty,
     );

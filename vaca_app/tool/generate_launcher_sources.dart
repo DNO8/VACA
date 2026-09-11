@@ -4,7 +4,7 @@ import 'package:image/image.dart' as image;
 
 void main() {
   _generate(
-    'assets/images/icono-app-claro-v2.webp',
+    'assets/images/icono-app-claro-v2.png',
     'assets/images/launcher-source-light.png',
     image.ColorRgba8(243, 247, 243, 255),
     540,
@@ -16,7 +16,7 @@ void main() {
     540,
   );
   _generate(
-    'assets/images/icono-app-claro-v2.webp',
+    'assets/images/icono-app-claro-v2.png',
     'assets/images/launcher-source-adaptive.png',
     image.ColorRgba8(243, 247, 243, 255),
     460,
