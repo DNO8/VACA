@@ -71,13 +71,26 @@ class DiditKycAdapter implements KycAdapter {
 
       final statusCode = response.statusCode ?? 0;
       if (statusCode < 200 || statusCode >= 300) {
-        final detail = response.data is Map<String, dynamic>
-            ? (response.data as Map<String, dynamic>)['detail'] as String?
-            : null;
+        if (statusCode == 404) {
+          return const Failure(
+            VacaError(
+              code: 'kyc_backend_not_deployed',
+              message: 'La función kyc-session no está desplegada en Supabase.',
+            ),
+          );
+        }
+        if (statusCode == 401 || statusCode == 403) {
+          return const Failure(
+            VacaError(
+              code: 'kyc_backend_unauthorized',
+              message: 'Supabase rechazó la autenticación del servicio KYC.',
+            ),
+          );
+        }
         return Failure(
           VacaError(
             code: 'didit_session_creation_failed',
-            message: detail ?? 'Didit session creation failed: $statusCode',
+            message: 'No se pudo crear la sesión KYC ($statusCode).',
           ),
         );
       }

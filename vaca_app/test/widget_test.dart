@@ -76,4 +76,35 @@ void main() {
     expect(emergencyTitle.style?.color, AppColors.danger);
     expect(emergencyCopy.style?.color, AppColors.ink);
   });
+
+  testWidgets('onboarding keeps primary actions visible on a compact phone',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: OnboardingFlow(onComplete: (_) async {}),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Iniciar'));
+    await tester.pumpAndSettle();
+    final disclaimerAction = tester.getRect(find.text('Entendido, continuar'));
+    expect(disclaimerAction.top, greaterThanOrEqualTo(0));
+    expect(disclaimerAction.bottom, lessThanOrEqualTo(568));
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Entendido, continuar'));
+    await tester.pumpAndSettle();
+    final permissionAction = tester.getRect(find.text('Aceptar y continuar'));
+    expect(permissionAction.top, greaterThanOrEqualTo(0));
+    expect(permissionAction.bottom, lessThanOrEqualTo(568));
+    expect(find.text('Solicitar permiso'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }

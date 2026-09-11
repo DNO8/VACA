@@ -21,7 +21,10 @@ class PermissionService {
   /// ubicación del dispositivo esté activo (necesario para capturar GPS).
   Future<PermissionOutcome> requestLocation() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return PermissionOutcome.serviceDisabled;
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return PermissionOutcome.serviceDisabled;
+    }
     final status = await Permission.locationWhenInUse.request();
     return _map(status);
   }

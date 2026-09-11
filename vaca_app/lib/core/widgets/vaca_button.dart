@@ -86,7 +86,12 @@ class VacaButton extends StatelessWidget {
       children: [
         Icon(icon, size: 20),
         const SizedBox(width: AppSpacing.xs),
-        Text(label),
+        Flexible(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+          ),
+        ),
       ],
     );
   }

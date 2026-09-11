@@ -87,7 +87,32 @@ class VacaHero extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xB31F3B30), Color(0xE61F3B30)],
+                colors: [
+                  Color(0xB31F3B30),
+                  Color(0x661F3B30),
+                  Color(0x001F3B30),
+                ],
+                stops: [0, 0.58, 1],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 104,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(context)
+                        .scaffoldBackgroundColor
+                        .withValues(alpha: 0),
+                    Theme.of(context).scaffoldBackgroundColor,
+                  ],
+                ),
               ),
             ),
           ),
@@ -113,14 +138,18 @@ class VacaHero extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: AppTypography.dataSm.copyWith(
-                        color: AppColors.celadon300,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.celadon300
+                            : AppColors.stone600,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                   ],
                   Text(
                     title,
-                    style: AppTypography.h1.copyWith(color: AppColors.white),
+                    style: AppTypography.h1.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),

@@ -194,6 +194,7 @@ class _Disclaimer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).height < 760;
     return Scaffold(
       body: Column(
         children: [
@@ -207,7 +208,9 @@ class _Disclaimer extends StatelessWidget {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: EdgeInsets.all(
+                compact ? AppSpacing.md : AppSpacing.xl,
+              ),
               children: [
                 const Text(
                   'VACA es una herramienta de coordinación comunitaria. No reemplaza los servicios de emergencia oficiales.',
@@ -270,22 +273,31 @@ class _Disclaimer extends StatelessWidget {
                   text:
                       'La recepción se confirma sólo con un recibo verificado del servidor.',
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                VacaButton(
-                  label: 'Entendido, continuar',
-                  onPressed: onContinue,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                VacaButton(
-                  label: 'Registrar emergencia sin verificar identidad',
-                  icon: Icons.emergency_outlined,
-                  variant: VacaButtonVariant.destructive,
-                  onPressed: onEmergency,
-                ),
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              VacaButton(
+                label: 'Entendido, continuar',
+                onPressed: onContinue,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              VacaButton(
+                label: 'Registrar emergencia sin verificar identidad',
+                icon: Icons.emergency_outlined,
+                variant: VacaButtonVariant.destructive,
+                onPressed: onEmergency,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -368,13 +380,17 @@ class _Permissions extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            VacaButton(
-              label: 'Aceptar y continuar',
-              loading: busy,
-              onPressed: busy ? null : onContinue,
-            ),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: VacaButton(
+            label: 'Aceptar y continuar',
+            loading: busy,
+            onPressed: busy ? null : onContinue,
+          ),
         ),
       ),
     );
@@ -409,24 +425,37 @@ class _PermissionTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppColors.celadon700),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTypography.h3),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(detail, style: AppTypography.body),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(status, style: AppTypography.dataSm),
-                ],
+            Row(
+              children: [
+                Icon(icon, color: AppColors.celadon700),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(child: Text(title, style: AppTypography.h3)),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(detail, style: AppTypography.body),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(status, style: AppTypography.dataSm),
+            const SizedBox(height: AppSpacing.xs),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onPressed,
+                icon: Icon(
+                  outcome == PermissionOutcome.serviceDisabled
+                      ? Icons.settings_outlined
+                      : Icons.security_outlined,
+                ),
+                label: Text(
+                  outcome == PermissionOutcome.serviceDisabled
+                      ? 'Abrir ajustes de ubicación'
+                      : 'Solicitar permiso',
+                ),
               ),
             ),
-            TextButton(onPressed: onPressed, child: const Text('Solicitar')),
           ],
         ),
       ),
@@ -449,6 +478,7 @@ class _IdentityChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).height < 760;
     return Scaffold(
       body: Column(
         children: [
@@ -456,49 +486,58 @@ class _IdentityChoice extends StatelessWidget {
             asset: 'assets/images/estetica-5.jpg',
             title: 'Configura tu identidad',
             subtitle: 'PASO 3 DE 3 · IDENTIDAD',
-            height: 280,
+            height: compact ? 224 : 250,
             alignment: const Alignment(0, -0.25),
             onBack: onBack,
           ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.xl),
-              children: [
-                const SizedBox(height: AppSpacing.xs),
-                const Text(
+              children: const [
+                SizedBox(height: AppSpacing.xs),
+                Text(
                   'La verificación es opcional y nunca impide guardar una señal urgente.',
                   style: AppTypography.bodyLg,
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                const _IdentityCard(
+                SizedBox(height: AppSpacing.xl),
+                _IdentityCard(
                   icon: Icons.verified_user_outlined,
                   title: 'Identidad verificada',
                   detail:
                       'Requiere Internet y una sesión KYC creada por el backend.',
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                const _IdentityCard(
+                SizedBox(height: AppSpacing.sm),
+                _IdentityCard(
                   icon: Icons.person_outline,
                   title: 'Continuar sin verificar',
                   detail:
                       'Las señales quedan marcadas como identidad no verificada.',
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                VacaButton(
-                  label: 'Verificar identidad',
-                  loading: busy,
-                  onPressed: busy ? null : onVerify,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                VacaButton(
-                  label: 'Continuar sin verificar',
-                  variant: VacaButtonVariant.secondary,
-                  onPressed: busy ? null : onUnverified,
-                ),
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              VacaButton(
+                label: 'Verificar identidad',
+                loading: busy,
+                onPressed: busy ? null : onVerify,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              VacaButton(
+                label: 'Continuar sin verificar',
+                variant: VacaButtonVariant.secondary,
+                onPressed: busy ? null : onUnverified,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
