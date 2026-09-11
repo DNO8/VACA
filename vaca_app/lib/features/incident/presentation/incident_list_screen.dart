@@ -34,6 +34,7 @@ class IncidentListScreen extends ConsumerWidget {
             subtitle: 'SEÑALES · OFFLINE-FIRST',
             height: 180,
             alignment: Alignment(0, 0.3),
+            trailing: VacaBrandLogo(size: 52),
           ),
           StreamBuilder<TransportStatus>(
             stream: transport.status,

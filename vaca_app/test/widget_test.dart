@@ -3,9 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vaca_app/app.dart';
 import 'package:vaca_app/core/theme/app_theme.dart';
+import 'package:vaca_app/core/widgets/vaca_brand_logo.dart';
 import 'package:vaca_app/features/onboarding/presentation/onboarding_flow.dart';
 
 void main() {
+  testWidgets('startup logo transitions to the compact home target',
+      (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: VacaApp(skipOnboarding: true)),
+    );
+
+    expect(find.text('Preparando VACA'), findsOneWidget);
+    expect(tester.widget<VacaBrandLogo>(find.byType(VacaBrandLogo)).size, 156);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1100));
+    await tester.pump(const Duration(milliseconds: 1100));
+
+    expect(find.text('Coordinación local'), findsOneWidget);
+    expect(tester.widget<VacaBrandLogo>(find.byType(VacaBrandLogo)).size, 52);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('VacaApp arranca y muestra la lista de señales', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: VacaApp(skipOnboarding: true)),

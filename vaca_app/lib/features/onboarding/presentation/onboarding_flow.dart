@@ -116,9 +116,6 @@ class _Intro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logoAsset = Theme.of(context).brightness == Brightness.dark
-        ? 'assets/images/icono-app-oscuro-v2.webp'
-        : 'assets/images/icono-app-claro-v2.webp';
     final logoSize = MediaQuery.sizeOf(context).height < 700 ? 112.0 : 148.0;
     return Scaffold(
       backgroundColor: AppColors.celadon900,
@@ -131,19 +128,7 @@ class _Intro extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(),
-                Semantics(
-                  image: true,
-                  label: 'Logo VACA',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    child: Image.asset(
-                      logoAsset,
-                      width: logoSize,
-                      height: logoSize,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+                VacaBrandLogo(size: logoSize),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Vaquita de Ayuda y Coordinación Activa',

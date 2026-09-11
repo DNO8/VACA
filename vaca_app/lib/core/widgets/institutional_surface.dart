@@ -63,6 +63,7 @@ class VacaHero extends StatelessWidget {
     this.height = 220,
     this.onBack,
     this.alignment = Alignment.center,
+    this.trailing,
     super.key,
   });
 
@@ -72,6 +73,7 @@ class VacaHero extends StatelessWidget {
   final double height;
   final VoidCallback? onBack;
   final Alignment alignment;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -134,22 +136,40 @@ class VacaHero extends StatelessWidget {
                       ),
                     ),
                   const Spacer(),
-                  if (subtitle != null) ...[
-                    Text(
-                      subtitle!,
-                      style: AppTypography.dataSm.copyWith(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.celadon300
-                            : AppColors.stone600,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (subtitle != null) ...[
+                              Text(
+                                subtitle!,
+                                style: AppTypography.dataSm.copyWith(
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.celadon300
+                                      : AppColors.stone600,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xxs),
+                            ],
+                            Text(
+                              title,
+                              style: AppTypography.h1.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                  ],
-                  Text(
-                    title,
-                    style: AppTypography.h1.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: AppSpacing.md),
+                        trailing!,
+                      ],
+                    ],
                   ),
                 ],
               ),

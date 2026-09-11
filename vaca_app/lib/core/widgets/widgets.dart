@@ -5,6 +5,7 @@ export 'network_status_banner.dart';
 export 'report_card.dart';
 export 'sync_status_badge.dart';
 export 'trust_score_badge.dart' show PriorityBadge;
+export 'vaca_brand_logo.dart';
 export 'vaca_button.dart';
 export 'vaca_enum_selector.dart';
 export 'vaca_text_field.dart';
