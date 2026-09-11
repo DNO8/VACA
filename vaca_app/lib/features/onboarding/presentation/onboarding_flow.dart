@@ -116,6 +116,10 @@ class _Intro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logoAsset = Theme.of(context).brightness == Brightness.dark
+        ? 'assets/images/icono-app-oscuro-v2.webp'
+        : 'assets/images/icono-app-claro-v2.webp';
+    final logoSize = MediaQuery.sizeOf(context).height < 700 ? 112.0 : 148.0;
     return Scaffold(
       backgroundColor: AppColors.celadon900,
       body: VacaAssetBackground(
@@ -127,26 +131,17 @@ class _Intro extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(),
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.celadon700,
+                Semantics(
+                  image: true,
+                  label: 'Logo VACA',
+                  child: ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(color: AppColors.celadon300),
-                  ),
-                  child: const Icon(
-                    Icons.account_balance_outlined,
-                    color: AppColors.celadon300,
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'VACA',
-                  style: AppTypography.display.copyWith(
-                    color: AppColors.white,
-                    letterSpacing: 6,
+                    child: Image.asset(
+                      logoAsset,
+                      width: logoSize,
+                      height: logoSize,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),

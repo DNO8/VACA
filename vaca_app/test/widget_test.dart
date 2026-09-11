@@ -58,6 +58,14 @@ void main() {
       ),
       isNotEmpty,
     );
+    expect(
+      introAssets.where(
+        (image) =>
+            image.image ==
+            const AssetImage('assets/images/icono-app-oscuro-v2.webp'),
+      ),
+      isNotEmpty,
+    );
     await tester.tap(find.text('Iniciar'));
     await tester.pumpAndSettle();
 
@@ -92,6 +100,15 @@ void main() {
       ),
     );
 
+    final lightAssets = tester.widgetList<Image>(find.byType(Image));
+    expect(
+      lightAssets.where(
+        (image) =>
+            image.image ==
+            const AssetImage('assets/images/icono-app-claro-v2.webp'),
+      ),
+      isNotEmpty,
+    );
     await tester.tap(find.text('Iniciar'));
     await tester.pumpAndSettle();
     final disclaimerAction = tester.getRect(find.text('Entendido, continuar'));
