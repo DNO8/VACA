@@ -43,7 +43,7 @@ Ante un conflicto, prevalecen las reglas de seguridad y producto; los handoffs y
 
 ### 3.1 Aplicación pública
 
-Disponible en Android e iOS. Utiliza persistencia local, outbox durable y sincronización HTTPS. No expone controles, permisos ni afirmaciones del piloto BLE.
+Disponible en Android e iOS. Utiliza persistencia local, outbox durable y sincronización HTTPS. Puede incluir una wallet Stellar testnet opcional y aislada, accesible sólo desde Identidad y datos. No expone controles, permisos ni afirmaciones del piloto BLE.
 
 ### 3.2 Piloto municipal
 
@@ -67,6 +67,7 @@ Build Android administrado para dispositivos aprobados. Añade relay BLE, foregr
 | P11 | Entrega | Outbox, reintentos y recibo verificado. |
 | P12 | Identidad, privacidad y datos | Estado KYC, consentimiento, soporte y eliminación. |
 | P13 | Relay municipal | Estado y control del servicio; sólo en piloto autorizado. |
+| P14 | Wallet Stellar testnet | Cuenta de prueba, Friendbot y balance real de testnet; aislada de señales y ayuda. |
 
 ## 5. Navegación principal
 
@@ -82,6 +83,7 @@ Inicio
   → lista y detalle
   → estado de entrega
   → identidad, privacidad y datos
+      → wallet Stellar testnet (opcional y aislada)
   → relay municipal (sólo build autorizado)
 ```
 
@@ -159,6 +161,16 @@ Custodia de relay o gateway no equivale a recepción del servidor.
 4. El backend registra la solicitud, aplica retención aprobada y devuelve un resultado auditable.
 5. La UI distingue solicitud recibida, eliminación completada y datos sujetos a conservación legal.
 
+### F7 — Wallet Stellar testnet aislada
+
+1. La persona abre Identidad y datos y entra explícitamente a Wallet Stellar testnet.
+2. La app genera un keypair válido en el dispositivo o recupera el existente desde almacenamiento seguro.
+3. La clave secreta nunca aparece en Drift, logs, incidentes, KYC ni payloads de transporte.
+4. Con red disponible, la persona puede solicitar fondos de prueba a Friendbot.
+5. La app consulta Horizon testnet y muestra el balance XLM real de esa cuenta.
+6. Los estados `sin cuenta`, `sin fondos`, `financiando`, `financiada` y `error` provienen de operaciones reales, no de temporizadores ni valores simulados.
+7. Toda la pantalla indica que testnet no representa dinero real ni acceso a ayuda.
+
 ## 7. Máquinas de estado
 
 ### 7.1 Incidente
@@ -199,6 +211,7 @@ pending | uploading → failed → pending
 - Ubicación exacta, notas y medios no aparecen en logs ni telemetría.
 - Los límites de nota, conteo, bundle, adjunto, reintento y retención se validan en cliente y servidor.
 - La prioridad es una regla de scheduling, no una afirmación de veracidad ni una orden automática de despacho.
+- La wallet testnet no comparte tablas, payloads, credenciales, estados ni navegación directa con captura y entrega de incidentes.
 
 ## 9. Criterios de aceptación permanentes
 
@@ -212,3 +225,4 @@ pending | uploading → failed → pending
 - Android e iOS comparten el flujo público.
 - El flavor público no puede iniciar el relay.
 - El piloto demuestra origen → relay → gateway → servidor y confidencialidad frente a intermediarios.
+- La wallet genera una cuenta Stellar testnet real, conserva el seed sólo en almacenamiento seguro, obtiene Friendbot y muestra el balance consultado a Horizon sin afectar señales ni ayuda.

@@ -232,6 +232,15 @@ El estado offline nunca se oculta: es una condición prevista, no una falla exce
 - Error y SOS nunca usan estatuaria o decoración ceremonial.
 - Loading funcional y respetuoso de reduce-motion.
 
+### 7.9 Wallet Stellar testnet
+
+- Se accede sólo desde Identidad y datos y nunca desde una señal, recibo o flujo de ayuda.
+- La cabecera y el balance muestran siempre la etiqueta `TESTNET`.
+- El bronce puede identificar el entorno de demostración, pero nunca éxito, fondos reales o elegibilidad.
+- Los estados sin cuenta, sin fondos, financiando, financiada y error incluyen texto e icono.
+- La clave pública usa JetBrains Mono y puede copiarse; la clave secreta no se muestra en la interfaz.
+- Debe incluir de forma persistente: “XLM de prueba, sin valor real y sin relación con acceso a ayuda”.
+
 ---
 
 ## 8. Iconografía

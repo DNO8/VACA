@@ -19,7 +19,7 @@ For product and implementation conflicts, use this precedence:
 5. `sistema-diseno-app.md` and `Markdowns/brandboard.md` for visual and content rules.
 6. Dated handoffs and implementation backlogs for sequencing and release evidence only.
 
-FIBE-oriented forms and Stellar-oriented aid flows are retired historical inputs. Do not expose FIBE names, modules, official codes, aid eligibility, tokenization, wallets, or official-assessment language in active source identifiers, UI copy, analytics, store metadata, or API contracts.
+FIBE-oriented forms and Stellar-oriented aid flows are retired historical inputs. Do not expose FIBE names, modules, official codes, aid eligibility, tokenization, financial-aid wallets, or official-assessment language in active source identifiers, UI copy, analytics, store metadata, or API contracts. An optional Stellar testnet developer wallet is permitted only under the isolation rules in this specification.
 
 ## Product outcomes
 
@@ -33,6 +33,7 @@ The public mobile product must allow a person to:
 6. See an honest delivery state and an authenticated receipt when the authorized server accepts the signal.
 7. Update or cancel a previously created signal.
 8. Delete their local data and request deletion of synchronized account data.
+9. Optionally create and inspect an isolated Stellar testnet account without connecting it to incidents, identity assurance, delivery, aid, or real funds.
 
 ## Actors
 
@@ -60,6 +61,7 @@ The public mobile product must allow a person to:
 - Durable outbox and idempotent Internet synchronization.
 - Delivery state, retry, update, cancel, and deletion flows.
 - Celadon civic design system defined in `sistema-diseno-app.md`.
+- Optional Stellar testnet wallet with locally generated account keys, platform secure storage, Friendbot funding, and Horizon balance visibility.
 - Accessibility and reduced-motion support.
 - Production-ready Android and iOS project structure, pending only external credentials explicitly listed in the release document.
 
@@ -81,7 +83,7 @@ The public mobile product must allow a person to:
 - iOS BLE multi-hop relay.
 - Wi-Fi Direct, Wi-Fi Aware, LoRa, satellite, MQTT, and custom QUIC implementation.
 - Full municipal dashboard.
-- Stellar wallet, aid distribution, tokenization, Social Yield, or Proof of Aid.
+- Stellar mainnet, aid distribution, Claimable Balances, tokenization, Social Yield, or Proof of Aid.
 - Video transfer over BLE.
 - Background location tracking.
 - Public display of exact incident coordinates.
@@ -169,6 +171,16 @@ Priority must be combined with expiration and fair scheduling so lower-priority 
 2. User records an update or cancellation as a new signed event referencing the incident.
 3. Updates never mutate an already signed/transmitted bundle in place.
 4. The server resolves the current incident state using event ordering and authorization rules.
+
+### Flow G — Isolated Stellar testnet wallet
+
+1. User opens Identity and Data, then explicitly enters the testnet wallet module.
+2. The application generates a valid random Stellar keypair on the device.
+3. The secret seed is written only to platform secure storage; Drift and logs may store only the public account ID and non-sensitive timestamps.
+4. The application can request Friendbot funding over the network and report the real response without fabricating success.
+5. The application queries Horizon testnet for the account and displays the actual native XLM balance.
+6. The UI continuously labels the network and balance as testnet data with no real monetary value.
+7. No wallet identifier, balance, or operation is included in incident payloads, KYC metadata, delivery priority, receipts, or aid decisions.
 
 ## Data model
 
@@ -301,3 +313,4 @@ expired → verificationPending → verified
 - Relay and gateway cannot decrypt the payload in an automated test.
 - iOS builds without the BLE pilot feature and retains the same domain/DTN interfaces.
 - Store-facing metadata and UI contain no official-assessment branding or claims.
+- The Stellar module creates a real testnet account, survives restart through secure storage, reads its balance from Horizon, and remains absent from all incident and aid contracts.

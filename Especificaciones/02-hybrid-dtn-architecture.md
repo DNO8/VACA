@@ -160,11 +160,13 @@ Use a deterministic compact binary representation suitable for signing and BLE f
 | `expiresAt` | timestamp | Operational expiration. |
 | `hopLimit` | unsigned integer | Decremented by each relay. |
 | `payloadLength` | unsigned integer | Strict allocation bound. |
-| `payloadHash` | 32 bytes | Hash of ciphertext payload. |
+| `payloadHash` | 32 bytes | SHA-256 of the canonical plaintext payload, verified after AEAD decryption. |
 | `fragmentIndex` | unsigned integer | Fragment position. |
 | `fragmentCount` | unsigned integer | Total bounded fragments. |
-| `keyId` | opaque identifier | Encryption key version. |
-| `nonce` | bytes | AEAD nonce. |
+| `keyId` | opaque identifier | Recipient encryption-key version. |
+| `nonce` | 12 bytes | Payload AES-GCM nonce. |
+| `wrapNonce` | 12 bytes | Independent content-key wrapping nonce and HKDF salt. |
+| `ephemeralPublicKey` | 32 bytes | Per-bundle X25519 public key. |
 | `signature` | bytes | Origin signature over canonical protected fields. |
 
 `expiresAt` and `hopLimit` are independent. A bundle is ineligible when either expires. Relays must not trust `createdAt` as an authoritative clock.
@@ -383,8 +385,9 @@ Only `serverReceiptVerified` permits UI text equivalent to â€œreceived by VACAâ€
 
 - Generate a random content-encryption key per payload.
 - Encrypt payload with an authenticated encryption primitive from a reviewed library.
-- Encrypt/wrap the content key for the authorized recipient.
-- Sign canonical protected header fields and ciphertext hash using an event-scoped pseudonymous origin key.
+- Wrap the content key with AES-256-GCM under a key derived from ephemeral X25519 plus HKDF-SHA-256; only the recipient public key is distributed to mobile clients.
+- Use independent random nonces for payload encryption and content-key wrapping.
+- Sign canonical protected header fields and payload hash using an event-scoped pseudonymous origin key.
 - Verify payload hash, AEAD authentication, credential validity, and signature at the authorized server.
 - Gateway and relays do not receive decryption keys.
 
