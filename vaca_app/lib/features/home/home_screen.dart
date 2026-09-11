@@ -68,7 +68,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                if (_lastCapture != null) _CaptureSummary(result: _lastCapture!),
+                if (_lastCapture != null)
+                  _CaptureSummary(result: _lastCapture!),
                 const SizedBox(height: AppSpacing.xl),
                 VacaButton(
                   label: 'Capturar evidencia',
@@ -92,9 +93,7 @@ class _CaptureSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gps = result.hasGps
-        ? ', '
-        : 'sin GPS';
+    final gps = result.hasGps ? ', ' : 'sin GPS';
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),

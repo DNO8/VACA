@@ -33,12 +33,14 @@ class VacaLogger {
   static String redact(Object? value, {String mask = '[REDACTED]'}) {
     if (value == null) return 'null';
     if (value is Map) {
-      return value.map(
-        (k, v) => MapEntry(
-          k.toString(),
-          _isSensitiveKey(k.toString()) ? mask : redact(v, mask: mask),
-        ),
-      ).toString();
+      return value
+          .map(
+            (k, v) => MapEntry(
+              k.toString(),
+              _isSensitiveKey(k.toString()) ? mask : redact(v, mask: mask),
+            ),
+          )
+          .toString();
     }
     if (value is List) {
       return value.map((e) => redact(e, mask: mask)).toList().toString();

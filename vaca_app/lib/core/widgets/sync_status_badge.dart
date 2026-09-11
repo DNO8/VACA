@@ -13,10 +13,26 @@ class SyncStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final (color, label, icon) = switch (status) {
-      AttachmentSyncStatus.pending => (tokens.syncPending, 'Pendiente', Icons.schedule),
-      AttachmentSyncStatus.uploading => (tokens.syncing, 'Subiendo', Icons.sync),
-      AttachmentSyncStatus.synced => (tokens.synced, 'Sincronizado', Icons.check_circle),
-      AttachmentSyncStatus.failed => (tokens.syncError, 'Error', Icons.error_outline),
+      AttachmentSyncStatus.pending => (
+          tokens.syncPending,
+          'Pendiente',
+          Icons.schedule
+        ),
+      AttachmentSyncStatus.uploading => (
+          tokens.syncing,
+          'Subiendo',
+          Icons.sync
+        ),
+      AttachmentSyncStatus.synced => (
+          tokens.synced,
+          'Sincronizado',
+          Icons.check_circle
+        ),
+      AttachmentSyncStatus.failed => (
+          tokens.syncError,
+          'Error',
+          Icons.error_outline
+        ),
     };
 
     return Semantics(

@@ -29,7 +29,8 @@ class IdentityProfiles extends Table {
 /// Incidente o señal generada localmente.
 class Incidents extends Table {
   TextColumn get id => text()();
-  TextColumn get reporterProfileId => text().references(IdentityProfiles, #id)();
+  TextColumn get reporterProfileId =>
+      text().references(IdentityProfiles, #id)();
   IntColumn get category => intEnum<IncidentCategory>()();
   IntColumn get priority => intEnum<IncidentPriority>()();
   IntColumn get peopleCount => integer().nullable()();
