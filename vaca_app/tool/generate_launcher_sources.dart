@@ -21,6 +21,13 @@ void main() {
     image.ColorRgba8(243, 247, 243, 255),
     460,
   );
+  _generate(
+    'assets/images/icono-app-oscuro-v2.webp',
+    'assets/images/launcher-source-adaptive-dark.png',
+    image.ColorRgba8(31, 59, 48, 255),
+    460,
+  );
+  _generateAndroidNightResources();
 }
 
 void _generate(
@@ -41,4 +48,65 @@ void _generate(
     dstY: (canvas.height - resized.height) ~/ 2,
   );
   File(output).writeAsBytesSync(image.encodePng(canvas));
+}
+
+void _generateAndroidNightResources() {
+  final legacy = image.decodeImage(
+    File('assets/images/launcher-source-dark.png').readAsBytesSync(),
+  );
+  final adaptive = image.decodeImage(
+    File('assets/images/launcher-source-adaptive-dark.png').readAsBytesSync(),
+  );
+  if (legacy == null || adaptive == null) {
+    throw StateError('Could not decode generated launcher sources');
+  }
+  const legacySizes = {
+    'mdpi': 48,
+    'hdpi': 72,
+    'xhdpi': 96,
+    'xxhdpi': 144,
+    'xxxhdpi': 192,
+  };
+  const adaptiveSizes = {
+    'mdpi': 108,
+    'hdpi': 162,
+    'xhdpi': 216,
+    'xxhdpi': 324,
+    'xxxhdpi': 432,
+  };
+  for (final entry in legacySizes.entries) {
+    _writeAndroidIcon(
+      legacy,
+      'mipmap-night-${entry.key}',
+      'ic_launcher.png',
+      entry.value,
+    );
+  }
+  for (final entry in adaptiveSizes.entries) {
+    _writeAndroidIcon(
+      adaptive,
+      'drawable-night-${entry.key}',
+      'ic_launcher_foreground.png',
+      entry.value,
+    );
+  }
+  final colors = File('android/app/src/main/res/values-night/colors.xml');
+  colors.writeAsStringSync(
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<resources>\n'
+    '    <color name="ic_launcher_background">#1F3B30</color>\n'
+    '</resources>\n',
+  );
+}
+
+void _writeAndroidIcon(
+  image.Image source,
+  String directory,
+  String filename,
+  int size,
+) {
+  final output = Directory('android/app/src/main/res/$directory');
+  output.createSync(recursive: true);
+  final resized = image.copyResize(source, width: size, height: size);
+  File('${output.path}/$filename').writeAsBytesSync(image.encodePng(resized));
 }
