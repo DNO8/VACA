@@ -119,34 +119,31 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
 }
 
 /// Tema de VACA. Modo Operación = temas claro/oscuro sobrios y de alto contraste.
-/// El "Modo Marca" (Y2K/Soft Club) se logra con widgets/overlays, no con un
-/// tercer ThemeData. Ver `sistema-diseno-app.md` §1 y §9.
+/// Las superficies institucionales amplían la misma paleta sin alterar los
+/// estados funcionales. Ver `sistema-diseno-app.md` §1 y §10.
 abstract final class AppTheme {
   static ThemeData get light => _build(Brightness.light);
   static ThemeData get dark => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-
     final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: AppColors.orange,
-      onPrimary: AppColors.deepBlue,
-      secondary: AppColors.dustySky,
-      onSecondary: AppColors.deepBlue,
-      tertiary: AppColors.celadon,
-      onTertiary: AppColors.deepBlue,
+      primary: AppColors.celadon700,
+      onPrimary: AppColors.white,
+      secondary: AppColors.celadon500,
+      onSecondary: AppColors.ink,
+      tertiary: AppColors.bronze,
+      onTertiary: AppColors.white,
       error: AppColors.danger,
       onError: AppColors.white,
-      surface: isDark ? AppColors.neutral800 : AppColors.neutral0,
-      onSurface: isDark ? AppColors.white : AppColors.deepBlue,
+      surface: isDark ? AppColors.neutral800 : AppColors.ivory,
+      onSurface: isDark ? AppColors.white : AppColors.ink,
       surfaceContainerHighest:
-          isDark ? AppColors.neutral700 : AppColors.neutral100,
-      outline: isDark ? AppColors.neutral700 : AppColors.neutral300,
+          isDark ? AppColors.celadon900 : AppColors.celadon100,
+      outline: isDark ? AppColors.celadon500 : AppColors.stone300,
     );
-
-    final baseText = isDark ? AppColors.white : AppColors.deepBlue;
-
+    final baseText = isDark ? AppColors.white : AppColors.ink;
     final textTheme = TextTheme(
       displayLarge: AppTypography.display.copyWith(color: baseText),
       headlineLarge: AppTypography.h1.copyWith(color: baseText),
@@ -161,33 +158,69 @@ abstract final class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       scaffoldBackgroundColor:
-          isDark ? AppColors.neutral900 : AppColors.neutral100,
+          isDark ? AppColors.celadon900 : AppColors.celadon50,
       colorScheme: colorScheme,
       fontFamily: AppTypography.brandFont,
       textTheme: textTheme,
       extensions: const <ThemeExtension<dynamic>>[VacaTokens.standard],
+      appBarTheme: AppBarTheme(
+        backgroundColor: isDark ? AppColors.celadon900 : AppColors.ivory,
+        foregroundColor: isDark ? AppColors.white : AppColors.ink,
+        centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: const Border(
+          bottom: BorderSide(color: AppColors.stone100),
+        ),
+        titleTextStyle: AppTypography.h3.copyWith(
+          color: isDark ? AppColors.white : AppColors.ink,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: isDark ? AppColors.neutral800 : AppColors.ivory,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: colorScheme.outline),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+      ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.orange,
-          foregroundColor: AppColors.deepBlue,
+          backgroundColor: AppColors.celadon700,
+          foregroundColor: AppColors.white,
           minimumSize: const Size.fromHeight(52),
           textStyle: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.full),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.celadon700,
+          minimumSize: const Size.fromHeight(52),
+          side: const BorderSide(color: AppColors.celadon700),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark ? AppColors.neutral700 : AppColors.neutral0,
+        fillColor: isDark ? AppColors.neutral800 : AppColors.ivory,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: BorderSide(color: colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: const BorderSide(color: AppColors.orange, width: 2),
+          borderSide: const BorderSide(color: AppColors.celadon700, width: 2),
         ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: isDark ? AppColors.neutral800 : AppColors.ivory,
+        indicatorColor: AppColors.celadon100,
+        labelTextStyle: const WidgetStatePropertyAll(AppTypography.caption),
       ),
     );
   }

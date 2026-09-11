@@ -26,6 +26,11 @@ class PermissionService {
     return _map(status);
   }
 
+  Future<PermissionOutcome> requestNotifications() async {
+    final status = await Permission.notification.request();
+    return _map(status);
+  }
+
   /// Obtiene la posición actual. Devuelve null si no hay permiso/servicio
   /// (modo degradado Día 0: nunca bloquear la captura por falta de GPS).
   Future<Position?> currentPosition() async {

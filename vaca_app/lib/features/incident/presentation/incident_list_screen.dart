@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/transport/transport.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/enums.dart';
 import '../domain/incident.dart';
@@ -10,80 +11,69 @@ import 'create_incident_screen.dart';
 import 'incident_detail_screen.dart';
 
 /// Lista de incidentes capturados localmente.
-class IncidentListScreen extends ConsumerStatefulWidget {
+class IncidentListScreen extends ConsumerWidget {
   const IncidentListScreen({super.key});
 
-  @override
-  ConsumerState<IncidentListScreen> createState() => _IncidentListScreenState();
-}
-
-class _IncidentListScreenState extends ConsumerState<IncidentListScreen> {
-  Future<List<UserIncident>>? _incidents;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  void _load() {
-    final service = ref.read(incidentServiceProvider);
-    final future = service.list();
-    setState(() {
-      _incidents = future;
-    });
-  }
-
-  Future<void> _create() async {
-    final created = await Navigator.of(context).push<bool>(
+  Future<void> _create(BuildContext context) async {
+    await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const CreateIncidentScreen()),
     );
-    if (created == true) _load();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final service = ref.watch(incidentServiceProvider);
+    final attachments = ref.watch(attachmentServiceProvider);
+    final transport = ref.watch(transportProvider);
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.celadon900,
-        foregroundColor: AppColors.white,
-        title: Text('Señales', style: AppTypography.h3.copyWith(color: AppColors.white)),
-      ),
+      appBar: AppBar(title: const Text('Señales')),
       body: Column(
         children: [
-          const NetworkStatusBanner(state: NetworkUiState.offline),
+          StreamBuilder<TransportStatus>(
+            stream: transport.status,
+            builder: (context, snapshot) => NetworkStatusBanner(
+              state: snapshot.data?.isAvailable == true
+                  ? NetworkUiState.online
+                  : NetworkUiState.offline,
+            ),
+          ),
           Expanded(
-            child: FutureBuilder<List<UserIncident>>(
-              future: _incidents,
+            child: StreamBuilder<List<UserIncident>>(
+              stream: service.watch(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) {
+                  return const EmptyState(kind: EmptyStateKind.loading);
                 }
-                final incidents = snapshot.data ?? [];
+                final incidents = snapshot.data!;
                 if (incidents.isEmpty) {
                   return EmptyState(
                     kind: EmptyStateKind.empty,
                     title: 'Sin señales guardadas',
                     message: 'Crea una señal para registrar un incidente.',
                     actionLabel: 'Nueva señal',
-                    onAction: _create,
+                    onAction: () => _create(context),
                   );
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   itemCount: incidents.length,
                   itemBuilder: (context, index) {
-                    final i = incidents[index];
-                    return ReportCard(
-                      category: i.category,
-                      priority: i.priority,
-                      status: i.status,
-                      locationLabel: _locationLabel(i),
-                      capturedAt: i.createdAt,
-                      attachmentStatus: AttachmentSyncStatus.pending,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => IncidentDetailScreen(incidentId: i.id),
+                    final incident = incidents[index];
+                    return StreamBuilder<AttachmentSyncStatus?>(
+                      stream: attachments.watchStatus(incident.id),
+                      builder: (context, attachmentSnapshot) => ReportCard(
+                        category: incident.category,
+                        priority: incident.priority,
+                        status: incident.status,
+                        locationLabel: _locationLabel(incident),
+                        capturedAt: incident.createdAt,
+                        attachmentStatus: attachmentSnapshot.data,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => IncidentDetailScreen(
+                              incidentId: incident.id,
+                            ),
+                          ),
                         ),
                       ),
                     );
@@ -98,7 +88,7 @@ class _IncidentListScreenState extends ConsumerState<IncidentListScreen> {
         button: true,
         label: 'Nueva señal',
         child: FloatingActionButton(
-          onPressed: _create,
+          onPressed: () => _create(context),
           backgroundColor: AppColors.celadon700,
           child: const Icon(Icons.add, color: AppColors.white),
         ),
@@ -106,9 +96,9 @@ class _IncidentListScreenState extends ConsumerState<IncidentListScreen> {
     );
   }
 
-  String _locationLabel(UserIncident i) {
-    if (i.latitude != null && i.longitude != null) {
-      return '${i.latitude!.toStringAsFixed(4)}, ${i.longitude!.toStringAsFixed(4)}';
+  String _locationLabel(UserIncident incident) {
+    if (incident.latitude != null && incident.longitude != null) {
+      return '${incident.latitude!.toStringAsFixed(4)}, ${incident.longitude!.toStringAsFixed(4)}';
     }
     return 'Ubicación no registrada';
   }

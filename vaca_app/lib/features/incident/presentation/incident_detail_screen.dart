@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
+import '../../../core/result/result.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/enums.dart';
@@ -33,26 +36,64 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
     setState(() => _incident = service.get(widget.incidentId));
   }
 
-  Future<void> _submit(IncidentService service, UserIncident incident) async {
-    await service.submit(incident.id);
-    if (mounted) {
-      _load();
-      _show('Señal enviada.');
+  Future<void> _update(IncidentService service, UserIncident incident) async {
+    final controller = TextEditingController(text: incident.shortNote);
+    final note = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Actualizar señal'),
+        content: TextField(
+          controller: controller,
+          maxLength: 280,
+          maxLines: 4,
+          decoration: const InputDecoration(labelText: 'Nota actualizada'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+            child: const Text('Guardar actualización'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (note == null || note.isEmpty) return;
+    final result = await service.updateNote(incident.id, note);
+    if (!mounted) return;
+    switch (result) {
+      case Success():
+        unawaited(ref.read(bundleSchedulerProvider).processQueue());
+        _load();
+        _show('Actualización guardada y en cola.');
+      case Failure(error: final error):
+        _show(error.message ?? 'No se pudo guardar la actualización.');
     }
   }
 
   Future<void> _cancel(IncidentService service, UserIncident incident) async {
-    await service.cancel(incident.id);
-    if (mounted) {
-      _load();
-      _show('Señal cancelada.');
+    final result = await service.cancel(incident.id);
+    if (!mounted) return;
+    switch (result) {
+      case Success():
+        unawaited(ref.read(bundleSchedulerProvider).processQueue());
+        _load();
+        _show('Cancelación guardada y en cola.');
+      case Failure(error: final error):
+        _show(error.message ?? 'No se pudo guardar la cancelación.');
     }
   }
 
   void _show(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: AppTypography.body.copyWith(color: AppColors.white)),
+        content: Text(
+          message,
+          style: AppTypography.body.copyWith(color: AppColors.white),
+        ),
         backgroundColor: AppColors.celadon700,
       ),
     );
@@ -64,7 +105,10 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.celadon900,
         foregroundColor: AppColors.white,
-        title: Text('Detalle', style: AppTypography.h3.copyWith(color: AppColors.white)),
+        title: Text(
+          'Detalle',
+          style: AppTypography.h3.copyWith(color: AppColors.white),
+        ),
       ),
       body: FutureBuilder<UserIncident?>(
         future: _incident,
@@ -87,7 +131,12 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
 
   Widget _buildBody(UserIncident incident) {
     final service = ref.read(incidentServiceProvider);
-    final canEdit = incident.status == IncidentStatus.savedLocally;
+    final canCancel = !{
+      IncidentStatus.cancelledLocally,
+      IncidentStatus.cancellationQueued,
+      IncidentStatus.cancellationReceived,
+      IncidentStatus.expired,
+    }.contains(incident.status);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -96,8 +145,14 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
         const SizedBox(height: AppSpacing.md),
         Text(_categoryLabel(incident.category), style: AppTypography.h2),
         const SizedBox(height: AppSpacing.sm),
-        Text('Estado: ${_statusLabel(incident.status)}', style: AppTypography.bodyLg),
-        Text('Confianza: ${_assuranceLabel(incident.identityAssurance)}', style: AppTypography.body),
+        Text(
+          'Estado: ${_statusLabel(incident.status)}',
+          style: AppTypography.bodyLg,
+        ),
+        Text(
+          'Confianza: ${_assuranceLabel(incident.identityAssurance)}',
+          style: AppTypography.body,
+        ),
         const SizedBox(height: AppSpacing.xl),
         if (incident.shortNote != null) ...[
           Text(incident.shortNote!, style: AppTypography.bodyLg),
@@ -114,10 +169,11 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
-        if (canEdit) ...[
+        if (canCancel) ...[
           VacaButton(
-            label: 'Enviar señal',
-            onPressed: () => _submit(service, incident),
+            label: 'Actualizar señal',
+            icon: Icons.edit_outlined,
+            onPressed: () => _update(service, incident),
           ),
           const SizedBox(height: AppSpacing.md),
           VacaButton(
@@ -125,12 +181,13 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
             variant: VacaButtonVariant.destructive,
             onPressed: () => _cancel(service, incident),
           ),
-        ] else ...[
-          VacaButton(
-            label: 'Volver',
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          const SizedBox(height: AppSpacing.md),
         ],
+        VacaButton(
+          label: 'Volver',
+          variant: VacaButtonVariant.secondary,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ],
     );
   }

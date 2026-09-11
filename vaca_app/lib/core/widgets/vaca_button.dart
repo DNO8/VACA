@@ -45,11 +45,11 @@ class VacaButton extends StatelessWidget {
       VacaButtonVariant.secondary => OutlinedButton(
           onPressed: effectiveOnPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.orange,
-            side: const BorderSide(color: AppColors.orange, width: 1.5),
+            foregroundColor: AppColors.celadon700,
+            side: const BorderSide(color: AppColors.celadon700, width: 1.5),
             minimumSize: const Size.fromHeight(52),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.full),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
           child: child,
@@ -61,7 +61,7 @@ class VacaButton extends StatelessWidget {
             foregroundColor: AppColors.white,
             minimumSize: const Size.fromHeight(52),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.full),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
           child: child,
@@ -69,7 +69,7 @@ class VacaButton extends StatelessWidget {
       VacaButtonVariant.text => TextButton(
           onPressed: effectiveOnPressed,
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.orange,
+            foregroundColor: AppColors.celadon700,
             minimumSize: const Size.fromHeight(48),
           ),
           child: child,

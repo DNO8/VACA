@@ -6,7 +6,11 @@ import '../theme/app_theme.dart';
 /// Indicador de prioridad del incidente. Reemplaza el Trust Score heredado
 /// del modelo FIBE por la prioridad operativa del nuevo dominio publico.
 class PriorityBadge extends StatelessWidget {
-  const PriorityBadge({required this.priority, this.compact = false, super.key});
+  const PriorityBadge({
+    required this.priority,
+    this.compact = false,
+    super.key,
+  });
 
   final IncidentPriority priority;
   final bool compact;
