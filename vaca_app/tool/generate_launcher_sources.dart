@@ -28,6 +28,7 @@ void main() {
     460,
   );
   _generateAndroidNightResources();
+  _generateAndroidSplashBlank();
 }
 
 void _generate(
@@ -97,6 +98,13 @@ void _generateAndroidNightResources() {
     '    <color name="ic_launcher_background">#1F3B30</color>\n'
     '</resources>\n',
   );
+}
+
+void _generateAndroidSplashBlank() {
+  final blank = image.Image(width: 432, height: 432, numChannels: 4);
+  image.fill(blank, color: image.ColorRgba8(0, 0, 0, 255));
+  File('android/app/src/main/res/drawable-nodpi/splash_blank.png')
+      .writeAsBytesSync(image.encodePng(blank));
 }
 
 void _writeAndroidIcon(
