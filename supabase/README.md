@@ -12,15 +12,19 @@ supabase/
 ├── .env.example             # Variables de entorno (copiar a .env)
 ├── migrations/
 │   ├── 001_initial_schema.sql
-│   └── 002_delete_identity.sql
+│   ├── 002_delete_identity.sql
+│   ├── 003_storage_bucket.sql
+│   ├── 004_security_hardening.sql
+│   └── 005_atomic_bundle_acceptance.sql
 └── functions/
     ├── _shared/
-    │   ├── encoding.ts      # Base64 sin dependencias
-    │   └── bundle.ts        # CBOR, Ed25519, AES-GCM
-    ├── bundle-ingest/       # Ingesta de bundles y recibo firmado
-    ├── attachment-authorize/# URLs firmadas de subida de adjuntos
-    ├── account-deletion/    # Borrado de cuenta
-    └── kyc-webhook/         # Actualizacion de identidad por proveedor KYC
+    │   ├── device-auth.ts         # Autenticacion Ed25519 y nonces
+    │   └── ingest-validation.ts   # Limites del contrato de ingesta
+    ├── bundle-ingest/             # Ingesta atomica y recibo firmado
+    ├── attachment-authorize/      # URLs firmadas de subida de adjuntos
+    ├── account-deletion/          # Borrado de cuenta
+    ├── kyc-session/               # Creacion server-side de sesion KYC
+    └── kyc-webhook/               # Actualizacion por proveedor KYC
 ```
 
 ## Flujo de un bundle
@@ -31,9 +35,9 @@ supabase/
 4. La Edge Function:
    - Verifica la firma Ed25519 del dispositivo.
    - Deriva una clave envolvente con X25519/HKDF y descifra el payload AES-256-GCM con `SERVER_BUNDLE_PRIVATE_KEY`.
-   - Valida idempotencia con `message_id`.
-   - Persiste incidente, evento, adjuntos y bundle origen.
-   - Firma un recibo con `SERVER_RECEIPT_PRIVATE_KEY`.
+   - Valida limites, expiracion e idempotencia con `message_id`.
+   - Persiste incidente, evento, adjuntos, bundle y recibo en una transaccion RPC.
+   - Firma un recibo ligado a `message_id` y `payload_hash`.
 5. El cliente verifica el recibo con `SERVER_RECEIPT_PUBLIC_KEY`.
 
 ## Despliegue
@@ -82,7 +86,7 @@ dart run tool/generate_server_keys.dart
 - Las funciones usan `npm:` para importar librerias compatibles con Deno (`cbor-x`, `@noble/curves`, `@noble/ciphers`, `@supabase/supabase-js`).
 - Las columnas binarias se almacenan como `text` en base64 para simplificar la serializacion en Deno.
 - `origin_bundles` conserva el bundle canonico para auditoria.
-- `idempotency_keys` evita procesar el mismo `message_id` dos veces.
+- `accept_bundle` toma un advisory lock por `message_id`, acepta todo en una transaccion y devuelve el recibo persistido en reintentos concurrentes.
 
 ## Limitaciones conocidas
 
