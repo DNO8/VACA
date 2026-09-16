@@ -8,7 +8,7 @@ enum BundleEventType {
   receipt,
 }
 
-/// Tipo logico de mensaje. Mapea a categoria de incidente.
+/// Tipo lógico de mensaje. Mapea a categoría de incidente.
 enum BundleMessageType {
   sos,
   medical,
@@ -21,7 +21,7 @@ enum BundleMessageType {
 
 /// Payload encriptado de un bundle.
 ///
-/// El payload contiene la informacion de dominio que solo el destinatario
+/// El payload contiene la información de dominio que sólo el destinatario
 /// autorizado puede leer. Nunca viaja en claro por un enlace.
 class BundlePayload {
   const BundlePayload({
@@ -130,10 +130,10 @@ class BundleAttachmentManifestEntry {
       );
 }
 
-/// Cabecera canonica de un bundle.
+/// Cabecera canónica de un bundle.
 ///
 /// Contiene los metadatos visibles en la red (ofuscados o no sensibles) y
-/// la firma del origen sobre los campos protegidos mas el hash del payload.
+/// la firma del origen sobre los campos protegidos más el hash del payload.
 class BundleHeader {
   const BundleHeader({
     required this.protocolVersion,
@@ -207,7 +207,7 @@ class BundleHeader {
 
   /// Campos protegidos que entran en la firma.
   ///
-  /// Excluye la firma y fragmentacion cuando no aplica.
+  /// Excluye la firma y fragmentación cuando no aplica.
   Map<String, dynamic> toProtectedFields() => {
         'protocolVersion': protocolVersion,
         'messageId': messageId,
@@ -229,7 +229,7 @@ class BundleHeader {
       };
 }
 
-/// Bundle canonico completo.
+/// Bundle canónico completo.
 class Bundle {
   const Bundle({
     required this.header,

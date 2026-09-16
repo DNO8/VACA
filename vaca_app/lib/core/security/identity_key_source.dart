@@ -10,8 +10,8 @@ import 'secure_storage.dart';
 
 /// Genera y protege el par de claves Ed25519 del dispositivo.
 ///
-/// La clave privada vive en `flutter_secure_storage`; la publica se expone
-/// para autenticar bundles. Usa `ed25519_edwards` para firma/verificacion.
+/// La clave privada vive en `flutter_secure_storage`; la pública se expone
+/// para autenticar bundles. Usa `ed25519_edwards` para firma/verificación.
 class IdentityKeySource {
   const IdentityKeySource(this._storage);
 
@@ -23,7 +23,7 @@ class IdentityKeySource {
   /// Recupera o genera un par de claves Ed25519.
   ///
   /// La clave privada se almacena como el seed RFC 8032 de 32 bytes.
-  /// La publica es el punto de 32 bytes codificado en base64.
+  /// La pública es el punto de 32 bytes codificado en base64.
   Future<Result<DeviceKeyPair>> getOrCreateKeyPair() async {
     final publicRead = await _storage.read(_publicKeyKey);
     if (publicRead.isFailure) return publicRead as Failure<DeviceKeyPair>;
@@ -106,7 +106,7 @@ class IdentityKeySource {
     }
   }
 
-  /// Verifica `signature` de `message` con la clave publica del dispositivo.
+  /// Verifica `signature` de `message` con la clave pública del dispositivo.
   Future<Result<bool>> verify(Uint8List message, Uint8List signature) async {
     final pairRead = await getOrCreateKeyPair();
     if (pairRead.isFailure) {
@@ -129,9 +129,9 @@ class IdentityKeySource {
     }
   }
 
-  /// Recupera el hash resumido del dispositivo (SHA-256 de la publica).
+  /// Recupera el hash resumido del dispositivo (SHA-256 de la pública).
   ///
-  /// Util para identificar el origen en logs no sensibles.
+  /// Útil para identificar el origen en logs no sensibles.
   Future<Result<String>> publicKeyThumbprint() async {
     final pairRead = await getOrCreateKeyPair();
     if (pairRead.isFailure) {
@@ -163,7 +163,7 @@ class IdentityKeySource {
 
 /// Par de claves opacas del dispositivo.
 ///
-/// Los valores estan en base64. `privateKeySeed` es el seed RFC 8032 de 32 bytes.
+/// Los valores están en base64. `privateKeySeed` es el seed RFC 8032 de 32 bytes.
 class DeviceKeyPair {
   const DeviceKeyPair({
     required this.publicKey,

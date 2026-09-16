@@ -31,10 +31,10 @@ class ReportCard extends StatelessWidget {
     final tokens = context.tokens;
     final (categoryColor, categoryLabel) = switch (category) {
       IncidentCategory.sos => (tokens.danger, 'SOS'),
-      IncidentCategory.medical => (tokens.danger, 'Medica'),
+      IncidentCategory.medical => (tokens.danger, 'Médica'),
       IncidentCategory.person => (tokens.info, 'Persona'),
       IncidentCategory.hazard => (tokens.warning, 'Peligro'),
-      IncidentCategory.coordination => (tokens.success, 'Coordinacion'),
+      IncidentCategory.coordination => (tokens.success, 'Coordinación'),
     };
 
     return Card(

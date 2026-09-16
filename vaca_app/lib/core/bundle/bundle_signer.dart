@@ -8,7 +8,7 @@ import '../security/identity_key_source.dart';
 /// Firma y verifica los bytes de la cabecera protegida de un bundle.
 ///
 /// El origen firma los campos protegidos de la cabecera concatenados con el
-/// hash del payload. El destinatario verifica usando la clave publica del
+/// hash del payload. El destinatario verifica usando la clave pública del
 /// origen.
 abstract interface class BundleSigner {
   Future<Result<Uint8List>> sign(Uint8List message);

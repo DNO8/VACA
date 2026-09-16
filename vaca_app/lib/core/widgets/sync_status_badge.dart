@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/local/enums.dart';
 import '../theme/app_theme.dart';
 
-/// Badge de estado de sincronizacion de un adjunto. Ver sistema-diseno-app.md §6.7.
+/// Badge de estado de sincronización de un adjunto. Ver sistema-diseno-app.md §6.7.
 class SyncStatusBadge extends StatelessWidget {
   const SyncStatusBadge({required this.status, super.key});
 
@@ -36,7 +36,7 @@ class SyncStatusBadge extends StatelessWidget {
     };
 
     return Semantics(
-      label: 'Estado de sincronizacion: ',
+      label: 'Estado de sincronización: ',
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

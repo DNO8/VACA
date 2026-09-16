@@ -52,9 +52,9 @@ class BundleSealedPayload {
 
 /// Fuente de claves de destinatario para cifrar bundles.
 ///
-/// En produccion resuelve la clave publica o clave compartida del servidor
+/// En producción resuelve la clave pública o clave compartida del servidor
 /// autorizado. En tests/dev se inyecta un valor conocido. Si no hay clave
-/// disponible, la implementacion debe fallar cerrado.
+/// disponible, la implementación debe fallar cerrado.
 abstract interface class BundleKeySource {
   Future<Result<BundleRecipientKey>> resolveKey(String keyId);
 }
@@ -80,9 +80,9 @@ class PublicBundleKeySource implements BundleKeySource {
       );
 }
 
-/// Implementacion estatica para tests y desarrollo.
+/// Implementación estática para tests y desarrollo.
 ///
-/// Nunca se usa en builds de produccion.
+/// Nunca se usa en builds de producción.
 class StaticBundleKeySource implements BundleKeySource {
   const StaticBundleKeySource(this._privateKey);
 
@@ -101,7 +101,7 @@ class StaticBundleKeySource implements BundleKeySource {
   }
 }
 
-/// Implementacion que falla cerrado (produccion sin clave configurada).
+/// Implementación que falla cerrado (producción sin clave configurada).
 class FailClosedBundleKeySource implements BundleKeySource {
   const FailClosedBundleKeySource();
 

@@ -11,7 +11,7 @@ import 'identity_profile.dart';
 
 /// Servicio de identidad del usuario.
 ///
-/// Orquesta el perfil local, la clave del dispositivo y la verificacion KYC.
+/// Orquesta el perfil local, la clave del dispositivo y la verificación KYC.
 class IdentityService {
   const IdentityService({
     required this.database,

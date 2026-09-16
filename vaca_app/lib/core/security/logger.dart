@@ -9,12 +9,12 @@ class VacaLogger {
 
   static const String _tag = 'VACA';
 
-  /// Registra un evento de depuracion sin datos sensibles.
+  /// Registra un evento de depuración sin datos sensibles.
   static void d(String message, {String? area}) {
     dev.log('[$_tag${area != null ? ' · $area' : ''}] $message');
   }
 
-  /// Registra un evento de informacion.
+  /// Registra un evento de información.
   static void i(String message, {String? area}) {
     dev.log('[$_tag${area != null ? ' · $area' : ''}] ℹ $message');
   }

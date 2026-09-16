@@ -15,8 +15,8 @@ import 'bundle_models.dart';
 /// Crea y administra bundles en la cola de origen.
 ///
 /// Responsabilidades:
-/// - Convertir un incidente en un bundle canonico.
-/// - Persistir el bundle en [OriginBundles] para envio posterior.
+/// - Convertir un incidente en un bundle canónico.
+/// - Persistir el bundle en [OriginBundles] para envío posterior.
 /// - Registrar el evento [IncidentEvents] append-only.
 /// - Leer/actualizar el estado de los bundles.
 class BundleQueueService {
@@ -120,7 +120,7 @@ class BundleQueueService {
     }
   }
 
-  /// Recupera los bundles pendientes ordenados por prioridad y antiguedad.
+  /// Recupera los bundles pendientes ordenados por prioridad y antigüedad.
   Future<List<OriginBundle>> pendingBundles({int limit = 10}) async {
     final query = _database.select(_database.originBundles)
       ..where((b) => b.state.equals(DeliveryState.queued.index))

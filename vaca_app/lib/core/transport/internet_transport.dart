@@ -11,9 +11,9 @@ import 'transport.dart';
 
 /// Transporte por internet. Única implementación de [Transport] en el MVP.
 ///
-/// Comprueba la conectividad y delega el envio real de bundles en
+/// Comprueba la conectividad y delega el envío real de bundles en
 /// [ServerContract]. Si no hay red, deja el paquete encolado. Si hay red
-/// pero el contrato no esta configurado o rechaza el paquete, falla cerrado.
+/// pero el contrato no está configurado o rechaza el paquete, falla cerrado.
 class InternetTransport implements Transport {
   InternetTransport({
     required ServerContract contract,
@@ -54,7 +54,7 @@ class InternetTransport implements Transport {
         availability: online
             ? TransportAvailability.available
             : TransportAvailability.unavailable,
-        detail: online ? 'Conectado' : 'Sin conexion',
+        detail: online ? 'Conectado' : 'Sin conexión',
       ),
     );
   }

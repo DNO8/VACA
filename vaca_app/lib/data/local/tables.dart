@@ -2,13 +2,13 @@ import 'package:drift/drift.dart';
 
 import 'enums.dart';
 
-/// Definicion de tablas Drift (SQLite) para la app publica VACA.
+/// Definición de tablas Drift (SQLite) para la app pública VACA.
 /// Reemplaza el modelo orientado a formularios oficiales por incidentes
-/// genericos, adjuntos, bundles de transporte y estados de entrega.
+/// genéricos, adjuntos, bundles de transporte y estados de entrega.
 ///
 /// Convenciones:
 /// - Todos los id son UUID v4 en texto, generados en el dispositivo.
-/// - Enums se persisten con intEnum (por indice; ver enums.dart).
+/// - Enums se persisten con intEnum (por índice; ver enums.dart).
 
 /// Perfil de identidad del usuario, verificado o no.
 class IdentityProfiles extends Table {
@@ -78,7 +78,7 @@ class Attachments extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Bundle canonico generado por el origen y puesto en cola de entrega.
+/// Bundle canónico generado por el origen y puesto en cola de entrega.
 class OriginBundles extends Table {
   TextColumn get id => text()();
   TextColumn get incidentId => text().references(Incidents, #id)();

@@ -27,7 +27,7 @@ abstract class ServerContract {
 
   /// Solicita URL firmada para subir un adjunto resumible.
   ///
-  /// Devuelve `null` si el servidor no permite adjuntos o si no esta
+  /// Devuelve `null` si el servidor no permite adjuntos o si no está
   /// configurado.
   Future<String?> requestAttachmentUrl(
     String bundleId,

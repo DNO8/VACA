@@ -6,7 +6,7 @@ import '../transport/server_contract.dart';
 import '../transport/transport.dart';
 import 'bundle_queue_service.dart';
 
-/// Coordina el envio de bundles desde el dispositivo origen.
+/// Coordina el envío de bundles desde el dispositivo origen.
 ///
 /// - Escucha el estado de [Transport] y vacia la cola cuando hay red.
 /// - Programa reintentos con backoff exponencial.
@@ -59,8 +59,8 @@ class BundleScheduler {
 
   /// Procesa la cola de bundles pendientes.
   ///
-  /// Dispara un envio por cada bundle contra [Transport]. El estado final
-  /// se actualiza segun el [DeliveryResult] devuelto.
+  /// Dispara un envío por cada bundle contra [Transport]. El estado final
+  /// se actualiza según el [DeliveryResult] devuelto.
   Future<void> processQueue() async {
     if (_processing) return;
     _processing = true;
@@ -111,7 +111,7 @@ class BundleScheduler {
   ) async {
     final state = result.state;
     if (state == DeliveryState.queued) {
-      // El transporte aun no pudo enviar; queda en cola.
+      // El transporte aún no pudo enviar; queda en cola.
       return;
     }
     if (state == DeliveryState.sent) {

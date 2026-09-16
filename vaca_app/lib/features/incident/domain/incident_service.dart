@@ -14,7 +14,7 @@ import 'incident.dart';
 /// Servicio de incidentes offline-first.
 ///
 /// Crea, actualiza y lista incidentes locales. Al enviar un incidente,
-/// lo convierte en un bundle canonico y lo encola en [BundleQueueService].
+/// lo convierte en un bundle canónico y lo encola en [BundleQueueService].
 class IncidentService {
   const IncidentService(
     this._database,
@@ -148,7 +148,7 @@ class IncidentService {
     }
   }
 
-  /// Lista todos los incidentes locales ordenados por creacion descendente.
+  /// Lista todos los incidentes locales ordenados por creación descendente.
   Future<List<UserIncident>> list() async {
     final rows = await _orderedIncidents().get();
     return rows.map(_toDomain).toList();
@@ -171,7 +171,7 @@ class IncidentService {
 
   /// Marca un incidente como enviado al backend.
   ///
-  /// Crea un bundle canonico, lo persiste en la cola de origen y actualiza
+  /// Crea un bundle canónico, lo persiste en la cola de origen y actualiza
   /// el estado del incidente a `queued` o `failedRetryable`.
   Future<UserIncident?> submit(String id) async {
     final incident = await get(id);

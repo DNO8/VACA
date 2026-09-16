@@ -13,15 +13,15 @@ import 'bundle_cipher.dart';
 import 'bundle_models.dart';
 import 'bundle_signer.dart';
 
-/// Codifica y decodifica bundles canonicos con CBOR.
+/// Codifica y decodifica bundles canónicos con CBOR.
 ///
 /// Responsabilidades:
-/// - Genera `messageId` unicos.
+/// - Genera `messageId` únicos.
 /// - Deriva `messageType`, `priority` y `expiresAt` a partir del incidente.
 /// - Cifra el payload con [AesGcmBundleCipher].
 /// - Firma la cabecera protegida + hash del payload con [BundleSigner].
-/// - Codifica/decodifica a CBOR en orden canonico determinista.
-/// - Rechaza versiones desconocidas, bundles truncados o con hash invalido.
+/// - Codifica/decodifica a CBOR en orden canónico determinista.
+/// - Rechaza versiones desconocidas, bundles truncados o con hash inválido.
 class BundleCodec {
   BundleCodec({
     required AesGcmBundleCipher cipher,
@@ -80,7 +80,7 @@ class BundleCodec {
       return const Failure(
         VacaError(
           code: 'bundle_oversized',
-          message: 'Payload excede el limite de bytes.',
+          message: 'Payload excede el límite de bytes.',
         ),
       );
     }
@@ -144,8 +144,8 @@ class BundleCodec {
 
   /// Decodifica un bundle desde CBOR y verifica firma + integridad.
   ///
-  /// Si [verifySignature] es true (default) requiere la clave publica del
-  /// origin. Si es false, solo verifica hash y estructura.
+  /// Si [verifySignature] es true (default) requiere la clave pública del
+  /// origin. Si es false, sólo verifica hash y estructura.
   Future<Result<Bundle>> decodeBundle(
     Uint8List bytes, {
     bool verifySignature = true,
@@ -160,7 +160,7 @@ class BundleCodec {
         return Failure(
           VacaError(
             code: 'bundle_version',
-            message: 'Version de bundle no soportada: $version',
+            message: 'Versión de bundle no soportada: $version',
           ),
         );
       }
@@ -203,7 +203,7 @@ class BundleCodec {
           return const Failure(
             VacaError(
               code: 'bundle_public_key_missing',
-              message: 'Se requiere clave publica para verificar firma.',
+              message: 'Se requiere clave pública para verificar firma.',
             ),
           );
         }
@@ -222,7 +222,7 @@ class BundleCodec {
           return const Failure(
             VacaError(
               code: 'bundle_signature_invalid',
-              message: 'Firma del bundle invalida.',
+              message: 'Firma del bundle inválida.',
             ),
           );
         }
@@ -269,7 +269,7 @@ class BundleCodec {
     }
   }
 
-  /// Codifica un bundle a CBOR canonico.
+  /// Codifica un bundle a CBOR canónico.
   Future<Result<Uint8List>> encodeBundle(Bundle bundle) async {
     try {
       final headerMap = _headerToCborMap(bundle.header);
@@ -345,7 +345,7 @@ class BundleCodec {
     return combined;
   }
 
-  /// Codifica los campos protegidos de la cabecera en CBOR canonico.
+  /// Codifica los campos protegidos de la cabecera en CBOR canónico.
   ///
   /// Excluye la firma para evitar circularidad al verificar.
   Uint8List encodeProtectedHeader(BundleHeader header) {

@@ -9,16 +9,16 @@ import '../security/device_request_signer.dart';
 import 'server_contract.dart';
 import 'transport.dart';
 
-/// Implementacion del contrato de servidor usando Supabase Edge Functions.
+/// Implementación del contrato de servidor usando Supabase Edge Functions.
 ///
-/// Lee la configuracion desde variables de entorno (dart-define) y falla
-/// cerrado si no esta completa:
+/// Lee la configuración desde variables de entorno (dart-define) y falla
+/// cerrado si no está completa:
 /// - `SUPABASE_URL`
 /// - `SUPABASE_ANON_KEY`
 /// - `SERVER_RECEIPT_PUBLIC_KEY` (base64, Ed25519)
 ///
-/// No almacena credenciales en el binario: si las variables no estan
-/// definidas, la entrega falla con un error de configuracion.
+/// No almacena credenciales en el binario: si las variables no están
+/// definidas, la entrega falla con un error de configuración.
 class SupabaseServerContract implements ServerContract {
   SupabaseServerContract(
     this._signer, {

@@ -164,7 +164,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
         ],
         if (incident.latitude != null && incident.longitude != null) ...[
           Text(
-            'Ubicacion: ${incident.latitude!.toStringAsFixed(5)}, ${incident.longitude!.toStringAsFixed(5)}',
+            'Ubicación: ${incident.latitude!.toStringAsFixed(5)}, ${incident.longitude!.toStringAsFixed(5)}',
             style: AppTypography.data,
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -194,10 +194,10 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
 
   String _categoryLabel(IncidentCategory c) => switch (c) {
         IncidentCategory.sos => 'SOS · Vida en riesgo',
-        IncidentCategory.medical => 'Emergencia medica',
-        IncidentCategory.person => 'Persona / ubicacion',
+        IncidentCategory.medical => 'Emergencia médica',
+        IncidentCategory.person => 'Persona / ubicación',
         IncidentCategory.hazard => 'Peligro / infraestructura',
-        IncidentCategory.coordination => 'Coordinacion',
+        IncidentCategory.coordination => 'Coordinación',
       };
 
   String _statusLabel(IncidentStatus s) => switch (s) {

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 /// Capa de transporte abstracta de VACA.
 ///
-/// El resto de la app NUNCA habla de "BLE mesh" ni de "HTTP": solo consume
+/// El resto de la app NUNCA habla de "BLE mesh" ni de "HTTP": sólo consume
 /// esta interfaz. Detrás se enchufan transportes intercambiables (Internet,
 /// BLE Mesh, WiFi Direct, LoRa, satélite) sin tocar el modelo de datos ni la UI.
 ///
@@ -104,7 +104,7 @@ abstract interface class Transport {
 /// Contrato específico del transporte mesh (fase posterior — no implementado
 /// en el MVP). Añade el descubrimiento de peers sobre el contrato base.
 /// El Mesh Engine (Kotlin/Swift) implementa Discovery, Routing, TTL, Gossip,
-/// ACK y Relay; Dart solo consume estos eventos de alto nivel.
+/// ACK y Relay; Dart sólo consume estos eventos de alto nivel.
 abstract interface class MeshTransport implements Transport {
   /// Peer descubierto.
   Stream<MeshPeer> get onPeerFound;

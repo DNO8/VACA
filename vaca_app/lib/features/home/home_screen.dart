@@ -7,8 +7,8 @@ import '../../data/local/enums.dart';
 import '../capture/camera_capture_screen.dart';
 import '../capture/capture_result.dart';
 
-/// Home base de VACA. Muestra el estado de red, acceso rapido a crear
-/// incidente y una demostracion visual de los tokens de UI.
+/// Home base de VACA. Muestra el estado de red, acceso rápido a crear
+/// incidente y una demostración visual de los tokens de UI.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -85,7 +85,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// Muestra el resultado de una captura (demo de la integracion cámara+GPS+hash).
+/// Muestra el resultado de una captura (demo de la integración cámara+GPS+hash).
 class _CaptureSummary extends StatelessWidget {
   const _CaptureSummary({required this.result});
 

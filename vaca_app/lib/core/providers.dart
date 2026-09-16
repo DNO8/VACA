@@ -46,7 +46,7 @@ final permissionServiceProvider = Provider<PermissionService>((ref) {
 /// Contrato de servidor para entrega de bundles por Internet.
 ///
 /// Lee SUPABASE_URL, SUPABASE_ANON_KEY y SERVER_RECEIPT_PUBLIC_KEY
-/// desde dart-define. Si no estan definidos, falla cerrado.
+/// desde dart-define. Si no están definidos, falla cerrado.
 final serverContractProvider = Provider<ServerContract>((ref) {
   const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
@@ -147,7 +147,7 @@ final identityServiceProvider = Provider<IdentityService>((ref) {
 
 /// Fuente de claves de destinatario para bundles.
 ///
-/// En produccion la clave publica X25519 del servidor se provee via dart-define
+/// En producción la clave pública X25519 del servidor se provee vía dart-define
 /// `SERVER_BUNDLE_PUBLIC_KEY` (base64 de 32 bytes). La clave privada permanece
 /// exclusivamente en el servidor autorizado.
 final bundleKeySourceProvider = Provider<BundleKeySource>((ref) {
@@ -159,7 +159,7 @@ final bundleKeySourceProvider = Provider<BundleKeySource>((ref) {
         return PublicBundleKeySource(key);
       }
     } catch (_) {
-      // Falla cerrado si la clave no es base64 valida o no mide 32 bytes.
+      // Falla cerrado si la clave no es base64 válida o no mide 32 bytes.
     }
   }
   return const FailClosedBundleKeySource();
@@ -177,7 +177,7 @@ final bundleSignerProvider = Provider<BundleSigner>((ref) {
   return DeviceBundleSigner(keySource);
 });
 
-/// Codifica/decodifica bundles canonicos.
+/// Codifica/decodifica bundles canónicos.
 final bundleCodecProvider = Provider<BundleCodec>((ref) {
   final cipher = ref.watch(bundleCipherProvider);
   final signer = ref.watch(bundleSignerProvider);
@@ -195,7 +195,7 @@ final bundleQueueServiceProvider = Provider<BundleQueueService>((ref) {
   return BundleQueueService(db, codec);
 });
 
-/// Scheduler de envio de bundles.
+/// Scheduler de envío de bundles.
 final bundleSchedulerProvider = Provider<BundleScheduler>((ref) {
   final queue = ref.watch(bundleQueueServiceProvider);
   final transport = ref.watch(transportProvider);

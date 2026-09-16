@@ -6,9 +6,9 @@ import '../../../core/security/device_request_signer.dart';
 import '../../../data/local/enums.dart';
 import 'kyc_adapter.dart';
 
-/// Implementacion de [KycAdapter] usando el SDK oficial de Didit.
+/// Implementación de [KycAdapter] usando el SDK oficial de Didit.
 ///
-/// La sesion se crea via API REST con la clave publica del dispositivo en
+/// La sesión se crea vía API REST con la clave pública del dispositivo en
 /// `metadata.device_public_key`. El SDK nativo recibe el `session_token` y
 /// maneja el flujo de captura. La autoridad final de la identidad es el
 /// webhook a `kyc-webhook` en Supabase.
@@ -138,7 +138,7 @@ class DiditKycAdapter implements KycAdapter {
           return const Failure(
             VacaError(
               code: 'kyc_cancelled',
-              message: 'El usuario cancelo el flujo de verificacion.',
+              message: 'El usuario canceló el flujo de verificación.',
             ),
           );
         case VerificationFailed(:final error):
@@ -153,7 +153,7 @@ class DiditKycAdapter implements KycAdapter {
       return Failure(
         VacaError(
           code: 'didit_network_error',
-          message: e.message ?? 'Error de red al crear la sesion de Didit.',
+          message: e.message ?? 'Error de red al crear la sesión de Didit.',
         ),
       );
     } catch (e) {

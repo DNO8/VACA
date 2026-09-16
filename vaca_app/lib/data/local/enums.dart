@@ -1,37 +1,37 @@
-/// Enums del dominio publico de incidentes de VACA.
+/// Enums del dominio público de incidentes de VACA.
 ///
-/// No contienen codigos oficiales de emergencia ni campos FIBE. Son estados
-/// internos del producto para la version publica offline-first.
+/// No contienen códigos oficiales de emergencia ni campos FIBE. Son estados
+/// internos del producto para la versión pública offline-first.
 library;
 
 /// Nivel de confianza de identidad capturado al crear el incidente.
 enum IdentityAssurance {
-  unverified, // Usuario no verifico su identidad con KYC.
+  unverified, // Usuario no verificó su identidad con KYC.
   verified, // Credencial opaca firmada y vigente.
   expired, // Credencial presente pero caducada.
   revoked, // Credencial revocada.
 }
 
-/// Categoria de incidente visible para el usuario.
+/// Categoría de incidente visible para el usuario.
 enum IncidentCategory {
   sos, // P0 — Vida en riesgo inmediato.
-  medical, // P1 — Emergencia medica.
-  person, // P2 — Persona ubicacion/desaparicion/reunificacion.
-  hazard, // P3 — Peligro, acceso bloqueado o dano infraestructura.
-  coordination, // P4 — Coordinacion o informacion no urgente.
+  medical, // P1 — Emergencia médica.
+  person, // P2 — Persona ubicación/desaparición/reunificación.
+  hazard, // P3 — Peligro, acceso bloqueado o daño infraestructura.
+  coordination, // P4 — Coordinación o información no urgente.
 }
 
-/// Prioridad de red derivada de la categoria.
+/// Prioridad de red derivada de la categoría.
 enum IncidentPriority {
   p0, // SOS / vida en riesgo.
-  p1, // Emergencia medica.
-  p2, // Personas/ubicacion.
+  p1, // Emergencia médica.
+  p2, // Personas/ubicación.
   p3, // Infraestructura/peligro.
-  p4, // Coordinacion.
-  p5, // Multimedia de gran tamano (deferred).
+  p4, // Coordinación.
+  p5, // Multimedia de gran tamaño (deferred).
 }
 
-/// Fuente de la ubicacion registrada.
+/// Fuente de la ubicación registrada.
 enum LocationSource {
   gps,
   manual,
@@ -68,7 +68,7 @@ enum AttachmentKind {
   thumbnail,
 }
 
-/// Estado de sincronizacion de un adjunto.
+/// Estado de sincronización de un adjunto.
 enum AttachmentSyncStatus {
   pending,
   uploading,

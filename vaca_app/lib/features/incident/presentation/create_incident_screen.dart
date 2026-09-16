@@ -13,9 +13,9 @@ import '../../capture/capture_result.dart';
 import '../domain/incident_service.dart';
 import 'local_confirmation_screen.dart';
 
-/// Pantalla de creacion de incidente.
+/// Pantalla de creación de incidente.
 ///
-/// Captura categoria, prioridad, nota corta, personas y ubicacion.
+/// Captura categoría, prioridad, nota corta, personas y ubicación.
 /// La foto es opcional y se adjunta en fase B5.
 class CreateIncidentScreen extends ConsumerStatefulWidget {
   const CreateIncidentScreen({super.key});
@@ -323,10 +323,10 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
 
   String _categoryLabel(IncidentCategory c) => switch (c) {
         IncidentCategory.sos => 'SOS · Vida en riesgo',
-        IncidentCategory.medical => 'Emergencia medica',
-        IncidentCategory.person => 'Persona / ubicacion',
+        IncidentCategory.medical => 'Emergencia médica',
+        IncidentCategory.person => 'Persona / ubicación',
         IncidentCategory.hazard => 'Peligro / infraestructura',
-        IncidentCategory.coordination => 'Coordinacion',
+        IncidentCategory.coordination => 'Coordinación',
       };
 }
 

@@ -1,7 +1,7 @@
 import '../../../core/result/result.dart';
 import '../../../data/local/enums.dart';
 
-/// Resultado de una verificacion KYC.
+/// Resultado de una verificación KYC.
 ///
 /// [credential] y [credentialExpiresAt] son nulos para proveedores que
 /// devuelven solo un estado (por ejemplo, Didit con session token).
@@ -19,13 +19,13 @@ class KycResult {
   final DateTime? credentialExpiresAt;
 }
 
-/// Abstraccion del proveedor de KYC (Didit u otro).
+/// Abstracción del proveedor de KYC (Didit u otro).
 ///
-/// La implementacion con Didit requiere credenciales del propietario y no
+/// La implementación con Didit requiere credenciales del propietario y no
 /// se entrega en el repositorio. Ver handoff §B2.
 ///
-/// [devicePublicKey] se envia al proveedor para que el webhook pueda
-/// vincular la sesion con el dispositivo. En Didit se incluye en
+/// [devicePublicKey] se envía al proveedor para que el webhook pueda
+/// vincular la sesión con el dispositivo. En Didit se incluye en
 /// `metadata.device_public_key`.
 abstract interface class KycAdapter {
   Future<Result<KycResult>> verify({
@@ -43,7 +43,7 @@ String diditVendorDataFor(String devicePublicKey, String consentVersion) {
   return '${consentVersion}_${devicePublicKey.hashCode.toRadixString(36)}';
 }
 
-/// Implementacion stub que indica que KYC no esta configurado.
+/// Implementación stub que indica que KYC no está configurado.
 ///
 /// No contiene credenciales y no realiza llamadas de red.
 class UnconfiguredKycAdapter implements KycAdapter {
@@ -58,7 +58,7 @@ class UnconfiguredKycAdapter implements KycAdapter {
       VacaError(
         code: 'kyc_unconfigured',
         message:
-            'KYC no esta configurado. Se requieren credenciales del propietario.',
+            'KYC no está configurado. Se requieren credenciales del propietario.',
       ),
     );
   }

@@ -14,8 +14,8 @@ import '../result/result.dart';
 /// Gestor de cifrado local con AES-256-GCM usando pointycastle.
 ///
 /// Usa HKDF-SHA256 para derivar una clave de 32 bytes a partir de
-/// `keyMaterial` y un salt aleatorio. Cada operacion genera un nonce de 12
-/// bytes aleatorio. El tag de autenticacion de 16 bytes se concatena al
+/// `keyMaterial` y un salt aleatorio. Cada operación genera un nonce de 12
+/// bytes aleatorio. El tag de autenticación de 16 bytes se concatena al
 /// ciphertext.
 class EncryptionManager {
   const EncryptionManager();
@@ -99,7 +99,7 @@ class EncryptionManager {
       return Failure(
         VacaError(
           code: 'encryption_unseal',
-          message: 'No se pudo descifrar el payload o tag invalido.',
+          message: 'No se pudo descifrar el payload o tag inválido.',
           cause: e,
         ),
       );
@@ -125,7 +125,7 @@ class EncryptionManager {
 
 /// Datos cifrados con nonce y salt.
 ///
-/// El tag de autenticacion GCM esta concatenado al ciphertext.
+/// El tag de autenticación GCM está concatenado al ciphertext.
 class SealedData {
   const SealedData({
     required this.ciphertext,

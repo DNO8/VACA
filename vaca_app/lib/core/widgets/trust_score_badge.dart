@@ -4,7 +4,7 @@ import '../../data/local/enums.dart';
 import '../theme/app_theme.dart';
 
 /// Indicador de prioridad del incidente. Reemplaza el Trust Score heredado
-/// del modelo FIBE por la prioridad operativa del nuevo dominio publico.
+/// del modelo FIBE por la prioridad operativa del nuevo dominio público.
 class PriorityBadge extends StatelessWidget {
   const PriorityBadge({
     required this.priority,
@@ -20,10 +20,10 @@ class PriorityBadge extends StatelessWidget {
     final tokens = context.tokens;
     final (color, text) = switch (priority) {
       IncidentPriority.p0 => (tokens.danger, 'P0 · SOS'),
-      IncidentPriority.p1 => (tokens.danger, 'P1 · Emergencia medica'),
+      IncidentPriority.p1 => (tokens.danger, 'P1 · Emergencia médica'),
       IncidentPriority.p2 => (tokens.info, 'P2 · Persona'),
       IncidentPriority.p3 => (tokens.warning, 'P3 · Peligro/infraestructura'),
-      IncidentPriority.p4 => (tokens.success, 'P4 · Coordinacion'),
+      IncidentPriority.p4 => (tokens.success, 'P4 · Coordinación'),
       IncidentPriority.p5 => (AppColors.neutral500, 'P5 · Multimedia'),
     };
 
