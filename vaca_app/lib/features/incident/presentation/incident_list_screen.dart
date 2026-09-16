@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/transport/transport.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../delivery/domain/sync_status_service.dart';
 import '../../../data/local/enums.dart';
 import '../domain/incident.dart';
 import 'create_incident_screen.dart';
@@ -24,7 +24,7 @@ class IncidentListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.watch(incidentServiceProvider);
     final attachments = ref.watch(attachmentServiceProvider);
-    final transport = ref.watch(transportProvider);
+    final sync = ref.watch(syncSnapshotProvider).valueOrNull;
     return Scaffold(
       body: Column(
         children: [
@@ -36,13 +36,12 @@ class IncidentListScreen extends ConsumerWidget {
             alignment: Alignment(0, 0.3),
             trailing: VacaBrandLogo(size: 52),
           ),
-          StreamBuilder<TransportStatus>(
-            stream: transport.status,
-            builder: (context, snapshot) => NetworkStatusBanner(
-              state: snapshot.data?.isAvailable == true
-                  ? NetworkUiState.online
-                  : NetworkUiState.offline,
-            ),
+          NetworkStatusBanner(
+            state: _networkState(sync?.phase ?? SyncPhase.offline),
+            pendingCount: sync?.pendingCount ?? 0,
+            onRetry: sync?.canRetry == true
+                ? () => ref.read(bundleSchedulerProvider).processQueue()
+                : null,
           ),
           Expanded(
             child: StreamBuilder<List<UserIncident>>(
@@ -102,6 +101,14 @@ class IncidentListScreen extends ConsumerWidget {
       ),
     );
   }
+
+  NetworkUiState _networkState(SyncPhase phase) => switch (phase) {
+        SyncPhase.offline => NetworkUiState.offline,
+        SyncPhase.online => NetworkUiState.online,
+        SyncPhase.syncing => NetworkUiState.syncing,
+        SyncPhase.success => NetworkUiState.success,
+        SyncPhase.error => NetworkUiState.error,
+      };
 
   String _locationLabel(UserIncident incident) {
     if (incident.latitude != null && incident.longitude != null) {

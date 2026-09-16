@@ -31,6 +31,10 @@ class InternetTransport implements Transport {
   final _deliveries = StreamController<DeliveryResult>.broadcast();
   final _status = StreamController<TransportStatus>.broadcast();
   StreamSubscription<List<ConnectivityResult>>? _connSub;
+  TransportStatus _currentStatus = const TransportStatus(
+    availability: TransportAvailability.unavailable,
+    detail: 'Comprobando conexión',
+  );
 
   @override
   String get name => 'internet';
@@ -49,14 +53,13 @@ class InternetTransport implements Transport {
 
   void _emitStatus(List<ConnectivityResult> results) {
     final online = results.any((r) => r != ConnectivityResult.none);
-    _status.add(
-      TransportStatus(
-        availability: online
-            ? TransportAvailability.available
-            : TransportAvailability.unavailable,
-        detail: online ? 'Conectado' : 'Sin conexión',
-      ),
+    _currentStatus = TransportStatus(
+      availability: online
+          ? TransportAvailability.available
+          : TransportAvailability.unavailable,
+      detail: online ? 'Conectado' : 'Sin conexión',
     );
+    _status.add(_currentStatus);
   }
 
   @override
@@ -103,6 +106,9 @@ class InternetTransport implements Transport {
 
   @override
   Stream<DeliveryResult> get deliveries => _deliveries.stream;
+
+  @override
+  TransportStatus get currentStatus => _currentStatus;
 
   @override
   Stream<TransportStatus> get status => _status.stream;

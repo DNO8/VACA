@@ -377,6 +377,18 @@ class BundleQueueService {
     return pending;
   }
 
+  Future<void> retryNow(String bundleId) async {
+    await (_database.update(_database.originBundles)
+          ..where((row) => row.id.equals(bundleId))
+          ..where((row) => row.state.equals(DeliveryState.queued.index)))
+        .write(
+      const OriginBundlesCompanion(
+        nextAttemptAt: Value(null),
+        lastErrorCode: Value(null),
+      ),
+    );
+  }
+
   Future<void> updateAttachmentStatus(
     String attachmentId,
     AttachmentSyncStatus status,

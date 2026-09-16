@@ -36,6 +36,11 @@ class _FakeTransport implements Transport {
   final statusController = StreamController<TransportStatus>.broadcast();
 
   @override
+  TransportStatus get currentStatus => const TransportStatus(
+        availability: TransportAvailability.available,
+      );
+
+  @override
   Stream<DeliveryResult> get deliveries => const Stream.empty();
 
   @override
@@ -92,6 +97,7 @@ void main() {
   late AppDatabase database;
   late _FakeTransport transport;
   late _FakeServerContract contract;
+  late BundleQueueService queue;
   late BundleScheduler scheduler;
 
   setUp(() async {
@@ -104,15 +110,16 @@ void main() {
       ),
     );
     contract = _FakeServerContract();
-    scheduler = BundleScheduler(
-      queue: BundleQueueService(
-        database,
-        BundleCodec(
-          cipher: const AesGcmBundleCipher(FailClosedBundleKeySource()),
-          signer: _NoopSigner(),
-          destination: 'test',
-        ),
+    queue = BundleQueueService(
+      database,
+      BundleCodec(
+        cipher: const AesGcmBundleCipher(FailClosedBundleKeySource()),
+        signer: _NoopSigner(),
+        destination: 'test',
       ),
+    );
+    scheduler = BundleScheduler(
+      queue: queue,
       transport: transport,
       serverContract: contract,
       baseRetrySeconds: 60,
@@ -140,6 +147,10 @@ void main() {
     expect(bundle.nextAttemptAt, isNotNull);
     expect(bundle.lastErrorCode, 'server_500');
     expect(attempt.outcome, local.DeliveryOutcome.retryable);
+    expect(await queue.pendingBundles(), isEmpty);
+
+    await queue.retryNow(bundle.id);
+    expect(await queue.pendingBundles(), hasLength(1));
   });
 
   test('permanent failure closes retry without consuming DTN budget', () async {

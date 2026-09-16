@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/local/database.dart';
+import '../features/delivery/domain/sync_status_service.dart';
 import '../features/identity/data/account_deletion_service.dart';
 import '../features/identity/data/didit_kyc_adapter.dart';
 import '../features/identity/data/kyc_adapter.dart';
@@ -78,6 +79,17 @@ final transportProvider = Provider<Transport>((ref) {
   );
   ref.onDispose(transport.stop);
   return transport;
+});
+
+final syncStatusServiceProvider = Provider<SyncStatusService>((ref) {
+  return SyncStatusService(
+    ref.watch(databaseProvider),
+    ref.watch(transportProvider),
+  );
+});
+
+final syncSnapshotProvider = StreamProvider.autoDispose<SyncSnapshot>((ref) {
+  return ref.watch(syncStatusServiceProvider).watch();
 });
 
 /// Almacenamiento seguro.

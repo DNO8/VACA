@@ -27,31 +27,37 @@ class NetworkStatusBanner extends StatelessWidget {
           AppColors.neutral700,
           AppColors.white,
           Icons.cloud_off,
-          'Sin conexión · guardando local',
+          pendingCount > 0
+              ? 'Sin conexión · $pendingCount señales en espera'
+              : 'Sin conexión · guardando local',
         ),
       NetworkUiState.online => (
           tokens.info,
           AppColors.deepBlue,
           Icons.wifi,
-          'Conectado',
+          pendingCount > 0
+              ? 'Conectado · $pendingCount señales pendientes'
+              : 'Conectado',
         ),
       NetworkUiState.syncing => (
           AppColors.orange,
           AppColors.deepBlue,
           Icons.sync,
-          'Sincronizando $pendingCount reportes…',
+          'Sincronizando $pendingCount señales…',
         ),
       NetworkUiState.success => (
           tokens.synced,
           AppColors.white,
           Icons.check_circle,
-          '$pendingCount reportes sincronizados',
+          'Entrega verificada · sin pendientes',
         ),
       NetworkUiState.error => (
           tokens.syncError,
           AppColors.white,
           Icons.error_outline,
-          'Error de sincronización',
+          pendingCount > 0
+              ? 'Entrega pendiente · $pendingCount elementos'
+              : 'Error de sincronización',
         ),
     };
 

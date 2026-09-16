@@ -108,6 +108,7 @@ abstract interface class Transport {
   Stream<DeliveryResult> get deliveries;
 
   /// Estado/salud del transporte para la UI.
+  TransportStatus get currentStatus;
   Stream<TransportStatus> get status;
 }
 

@@ -85,13 +85,17 @@ class DeliveryScreen extends ConsumerWidget {
                         '${bundle.incidentId.substring(0, 8)} · ${bundle.createdAt.toLocal()}',
                         style: AppTypography.dataSm,
                       ),
-                      trailing: bundle.state == DeliveryState.queued ||
-                              bundle.state == DeliveryState.failed
+                      trailing: bundle.state == DeliveryState.queued
                           ? IconButton(
                               tooltip: 'Reintentar entrega',
-                              onPressed: () => ref
-                                  .read(bundleSchedulerProvider)
-                                  .processQueue(),
+                              onPressed: () async {
+                                await ref
+                                    .read(bundleQueueServiceProvider)
+                                    .retryNow(bundle.id);
+                                await ref
+                                    .read(bundleSchedulerProvider)
+                                    .processQueue();
+                              },
                               icon: const Icon(Icons.refresh),
                             )
                           : null,
