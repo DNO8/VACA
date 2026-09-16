@@ -348,14 +348,33 @@ class BundleQueueService {
     }
   }
 
-  Future<List<Attachment>> attachmentsForBundle(String bundleId) async {
-    final bundle = await (_database.select(_database.originBundles)
-          ..where((row) => row.id.equals(bundleId)))
-        .getSingleOrNull();
-    if (bundle == null) return const [];
-    return (_database.select(_database.attachments)
-          ..where((row) => row.incidentId.equals(bundle.incidentId)))
+  Future<List<PendingAttachmentUpload>> pendingAttachmentUploads({
+    int limit = 5,
+  }) async {
+    final attachments = await (_database.select(_database.attachments)
+          ..where(
+            (row) => row.syncStatus.isIn([
+              AttachmentSyncStatus.pending.index,
+              AttachmentSyncStatus.uploading.index,
+              AttachmentSyncStatus.failed.index,
+            ]),
+          )
+          ..orderBy([(row) => OrderingTerm.asc(row.capturedAt)])
+          ..limit(limit))
         .get();
+    final pending = <PendingAttachmentUpload>[];
+    for (final attachment in attachments) {
+      final bundle = await (_database.select(_database.originBundles)
+            ..where((row) => row.incidentId.equals(attachment.incidentId))
+            ..where((row) => row.state.equals(DeliveryState.delivered.index))
+            ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+            ..limit(1))
+          .getSingleOrNull();
+      if (bundle != null) {
+        pending.add(PendingAttachmentUpload(bundle.id, attachment));
+      }
+    }
+    return pending;
   }
 
   Future<void> updateAttachmentStatus(
@@ -392,6 +411,13 @@ class BundleQueueService {
     final rows = await query.get();
     return rows.length;
   }
+}
+
+class PendingAttachmentUpload {
+  const PendingAttachmentUpload(this.bundleId, this.attachment);
+
+  final String bundleId;
+  final Attachment attachment;
 }
 
 /// Bundle con sus ids de persistencia.

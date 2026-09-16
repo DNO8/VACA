@@ -73,6 +73,7 @@ class BundleScheduler {
       await _queue.expirePendingBundles();
       final pending = await _queue.pendingBundles(limit: batchSize);
       if (pending.isEmpty) {
+        await _uploadPendingAttachments();
         await _scheduleRetryIfNeeded();
         return;
       }
@@ -108,6 +109,7 @@ class BundleScheduler {
         await _handleDeliveryResult(row.id, result);
       }
 
+      await _uploadPendingAttachments();
       await _scheduleRetryIfNeeded();
     } finally {
       _processing = false;
@@ -130,8 +132,7 @@ class BundleScheduler {
     }
     if (state == DeliveryState.sent) return;
     if (state == DeliveryState.delivered && result.receipt != null) {
-      final persisted = await _queue.markDelivered(bundleId, result.receipt!);
-      if (persisted.isSuccess) await _uploadAttachments(bundleId);
+      await _queue.markDelivered(bundleId, result.receipt!);
       return;
     }
     if (state == DeliveryState.delivered) {
@@ -170,16 +171,16 @@ class BundleScheduler {
     );
   }
 
-  Future<void> _uploadAttachments(String bundleId) async {
-    final attachments = await _queue.attachmentsForBundle(bundleId);
-    for (final attachment in attachments) {
-      if (attachment.syncStatus == local.AttachmentSyncStatus.synced) continue;
+  Future<void> _uploadPendingAttachments() async {
+    final pending = await _queue.pendingAttachmentUploads();
+    for (final item in pending) {
+      final attachment = item.attachment;
       await _queue.updateAttachmentStatus(
         attachment.id,
         local.AttachmentSyncStatus.uploading,
       );
       final uploadUrl = await _serverContract.requestAttachmentUrl(
-        bundleId,
+        item.bundleId,
         attachment.sha256,
       );
       final uploaded = uploadUrl != null &&
@@ -198,8 +199,15 @@ class BundleScheduler {
 
   Future<void> _scheduleRetryIfNeeded() async {
     final nextRetryAt = await _queue.nextRetryAt();
-    if (nextRetryAt == null) return;
-    final delay = nextRetryAt.difference(DateTime.now());
+    final hasAttachments =
+        (await _queue.pendingAttachmentUploads(limit: 1)).isNotEmpty;
+    if (nextRetryAt == null && !hasAttachments) return;
+    final bundleDelay = nextRetryAt?.difference(DateTime.now());
+    final attachmentDelay = Duration(seconds: baseRetrySeconds);
+    final delay =
+        bundleDelay == null || (hasAttachments && attachmentDelay < bundleDelay)
+            ? attachmentDelay
+            : bundleDelay;
     _retryTimer = Timer(
       delay.isNegative ? Duration.zero : delay,
       processQueue,

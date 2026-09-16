@@ -61,12 +61,16 @@ class _FakeTransport implements Transport {
 }
 
 class _FakeServerContract extends ServerContract {
+  String? uploadUrl;
+  bool uploadResult = false;
+  int uploadCalls = 0;
+
   @override
   Future<String?> requestAttachmentUrl(
     String bundleId,
     String contentHash,
   ) async =>
-      null;
+      uploadUrl;
 
   @override
   Future<DeliveryResult> sendBundle(
@@ -78,13 +82,16 @@ class _FakeServerContract extends ServerContract {
       throw UnimplementedError();
 
   @override
-  Future<bool> uploadAttachment(String uploadUrl, String localPath) async =>
-      false;
+  Future<bool> uploadAttachment(String uploadUrl, String localPath) async {
+    uploadCalls++;
+    return uploadResult;
+  }
 }
 
 void main() {
   late AppDatabase database;
   late _FakeTransport transport;
+  late _FakeServerContract contract;
   late BundleScheduler scheduler;
 
   setUp(() async {
@@ -96,6 +103,7 @@ void main() {
         failure: DeliveryFailure('server_500', retryable: true),
       ),
     );
+    contract = _FakeServerContract();
     scheduler = BundleScheduler(
       queue: BundleQueueService(
         database,
@@ -106,7 +114,7 @@ void main() {
         ),
       ),
       transport: transport,
-      serverContract: _FakeServerContract(),
+      serverContract: contract,
       baseRetrySeconds: 60,
       random: Random(1),
     );
@@ -168,11 +176,39 @@ void main() {
     expect(incident.status, local.IncidentStatus.expired);
     expect(attempt.outcome, local.DeliveryOutcome.expired);
   });
+
+  test('failed attachment retries independently from delivered bundle',
+      () async {
+    await _insertBundle(database, state: local.DeliveryState.delivered);
+    await database.into(database.attachments).insert(
+          AttachmentsCompanion.insert(
+            id: 'attachment-1',
+            incidentId: 'incident-1',
+            kind: local.AttachmentKind.photo,
+            localPath: 'evidence.jpg',
+            sha256: 'hash',
+            sizeBytes: 10,
+            capturedAt: DateTime.now(),
+            syncStatus: local.AttachmentSyncStatus.failed,
+          ),
+        );
+    contract
+      ..uploadUrl = 'https://upload.test'
+      ..uploadResult = true;
+
+    await scheduler.processQueue();
+
+    final attachment = await database.select(database.attachments).getSingle();
+    expect(transport.sends, 0);
+    expect(contract.uploadCalls, 1);
+    expect(attachment.syncStatus, local.AttachmentSyncStatus.synced);
+  });
 }
 
 Future<void> _insertBundle(
   AppDatabase database, {
   DateTime? expiresAt,
+  local.DeliveryState state = local.DeliveryState.queued,
 }) async {
   final now = DateTime.now();
   await database.into(database.identityProfiles).insert(
@@ -219,7 +255,7 @@ Future<void> _insertBundle(
           ciphertextBytes: Value(Uint8List.fromList([1, 2, 3])),
           payloadHash: List.filled(64, '0').join(),
           expiresAt: expiresAt ?? now.add(const Duration(hours: 1)),
-          state: local.DeliveryState.queued,
+          state: state,
           createdAt: now,
         ),
       );
