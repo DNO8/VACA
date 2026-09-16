@@ -67,9 +67,6 @@ class DeliveryResult {
   final DeliveryState state;
   final DeliveryFailure? failure;
   final DeliveryReceipt? receipt;
-
-  @Deprecated('Use failure')
-  Object? get error => failure?.code;
 }
 
 class DeliveryReceipt {
