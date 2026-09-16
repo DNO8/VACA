@@ -2213,6 +2213,26 @@ class $OriginBundlesTable extends OriginBundles
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(3));
+  static const VerificationMeta _retryCountMeta =
+      const VerificationMeta('retryCount');
+  @override
+  late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
+      'retry_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _nextAttemptAtMeta =
+      const VerificationMeta('nextAttemptAt');
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAt =
+      GeneratedColumn<DateTime>('next_attempt_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorCodeMeta =
+      const VerificationMeta('lastErrorCode');
+  @override
+  late final GeneratedColumn<String> lastErrorCode = GeneratedColumn<String>(
+      'last_error_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2229,7 +2249,10 @@ class $OriginBundlesTable extends OriginBundles
         lastAttemptAt,
         serverReceiptId,
         hopLimit,
-        copyBudget
+        copyBudget,
+        retryCount,
+        nextAttemptAt,
+        lastErrorCode
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2322,6 +2345,24 @@ class $OriginBundlesTable extends OriginBundles
           copyBudget.isAcceptableOrUnknown(
               data['copy_budget']!, _copyBudgetMeta));
     }
+    if (data.containsKey('retry_count')) {
+      context.handle(
+          _retryCountMeta,
+          retryCount.isAcceptableOrUnknown(
+              data['retry_count']!, _retryCountMeta));
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+          _nextAttemptAtMeta,
+          nextAttemptAt.isAcceptableOrUnknown(
+              data['next_attempt_at']!, _nextAttemptAtMeta));
+    }
+    if (data.containsKey('last_error_code')) {
+      context.handle(
+          _lastErrorCodeMeta,
+          lastErrorCode.isAcceptableOrUnknown(
+              data['last_error_code']!, _lastErrorCodeMeta));
+    }
     return context;
   }
 
@@ -2363,6 +2404,12 @@ class $OriginBundlesTable extends OriginBundles
           .read(DriftSqlType.int, data['${effectivePrefix}hop_limit'])!,
       copyBudget: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}copy_budget'])!,
+      retryCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}retry_count'])!,
+      nextAttemptAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}next_attempt_at']),
+      lastErrorCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error_code']),
     );
   }
 
@@ -2393,6 +2440,9 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
   final String? serverReceiptId;
   final int hopLimit;
   final int copyBudget;
+  final int retryCount;
+  final DateTime? nextAttemptAt;
+  final String? lastErrorCode;
   const OriginBundle(
       {required this.id,
       required this.incidentId,
@@ -2408,7 +2458,10 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
       this.lastAttemptAt,
       this.serverReceiptId,
       required this.hopLimit,
-      required this.copyBudget});
+      required this.copyBudget,
+      required this.retryCount,
+      this.nextAttemptAt,
+      this.lastErrorCode});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2441,6 +2494,13 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
     }
     map['hop_limit'] = Variable<int>(hopLimit);
     map['copy_budget'] = Variable<int>(copyBudget);
+    map['retry_count'] = Variable<int>(retryCount);
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    if (!nullToAbsent || lastErrorCode != null) {
+      map['last_error_code'] = Variable<String>(lastErrorCode);
+    }
     return map;
   }
 
@@ -2469,6 +2529,13 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
           : Value(serverReceiptId),
       hopLimit: Value(hopLimit),
       copyBudget: Value(copyBudget),
+      retryCount: Value(retryCount),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+      lastErrorCode: lastErrorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorCode),
     );
   }
 
@@ -2493,6 +2560,9 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
       serverReceiptId: serializer.fromJson<String?>(json['serverReceiptId']),
       hopLimit: serializer.fromJson<int>(json['hopLimit']),
       copyBudget: serializer.fromJson<int>(json['copyBudget']),
+      retryCount: serializer.fromJson<int>(json['retryCount']),
+      nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+      lastErrorCode: serializer.fromJson<String?>(json['lastErrorCode']),
     );
   }
   @override
@@ -2516,6 +2586,9 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
       'serverReceiptId': serializer.toJson<String?>(serverReceiptId),
       'hopLimit': serializer.toJson<int>(hopLimit),
       'copyBudget': serializer.toJson<int>(copyBudget),
+      'retryCount': serializer.toJson<int>(retryCount),
+      'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+      'lastErrorCode': serializer.toJson<String?>(lastErrorCode),
     };
   }
 
@@ -2534,7 +2607,10 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
           Value<DateTime?> lastAttemptAt = const Value.absent(),
           Value<String?> serverReceiptId = const Value.absent(),
           int? hopLimit,
-          int? copyBudget}) =>
+          int? copyBudget,
+          int? retryCount,
+          Value<DateTime?> nextAttemptAt = const Value.absent(),
+          Value<String?> lastErrorCode = const Value.absent()}) =>
       OriginBundle(
         id: id ?? this.id,
         incidentId: incidentId ?? this.incidentId,
@@ -2557,6 +2633,11 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
             : this.serverReceiptId,
         hopLimit: hopLimit ?? this.hopLimit,
         copyBudget: copyBudget ?? this.copyBudget,
+        retryCount: retryCount ?? this.retryCount,
+        nextAttemptAt:
+            nextAttemptAt.present ? nextAttemptAt.value : this.nextAttemptAt,
+        lastErrorCode:
+            lastErrorCode.present ? lastErrorCode.value : this.lastErrorCode,
       );
   OriginBundle copyWithCompanion(OriginBundlesCompanion data) {
     return OriginBundle(
@@ -2588,6 +2669,14 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
       hopLimit: data.hopLimit.present ? data.hopLimit.value : this.hopLimit,
       copyBudget:
           data.copyBudget.present ? data.copyBudget.value : this.copyBudget,
+      retryCount:
+          data.retryCount.present ? data.retryCount.value : this.retryCount,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+      lastErrorCode: data.lastErrorCode.present
+          ? data.lastErrorCode.value
+          : this.lastErrorCode,
     );
   }
 
@@ -2608,7 +2697,10 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
           ..write('lastAttemptAt: $lastAttemptAt, ')
           ..write('serverReceiptId: $serverReceiptId, ')
           ..write('hopLimit: $hopLimit, ')
-          ..write('copyBudget: $copyBudget')
+          ..write('copyBudget: $copyBudget, ')
+          ..write('retryCount: $retryCount, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastErrorCode: $lastErrorCode')
           ..write(')'))
         .toString();
   }
@@ -2629,7 +2721,10 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
       lastAttemptAt,
       serverReceiptId,
       hopLimit,
-      copyBudget);
+      copyBudget,
+      retryCount,
+      nextAttemptAt,
+      lastErrorCode);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2649,7 +2744,10 @@ class OriginBundle extends DataClass implements Insertable<OriginBundle> {
           other.lastAttemptAt == this.lastAttemptAt &&
           other.serverReceiptId == this.serverReceiptId &&
           other.hopLimit == this.hopLimit &&
-          other.copyBudget == this.copyBudget);
+          other.copyBudget == this.copyBudget &&
+          other.retryCount == this.retryCount &&
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.lastErrorCode == this.lastErrorCode);
 }
 
 class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
@@ -2668,6 +2766,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
   final Value<String?> serverReceiptId;
   final Value<int> hopLimit;
   final Value<int> copyBudget;
+  final Value<int> retryCount;
+  final Value<DateTime?> nextAttemptAt;
+  final Value<String?> lastErrorCode;
   final Value<int> rowid;
   const OriginBundlesCompanion({
     this.id = const Value.absent(),
@@ -2685,6 +2786,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
     this.serverReceiptId = const Value.absent(),
     this.hopLimit = const Value.absent(),
     this.copyBudget = const Value.absent(),
+    this.retryCount = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   OriginBundlesCompanion.insert({
@@ -2703,6 +2807,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
     this.serverReceiptId = const Value.absent(),
     this.hopLimit = const Value.absent(),
     this.copyBudget = const Value.absent(),
+    this.retryCount = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         incidentId = Value(incidentId),
@@ -2729,6 +2836,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
     Expression<String>? serverReceiptId,
     Expression<int>? hopLimit,
     Expression<int>? copyBudget,
+    Expression<int>? retryCount,
+    Expression<DateTime>? nextAttemptAt,
+    Expression<String>? lastErrorCode,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2747,6 +2857,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
       if (serverReceiptId != null) 'server_receipt_id': serverReceiptId,
       if (hopLimit != null) 'hop_limit': hopLimit,
       if (copyBudget != null) 'copy_budget': copyBudget,
+      if (retryCount != null) 'retry_count': retryCount,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (lastErrorCode != null) 'last_error_code': lastErrorCode,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2767,6 +2880,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
       Value<String?>? serverReceiptId,
       Value<int>? hopLimit,
       Value<int>? copyBudget,
+      Value<int>? retryCount,
+      Value<DateTime?>? nextAttemptAt,
+      Value<String?>? lastErrorCode,
       Value<int>? rowid}) {
     return OriginBundlesCompanion(
       id: id ?? this.id,
@@ -2784,6 +2900,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
       serverReceiptId: serverReceiptId ?? this.serverReceiptId,
       hopLimit: hopLimit ?? this.hopLimit,
       copyBudget: copyBudget ?? this.copyBudget,
+      retryCount: retryCount ?? this.retryCount,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      lastErrorCode: lastErrorCode ?? this.lastErrorCode,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2838,6 +2957,15 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
     if (copyBudget.present) {
       map['copy_budget'] = Variable<int>(copyBudget.value);
     }
+    if (retryCount.present) {
+      map['retry_count'] = Variable<int>(retryCount.value);
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
+    }
+    if (lastErrorCode.present) {
+      map['last_error_code'] = Variable<String>(lastErrorCode.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2862,6 +2990,9 @@ class OriginBundlesCompanion extends UpdateCompanion<OriginBundle> {
           ..write('serverReceiptId: $serverReceiptId, ')
           ..write('hopLimit: $hopLimit, ')
           ..write('copyBudget: $copyBudget, ')
+          ..write('retryCount: $retryCount, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5785,6 +5916,9 @@ typedef $$OriginBundlesTableCreateCompanionBuilder = OriginBundlesCompanion
   Value<String?> serverReceiptId,
   Value<int> hopLimit,
   Value<int> copyBudget,
+  Value<int> retryCount,
+  Value<DateTime?> nextAttemptAt,
+  Value<String?> lastErrorCode,
   Value<int> rowid,
 });
 typedef $$OriginBundlesTableUpdateCompanionBuilder = OriginBundlesCompanion
@@ -5804,6 +5938,9 @@ typedef $$OriginBundlesTableUpdateCompanionBuilder = OriginBundlesCompanion
   Value<String?> serverReceiptId,
   Value<int> hopLimit,
   Value<int> copyBudget,
+  Value<int> retryCount,
+  Value<DateTime?> nextAttemptAt,
+  Value<String?> lastErrorCode,
   Value<int> rowid,
 });
 
@@ -5930,6 +6067,15 @@ class $$OriginBundlesTableFilterComposer
 
   ColumnFilters<int> get copyBudget => $composableBuilder(
       column: $table.copyBudget, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get retryCount => $composableBuilder(
+      column: $table.retryCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => ColumnFilters(column));
 
   $$IncidentsTableFilterComposer get incidentId {
     final $$IncidentsTableFilterComposer composer = $composerBuilder(
@@ -6067,6 +6213,17 @@ class $$OriginBundlesTableOrderingComposer
   ColumnOrderings<int> get copyBudget => $composableBuilder(
       column: $table.copyBudget, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get retryCount => $composableBuilder(
+      column: $table.retryCount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode,
+      builder: (column) => ColumnOrderings(column));
+
   $$IncidentsTableOrderingComposer get incidentId {
     final $$IncidentsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -6155,6 +6312,15 @@ class $$OriginBundlesTableAnnotationComposer
 
   GeneratedColumn<int> get copyBudget => $composableBuilder(
       column: $table.copyBudget, builder: (column) => column);
+
+  GeneratedColumn<int> get retryCount => $composableBuilder(
+      column: $table.retryCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => column);
 
   $$IncidentsTableAnnotationComposer get incidentId {
     final $$IncidentsTableAnnotationComposer composer = $composerBuilder(
@@ -6281,6 +6447,9 @@ class $$OriginBundlesTableTableManager extends RootTableManager<
             Value<String?> serverReceiptId = const Value.absent(),
             Value<int> hopLimit = const Value.absent(),
             Value<int> copyBudget = const Value.absent(),
+            Value<int> retryCount = const Value.absent(),
+            Value<DateTime?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               OriginBundlesCompanion(
@@ -6299,6 +6468,9 @@ class $$OriginBundlesTableTableManager extends RootTableManager<
             serverReceiptId: serverReceiptId,
             hopLimit: hopLimit,
             copyBudget: copyBudget,
+            retryCount: retryCount,
+            nextAttemptAt: nextAttemptAt,
+            lastErrorCode: lastErrorCode,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -6317,6 +6489,9 @@ class $$OriginBundlesTableTableManager extends RootTableManager<
             Value<String?> serverReceiptId = const Value.absent(),
             Value<int> hopLimit = const Value.absent(),
             Value<int> copyBudget = const Value.absent(),
+            Value<int> retryCount = const Value.absent(),
+            Value<DateTime?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               OriginBundlesCompanion.insert(
@@ -6335,6 +6510,9 @@ class $$OriginBundlesTableTableManager extends RootTableManager<
             serverReceiptId: serverReceiptId,
             hopLimit: hopLimit,
             copyBudget: copyBudget,
+            retryCount: retryCount,
+            nextAttemptAt: nextAttemptAt,
+            lastErrorCode: lastErrorCode,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

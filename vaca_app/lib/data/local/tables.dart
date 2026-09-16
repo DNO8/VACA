@@ -95,6 +95,9 @@ class OriginBundles extends Table {
   TextColumn get serverReceiptId => text().nullable()();
   IntColumn get hopLimit => integer().withDefault(const Constant(8))();
   IntColumn get copyBudget => integer().withDefault(const Constant(3))();
+  IntColumn get retryCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+  TextColumn get lastErrorCode => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

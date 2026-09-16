@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:typed_data';
 
 import '../../data/local/enums.dart' as local;
@@ -19,13 +20,16 @@ class BundleScheduler {
     this.batchSize = 5,
     this.baseRetrySeconds = 30,
     this.maxRetrySeconds = 3600,
+    Random? random,
   })  : _queue = queue,
         _transport = transport,
-        _serverContract = serverContract;
+        _serverContract = serverContract,
+        _random = random ?? Random.secure();
 
   final BundleQueueService _queue;
   final Transport _transport;
   final ServerContract _serverContract;
+  final Random _random;
   final int batchSize;
   final int baseRetrySeconds;
   final int maxRetrySeconds;
@@ -67,7 +71,10 @@ class BundleScheduler {
     _retryTimer?.cancel();
     try {
       final pending = await _queue.pendingBundles(limit: batchSize);
-      if (pending.isEmpty) return;
+      if (pending.isEmpty) {
+        await _scheduleRetryIfNeeded();
+        return;
+      }
 
       for (final row in pending) {
         final bytes = await _queue.bundleBytes(row.id);
@@ -95,6 +102,7 @@ class BundleScheduler {
           payloadHash: payloadHash,
         );
 
+        await _queue.markSent(row.id);
         final result = await _transport.send(packet);
         await _handleDeliveryResult(row.id, result);
       }
@@ -112,12 +120,14 @@ class BundleScheduler {
     final state = result.state;
     if (state == DeliveryState.queued) {
       // El transporte aún no pudo enviar; queda en cola.
+      await _recordFailure(
+        bundleId,
+        result.failure ??
+            const DeliveryFailure('transport_queued', retryable: true),
+      );
       return;
     }
-    if (state == DeliveryState.sent) {
-      await _queue.markSent(bundleId);
-      return;
-    }
+    if (state == DeliveryState.sent) return;
     if (state == DeliveryState.delivered && result.receipt != null) {
       final persisted = await _queue.markDelivered(bundleId, result.receipt!);
       if (persisted.isSuccess) await _uploadAttachments(bundleId);
@@ -132,16 +142,31 @@ class BundleScheduler {
       return;
     }
     if (state == DeliveryState.failed) {
-      final outcome = _isRetryable(result.error)
-          ? local.DeliveryOutcome.retryable
-          : local.DeliveryOutcome.nonRetryable;
-      await _queue.markFailed(
+      await _recordFailure(
         bundleId,
-        outcome,
-        errorCode: _errorCode(result.error),
+        result.failure ??
+            const DeliveryFailure('unknown_failure', retryable: true),
       );
       return;
     }
+  }
+
+  Future<void> _recordFailure(
+    String bundleId,
+    DeliveryFailure failure,
+  ) async {
+    final attempts = await _queue.countDeliveryAttempts(bundleId);
+    final nextAttemptAt = failure.retryable
+        ? DateTime.now().add(Duration(seconds: _backoffDelay(attempts)))
+        : null;
+    await _queue.markFailed(
+      bundleId,
+      failure.retryable
+          ? local.DeliveryOutcome.retryable
+          : local.DeliveryOutcome.nonRetryable,
+      errorCode: failure.code,
+      nextAttemptAt: nextAttemptAt,
+    );
   }
 
   Future<void> _uploadAttachments(String bundleId) async {
@@ -171,39 +196,19 @@ class BundleScheduler {
   }
 
   Future<void> _scheduleRetryIfNeeded() async {
-    final stillPending = await _queue.pendingBundles(limit: 1);
-    if (stillPending.isEmpty) return;
-
-    final row = stillPending.first;
-    final attempts = await _queue.countDeliveryAttempts(row.id);
-    final delay = _backoffDelay(attempts);
-
-    _retryTimer = Timer(Duration(seconds: delay), processQueue);
+    final nextRetryAt = await _queue.nextRetryAt();
+    if (nextRetryAt == null) return;
+    final delay = nextRetryAt.difference(DateTime.now());
+    _retryTimer = Timer(
+      delay.isNegative ? Duration.zero : delay,
+      processQueue,
+    );
   }
 
   int _backoffDelay(int attempts) {
-    final delay = baseRetrySeconds * (1 << attempts.clamp(0, 8));
-    return delay > maxRetrySeconds ? maxRetrySeconds : delay;
-  }
-
-  bool _isRetryable(Object? error) {
-    if (error == null) return true;
-    final message = error.toString().toLowerCase();
-    final nonRetryable = [
-      'unauthorized',
-      'forbidden',
-      'invalid',
-      'not found',
-      'gone',
-      'permanent',
-    ];
-    return !nonRetryable.any(message.contains);
-  }
-
-  String? _errorCode(Object? error) {
-    if (error == null) return null;
-    final text = error.toString();
-    return text.length > 100 ? '${text.substring(0, 100)}...' : text;
+    final exponential = baseRetrySeconds * (1 << attempts.clamp(0, 8));
+    final capped = min(exponential, maxRetrySeconds);
+    return min(capped + _random.nextInt(max(1, capped ~/ 4)), maxRetrySeconds);
   }
 
   Uint8List? _decodeHex(String value) {

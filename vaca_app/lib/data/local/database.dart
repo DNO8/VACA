@@ -27,7 +27,25 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (migrator) => migrator.createAll(),
+        onUpgrade: (migrator, from, to) async {
+          if (from < 2) {
+            await migrator.addColumn(originBundles, originBundles.retryCount);
+            await migrator.addColumn(
+              originBundles,
+              originBundles.nextAttemptAt,
+            );
+            await migrator.addColumn(
+              originBundles,
+              originBundles.lastErrorCode,
+            );
+          }
+        },
+      );
 
   static QueryExecutor _openConnection() {
     // drift_flutter maneja la ruta del archivo y las libs nativas de SQLite.

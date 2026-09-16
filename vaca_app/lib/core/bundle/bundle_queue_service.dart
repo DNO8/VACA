@@ -122,15 +122,40 @@ class BundleQueueService {
 
   /// Recupera los bundles pendientes ordenados por prioridad y antigüedad.
   Future<List<OriginBundle>> pendingBundles({int limit = 10}) async {
+    final now = DateTime.now();
     final query = _database.select(_database.originBundles)
-      ..where((b) => b.state.equals(DeliveryState.queued.index))
-      ..where((b) => b.expiresAt.isBiggerThan(Variable(DateTime.now())))
+      ..where(
+        (b) => b.state.isIn([
+          DeliveryState.queued.index,
+          DeliveryState.sent.index,
+        ]),
+      )
+      ..where((b) => b.expiresAt.isBiggerThan(Variable(now)))
+      ..where(
+        (b) =>
+            b.nextAttemptAt.isNull() |
+            b.nextAttemptAt.isSmallerOrEqual(Variable(now)),
+      )
       ..orderBy([
         (b) => OrderingTerm.asc(b.priority),
         (b) => OrderingTerm.asc(b.createdAt),
       ])
       ..limit(limit);
     return query.get();
+  }
+
+  Future<DateTime?> nextRetryAt() async {
+    final query = _database.select(_database.originBundles)
+      ..where(
+        (row) => row.state.isIn([
+          DeliveryState.queued.index,
+          DeliveryState.sent.index,
+        ]),
+      )
+      ..where((row) => row.nextAttemptAt.isNotNull())
+      ..orderBy([(row) => OrderingTerm.asc(row.nextAttemptAt)])
+      ..limit(1);
+    return (await query.getSingleOrNull())?.nextAttemptAt;
   }
 
   /// Marca un bundle como enviado.
@@ -143,6 +168,8 @@ class BundleQueueService {
         OriginBundlesCompanion(
           state: const Value(DeliveryState.sent),
           lastAttemptAt: Value(now),
+          nextAttemptAt: const Value(null),
+          lastErrorCode: const Value(null),
         ),
       );
       return const Success(null);
@@ -175,6 +202,8 @@ class BundleQueueService {
             state: const Value(DeliveryState.delivered),
             lastAttemptAt: Value(now),
             serverReceiptId: Value(receipt.receiptId),
+            nextAttemptAt: const Value(null),
+            lastErrorCode: const Value(null),
           ),
         );
         await _database.into(_database.serverReceipts).insert(
@@ -219,11 +248,12 @@ class BundleQueueService {
     }
   }
 
-  /// Marca un bundle como fallido y decrementa presupuesto de copias.
+  /// Marca un intento fallido sin consumir el presupuesto de copias DTN.
   Future<Result<void>> markFailed(
     String bundleId,
     DeliveryOutcome outcome, {
     String? errorCode,
+    DateTime? nextAttemptAt,
   }) async {
     try {
       final now = DateTime.now();
@@ -236,17 +266,18 @@ class BundleQueueService {
         );
       }
 
-      final newCopyBudget = row.copyBudget - 1;
-      final newState =
-          newCopyBudget <= 0 ? DeliveryState.failed : DeliveryState.queued;
-
+      final retryable = outcome == DeliveryOutcome.retryable;
       await (_database.update(_database.originBundles)
             ..where((bundle) => bundle.id.equals(bundleId)))
           .write(
         OriginBundlesCompanion(
-          state: Value(newState),
+          state: Value(
+            retryable ? DeliveryState.queued : DeliveryState.failed,
+          ),
           lastAttemptAt: Value(now),
-          copyBudget: Value(newCopyBudget),
+          retryCount: Value(row.retryCount + 1),
+          nextAttemptAt: Value(retryable ? nextAttemptAt : null),
+          lastErrorCode: Value(errorCode),
         ),
       );
 
