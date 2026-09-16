@@ -277,14 +277,6 @@ function jsonResponse(body: Record<string, unknown>, status: number): Response {
   });
 }
 
-async function requireWrite(
-  operation: PromiseLike<{ error: unknown }>,
-  code: string,
-): Promise<void> {
-  const { error } = await operation;
-  if (error) throw new Error(code);
-}
-
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return jsonResponse({ error: "method_not_allowed" }, 405);
@@ -461,145 +453,92 @@ Deno.serve(async (req) => {
     : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const now = new Date().toISOString();
-
-  try {
-    // Upsert identidad opaca vinculada a la clave publica.
-    await requireWrite(
-      supabase.from("identities").upsert(
-        {
-          device_public_key: originPublicKeyB64,
-        },
-        { onConflict: "device_public_key", ignoreDuplicates: true },
-      ),
-      "identity_write_failed",
-    );
-
-    // Crea o actualiza el incidente.
-    await requireWrite(
-      supabase.from("incidents").upsert(
-        {
-          incident_id: incidentId,
-          reporter_credential_ref: encodeBase64(originCredentialRef),
-          category,
-          priority,
-          people_count: payload.peopleCount,
-          short_note: payload.shortNote,
-          latitude: payload.latitude,
-          longitude: payload.longitude,
-          accuracy_meters: payload.accuracyMeters,
-          location_source: locationSource,
-          identity_assurance: identityAssurance,
-          status: eventType === "cancelled"
-            ? "cancellationReceived"
-            : "received",
-          updated_at: now,
-        },
-        { onConflict: "incident_id" },
-      ),
-      "incident_write_failed",
-    );
-
-    // Registra el evento append-only.
-    await requireWrite(
-      supabase.from("incident_events").upsert(
-        {
-          incident_id: incidentId,
-          event_type: eventType,
-          message_id: messageId,
-          payload_hash: encodeBase64(payloadHash),
-          signer: originPublicKeyB64,
-          signature: encodeBase64(header.get("s") as Uint8Array),
-          timestamp,
-        },
-        { onConflict: "message_id" },
-      ),
-      "event_write_failed",
-    );
-
-    // Registra adjuntos pendientes.
-    for (const attachment of payload.attachmentManifest) {
-      await requireWrite(
-        supabase.from("attachments").upsert(
-          {
-            incident_id: incidentId,
-            content_hash: attachment.contentHash,
-            size_bytes: attachment.sizeBytes,
-            kind: attachmentKindByIndex[attachment.kindIndex],
-          },
-          { onConflict: "incident_id, content_hash", ignoreDuplicates: true },
-        ),
-        "attachment_write_failed",
-      );
-    }
-
-    // Almacena el bundle origen para auditoria.
-    await requireWrite(
-      supabase.from("origin_bundles").upsert(
-        {
-          message_id: messageId,
-          incident_id: incidentId,
-          event_id: messageId,
-          protocol_version: bundle.version,
-          canonical_header: encodeBase64(encoder.encode(header)),
-          ciphertext: encodeBase64(bundle.ciphertext),
-          wrapped_key: encodeBase64(bundle.wrappedKey),
-          payload_hash: encodeBase64(payloadHash),
-          origin_public_key: originPublicKeyB64,
-          expires_at: expiresAt,
-          state: "received",
-        },
-        { onConflict: "message_id" },
-      ),
-      "bundle_write_failed",
-    );
-
-    // Marca idempotencia.
-    await requireWrite(
-      supabase.from("idempotency_keys").upsert(
-        {
-          message_id: messageId,
-          payload_hash: encodeBase64(payloadHash),
-          status: "received",
-        },
-        { onConflict: "message_id" },
-      ),
-      "idempotency_write_failed",
-    );
-
-    // Firma y devuelve recibo.
-    const receiptId = crypto.randomUUID();
-    const payloadHashB64 = encodeBase64(payloadHash);
-    const serverReceivedAt = new Date().toISOString();
-    const receiptSignature = signReceipt(
+  const receiptId = crypto.randomUUID();
+  const payloadHashB64 = encodeBase64(payloadHash);
+  const serverReceivedAt = new Date().toISOString();
+  const receiptSignatureB64 = encodeBase64(
+    signReceipt(
       receiptId,
       messageId,
       payloadHashB64,
       serverReceivedAt,
       receiptKeyId,
       receiptPrivateKey,
-    );
-    const receiptSignatureB64 = encodeBase64(receiptSignature);
+    ),
+  );
 
-    await requireWrite(
-      supabase.from("server_receipts").insert({
-        id: receiptId,
+  try {
+    // Upsert identidad opaca vinculada a la clave publica.
+    // Crea o actualiza el incidente.
+    // Registra el evento append-only.
+    // Registra adjuntos pendientes.
+    // Almacena el bundle origen para auditoria.
+    // Marca idempotencia.
+    // Firma y devuelve recibo.
+    const { data, error } = await supabase.rpc("accept_bundle", {
+      p_origin_public_key: originPublicKeyB64,
+      p_incident: {
+        incident_id: incidentId,
+        reporter_credential_ref: encodeBase64(originCredentialRef),
+        category,
+        priority,
+        people_count: payload.peopleCount,
+        short_note: payload.shortNote,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        accuracy_meters: payload.accuracyMeters,
+        location_source: locationSource,
+        identity_assurance: identityAssurance,
+        status: eventType === "cancelled" ? "cancellationReceived" : "received",
+        updated_at: now,
+      },
+      p_event: {
+        incident_id: incidentId,
+        event_type: eventType,
         message_id: messageId,
         payload_hash: payloadHashB64,
+        signer: originPublicKeyB64,
+        signature: encodeBase64(header.get("s") as Uint8Array),
+        timestamp,
+      },
+      p_bundle: {
+        protocol_version: bundle.version,
+        canonical_header: encodeBase64(encoder.encode(header)),
+        ciphertext: encodeBase64(bundle.ciphertext),
+        wrapped_key: encodeBase64(bundle.wrappedKey),
+        expires_at: expiresAt,
+      },
+      p_attachments: payload.attachmentManifest.map((attachment) => ({
+        content_hash: attachment.contentHash,
+        size_bytes: attachment.sizeBytes,
+        kind: attachmentKindByIndex[attachment.kindIndex],
+      })),
+      p_receipt: {
+        receipt_id: receiptId,
         server_received_at: serverReceivedAt,
         server_key_id: receiptKeyId,
         receipt_signature: receiptSignatureB64,
-      }),
-      "receipt_write_failed",
-    );
-
+      },
+    });
+    if (error) {
+      if (String(error.message).includes("idempotency_conflict")) {
+        return jsonResponse({ error: "idempotency_conflict" }, 409);
+      }
+      if (String(error.message).includes("incident_origin_conflict")) {
+        return jsonResponse({ error: "incident_origin_conflict" }, 403);
+      }
+      throw error;
+    }
+    const accepted = Array.isArray(data) ? data[0] : data;
+    if (!accepted) throw new Error("acceptance_missing");
     return jsonResponse(
       {
-        receipt_id: receiptId,
-        message_id: messageId,
-        payload_hash: payloadHashB64,
-        server_received_at: serverReceivedAt,
-        server_key_id: receiptKeyId,
-        signature: receiptSignatureB64,
+        receipt_id: accepted.receipt_id,
+        message_id: accepted.message_id,
+        payload_hash: accepted.payload_hash,
+        server_received_at: accepted.server_received_at,
+        server_key_id: accepted.server_key_id,
+        signature: accepted.receipt_signature,
       },
       200,
     );
