@@ -56,7 +56,7 @@ class SupabaseServerContract implements ServerContract {
       return DeliveryResult(
         messageId,
         DeliveryState.failed,
-        error: 'server_not_configured',
+        failure: _permanent('server_not_configured'),
       );
     }
 
@@ -83,7 +83,7 @@ class SupabaseServerContract implements ServerContract {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
-            error: 'receipt_missing',
+            failure: _permanent('receipt_missing'),
           );
         }
 
@@ -105,7 +105,7 @@ class SupabaseServerContract implements ServerContract {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
-            error: 'receipt_incomplete',
+            failure: _permanent('receipt_incomplete'),
           );
         }
         if (receiptMessageId != messageId ||
@@ -113,7 +113,7 @@ class SupabaseServerContract implements ServerContract {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
-            error: 'receipt_binding_invalid',
+            failure: _permanent('receipt_binding_invalid'),
           );
         }
 
@@ -122,7 +122,7 @@ class SupabaseServerContract implements ServerContract {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
-            error: 'server_public_key_missing',
+            failure: _permanent('server_public_key_missing'),
           );
         }
         final canonicalReceipt = [
@@ -141,14 +141,14 @@ class SupabaseServerContract implements ServerContract {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
-            error: 'receipt_verify_error',
+            failure: _permanent('receipt_verify_error'),
           );
         }
         if (!verify.valueOrNull!) {
           return DeliveryResult(
             messageId,
             DeliveryState.failed,
-            error: 'receipt_signature_invalid',
+            failure: _permanent('receipt_signature_invalid'),
           );
         }
 
@@ -170,14 +170,14 @@ class SupabaseServerContract implements ServerContract {
         return DeliveryResult(
           messageId,
           DeliveryState.failed,
-          error: 'server_${status}_non_retryable',
+          failure: _permanent('server_$status'),
         );
       }
 
       return DeliveryResult(
         messageId,
         DeliveryState.failed,
-        error: 'server_$status',
+        failure: _retryable('server_$status'),
       );
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
@@ -187,19 +187,19 @@ class SupabaseServerContract implements ServerContract {
         return DeliveryResult(
           messageId,
           DeliveryState.queued,
-          error: 'network_unavailable',
+          failure: _retryable('network_unavailable'),
         );
       }
       return DeliveryResult(
         messageId,
         DeliveryState.failed,
-        error: 'network_error: ${e.message}',
+        failure: _retryable('network_error'),
       );
-    } catch (e) {
+    } catch (_) {
       return DeliveryResult(
         messageId,
         DeliveryState.failed,
-        error: 'send_exception: $e',
+        failure: _retryable('send_exception'),
       );
     }
   }
@@ -271,6 +271,12 @@ class SupabaseServerContract implements ServerContract {
       return false;
     }
   }
+
+  static DeliveryFailure _retryable(String code) =>
+      DeliveryFailure(code, retryable: true);
+
+  static DeliveryFailure _permanent(String code) =>
+      DeliveryFailure(code, retryable: false);
 
   static Uint8List? _decodeKey(String? base64Key) {
     if (base64Key == null || base64Key.isEmpty) return null;

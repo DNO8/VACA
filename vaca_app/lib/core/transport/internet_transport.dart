@@ -72,7 +72,10 @@ class InternetTransport implements Transport {
       return DeliveryResult(
         packet.id,
         DeliveryState.failed,
-        error: 'origin_public_key_missing',
+        failure: const DeliveryFailure(
+          'origin_public_key_missing',
+          retryable: false,
+        ),
       );
     }
 

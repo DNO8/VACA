@@ -87,7 +87,7 @@ void main() {
       );
 
       expect(result.state, DeliveryState.failed);
-      expect(result.error, 'server_not_configured');
+      expect(result.failure?.code, 'server_not_configured');
     });
 
     test('requestAttachmentUrl returns null when not configured', () async {
@@ -169,7 +169,7 @@ void main() {
       );
 
       expect(result.state, DeliveryState.failed);
-      expect(result.error, 'receipt_binding_invalid');
+      expect(result.failure?.code, 'receipt_binding_invalid');
     });
 
     test('rejects a receipt bound to another payload hash', () async {
@@ -197,7 +197,7 @@ void main() {
       );
 
       expect(result.state, DeliveryState.failed);
-      expect(result.error, 'receipt_binding_invalid');
+      expect(result.failure?.code, 'receipt_binding_invalid');
     });
 
     test('fails with server_public_key_missing when key is absent', () async {
@@ -228,7 +228,7 @@ void main() {
       );
 
       expect(result.state, DeliveryState.failed);
-      expect(result.error, 'server_public_key_missing');
+      expect(result.failure?.code, 'server_public_key_missing');
     });
 
     test('fails with receipt_signature_invalid when verify is false', () async {
@@ -260,7 +260,7 @@ void main() {
       );
 
       expect(result.state, DeliveryState.failed);
-      expect(result.error, 'receipt_signature_invalid');
+      expect(result.failure?.code, 'receipt_signature_invalid');
     });
 
     test('returns queued on network connection error', () async {
@@ -289,7 +289,8 @@ void main() {
       );
 
       expect(result.state, DeliveryState.queued);
-      expect(result.error, 'network_unavailable');
+      expect(result.failure?.code, 'network_unavailable');
+      expect(result.failure?.retryable, isTrue);
     });
 
     test('fails non-retryable on 401', () async {
@@ -320,7 +321,8 @@ void main() {
       );
 
       expect(result.state, DeliveryState.failed);
-      expect(result.error, 'server_401_non_retryable');
+      expect(result.failure?.code, 'server_401');
+      expect(result.failure?.retryable, isFalse);
     });
   });
 }

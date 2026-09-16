@@ -48,18 +48,28 @@ class TransportPacket {
 /// Resultado de un intento de envío.
 enum DeliveryState { queued, sent, delivered, failed }
 
+class DeliveryFailure {
+  const DeliveryFailure(this.code, {required this.retryable});
+
+  final String code;
+  final bool retryable;
+}
+
 class DeliveryResult {
   const DeliveryResult(
     this.packetId,
     this.state, {
-    this.error,
+    this.failure,
     this.receipt,
   });
 
   final String packetId;
   final DeliveryState state;
-  final Object? error;
+  final DeliveryFailure? failure;
   final DeliveryReceipt? receipt;
+
+  @Deprecated('Use failure')
+  Object? get error => failure?.code;
 }
 
 class DeliveryReceipt {
