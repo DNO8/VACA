@@ -150,6 +150,24 @@ void main() {
     expect(bundle.retryCount, 1);
     expect(bundle.nextAttemptAt, isNull);
   });
+
+  test('expired bundle closes without a network send', () async {
+    await _insertBundle(
+      database,
+      expiresAt: DateTime.now().subtract(const Duration(minutes: 1)),
+    );
+
+    await scheduler.processQueue();
+
+    final bundle = await database.select(database.originBundles).getSingle();
+    final incident = await database.select(database.incidents).getSingle();
+    final attempt =
+        await database.select(database.deliveryAttempts).getSingle();
+    expect(transport.sends, 0);
+    expect(bundle.lastErrorCode, 'expired');
+    expect(incident.status, local.IncidentStatus.expired);
+    expect(attempt.outcome, local.DeliveryOutcome.expired);
+  });
 }
 
 Future<void> _insertBundle(

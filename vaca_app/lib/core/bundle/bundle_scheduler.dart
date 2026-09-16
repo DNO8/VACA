@@ -70,6 +70,7 @@ class BundleScheduler {
     _processing = true;
     _retryTimer?.cancel();
     try {
+      await _queue.expirePendingBundles();
       final pending = await _queue.pendingBundles(limit: batchSize);
       if (pending.isEmpty) {
         await _scheduleRetryIfNeeded();

@@ -158,6 +158,49 @@ class BundleQueueService {
     return (await query.getSingleOrNull())?.nextAttemptAt;
   }
 
+  Future<void> expirePendingBundles() async {
+    final now = DateTime.now();
+    final query = _database.select(_database.originBundles)
+      ..where(
+        (row) => row.state.isIn([
+          DeliveryState.queued.index,
+          DeliveryState.sent.index,
+        ]),
+      )
+      ..where((row) => row.expiresAt.isSmallerOrEqual(Variable(now)));
+    final expired = await query.get();
+    if (expired.isEmpty) return;
+    await _database.transaction(() async {
+      for (final bundle in expired) {
+        await (_database.update(_database.originBundles)
+              ..where((row) => row.id.equals(bundle.id)))
+            .write(
+          const OriginBundlesCompanion(
+            state: Value(DeliveryState.failed),
+            nextAttemptAt: Value(null),
+            lastErrorCode: Value('expired'),
+          ),
+        );
+        await (_database.update(_database.incidents)
+              ..where((row) => row.id.equals(bundle.incidentId)))
+            .write(
+          const IncidentsCompanion(status: Value(IncidentStatus.expired)),
+        );
+        await _database.into(_database.deliveryAttempts).insert(
+              DeliveryAttemptsCompanion.insert(
+                id: const Uuid().v4(),
+                messageId: bundle.id,
+                linkId: 'internet',
+                startedAt: now,
+                finishedAt: Value(now),
+                outcome: DeliveryOutcome.expired,
+                errorCode: const Value('expired'),
+              ),
+            );
+      }
+    });
+  }
+
   /// Marca un bundle como enviado.
   Future<Result<void>> markSent(String bundleId) async {
     try {
