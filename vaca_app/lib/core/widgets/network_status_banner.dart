@@ -33,7 +33,7 @@ class NetworkStatusBanner extends StatelessWidget {
         ),
       NetworkUiState.online => (
           tokens.info,
-          AppColors.deepBlue,
+          AppColors.white,
           Icons.wifi,
           pendingCount > 0
               ? 'Conectado · $pendingCount señales pendientes'
@@ -41,7 +41,7 @@ class NetworkStatusBanner extends StatelessWidget {
         ),
       NetworkUiState.syncing => (
           AppColors.orange,
-          AppColors.deepBlue,
+          AppColors.white,
           Icons.sync,
           'Sincronizando $pendingCount señales…',
         ),

@@ -36,7 +36,7 @@ class SyncStatusBadge extends StatelessWidget {
     };
 
     return Semantics(
-      label: 'Estado de sincronización: ',
+      label: 'Estado de sincronización: $label',
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

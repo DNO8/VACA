@@ -28,7 +28,7 @@ class PriorityBadge extends StatelessWidget {
     };
 
     return Semantics(
-      label: 'Prioridad: ',
+      label: 'Prioridad: $text',
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
