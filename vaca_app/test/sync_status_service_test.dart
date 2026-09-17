@@ -5,52 +5,50 @@ import 'package:vaca_app/features/delivery/domain/sync_status_service.dart';
 void main() {
   SyncSnapshot derive({
     TransportAvailability availability = TransportAvailability.available,
-    int queued = 0,
-    int sending = 0,
+    Set<String> pendingIncidentIds = const {},
     int delivered = 0,
-    int failed = 0,
-    int pendingAttachments = 0,
-    int uploadingAttachments = 0,
-    int failedAttachments = 0,
+    bool hasInFlight = false,
+    bool hasFailures = false,
+    bool hasRetryableAttachments = false,
   }) {
     return SyncSnapshot.derive(
       availability: availability,
-      queued: queued,
-      sending: sending,
+      pendingIncidentIds: pendingIncidentIds,
       delivered: delivered,
-      failed: failed,
-      pendingAttachments: pendingAttachments,
-      uploadingAttachments: uploadingAttachments,
-      failedAttachments: failedAttachments,
+      hasInFlight: hasInFlight,
+      hasFailures: hasFailures,
+      hasRetryableAttachments: hasRetryableAttachments,
     );
   }
 
   test('offline takes precedence and retains pending count', () {
     final snapshot = derive(
       availability: TransportAvailability.unavailable,
-      queued: 2,
-      failedAttachments: 1,
+      pendingIncidentIds: {'inc-1', 'inc-2'},
     );
 
     expect(snapshot.phase, SyncPhase.offline);
-    expect(snapshot.pendingCount, 3);
+    expect(snapshot.pendingCount, 2);
   });
 
   test('active bundle or attachment projects syncing', () {
-    expect(derive(sending: 1).phase, SyncPhase.syncing);
-    expect(derive(uploadingAttachments: 1).phase, SyncPhase.syncing);
+    expect(derive(hasInFlight: true).phase, SyncPhase.syncing);
   });
 
   test('persisted failures project error with retry action', () {
-    final snapshot = derive(failed: 1, failedAttachments: 1);
+    final snapshot = derive(
+      pendingIncidentIds: {'inc-1'},
+      hasFailures: true,
+      hasRetryableAttachments: true,
+    );
 
     expect(snapshot.phase, SyncPhase.error);
-    expect(snapshot.pendingCount, 2);
+    expect(snapshot.pendingCount, 1);
     expect(snapshot.canRetry, isTrue);
   });
 
   test('permanent bundle failure does not expose a dead retry action', () {
-    final snapshot = derive(failed: 1);
+    final snapshot = derive(hasFailures: true);
 
     expect(snapshot.phase, SyncPhase.error);
     expect(snapshot.canRetry, isFalse);
@@ -61,5 +59,15 @@ void main() {
 
     expect(snapshot.phase, SyncPhase.success);
     expect(snapshot.deliveredCount, 2);
+  });
+
+  test('an incident with undelivered bundle and unsynced photo counts once', () {
+    // Misma señal con dos items pendientes -> un solo pendiente visible.
+    final snapshot = derive(
+      pendingIncidentIds: {'inc-1'},
+      hasInFlight: true,
+    );
+
+    expect(snapshot.pendingCount, 1);
   });
 }

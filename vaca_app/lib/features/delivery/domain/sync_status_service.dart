@@ -21,28 +21,25 @@ class SyncSnapshot {
 
   factory SyncSnapshot.derive({
     required TransportAvailability availability,
-    required int queued,
-    required int sending,
+    required Set<String> pendingIncidentIds,
     required int delivered,
-    required int failed,
-    required int pendingAttachments,
-    required int uploadingAttachments,
-    required int failedAttachments,
+    required bool hasInFlight,
+    required bool hasFailures,
+    required bool hasRetryableAttachments,
   }) {
-    final pending =
-        queued + sending + pendingAttachments + uploadingAttachments;
     final phase = switch (availability) {
       TransportAvailability.unavailable => SyncPhase.offline,
-      _ when sending > 0 || uploadingAttachments > 0 => SyncPhase.syncing,
-      _ when failed > 0 || failedAttachments > 0 => SyncPhase.error,
-      _ when pending == 0 && delivered > 0 => SyncPhase.success,
+      _ when hasInFlight => SyncPhase.syncing,
+      _ when hasFailures => SyncPhase.error,
+      _ when pendingIncidentIds.isEmpty && delivered > 0 =>
+        SyncPhase.success,
       _ => SyncPhase.online,
     };
     return SyncSnapshot(
       phase: phase,
-      pendingCount: pending + failed + failedAttachments,
+      pendingCount: pendingIncidentIds.length,
       deliveredCount: delivered,
-      canRetry: failedAttachments > 0,
+      canRetry: hasRetryableAttachments,
     );
   }
 }
@@ -64,36 +61,38 @@ class SyncStatusService {
 
     void emit() {
       if (controller.isClosed) return;
+      // Una "senal pendiente" es un incidente con trabajo sin terminar: su
+      // bundle no llego o alguno de sus adjuntos no se sincronizo. Contar
+      // incidentes (no items) evita que una señal con foto aparezca como 2.
+      final pendingIncidentIds = <String>{
+        for (final row in bundles)
+          if (row.state != local.DeliveryState.delivered) row.incidentId,
+        for (final row in attachments)
+          if (row.syncStatus != local.AttachmentSyncStatus.synced)
+            row.incidentId,
+      };
+      final hasInFlight = bundles.any(
+            (row) => row.state == local.DeliveryState.sent,
+          ) ||
+          attachments.any(
+            (row) => row.syncStatus == local.AttachmentSyncStatus.uploading,
+          );
+      final failedBundles = bundles.any(
+        (row) => row.state == local.DeliveryState.failed,
+      );
+      final failedAttachments = attachments.any(
+        (row) => row.syncStatus == local.AttachmentSyncStatus.failed,
+      );
       controller.add(
         SyncSnapshot.derive(
           availability: availability,
-          queued: bundles
-              .where((row) => row.state == local.DeliveryState.queued)
-              .length,
-          sending: bundles
-              .where((row) => row.state == local.DeliveryState.sent)
-              .length,
+          pendingIncidentIds: pendingIncidentIds,
           delivered: bundles
               .where((row) => row.state == local.DeliveryState.delivered)
               .length,
-          failed: bundles
-              .where((row) => row.state == local.DeliveryState.failed)
-              .length,
-          pendingAttachments: attachments
-              .where(
-                (row) => row.syncStatus == local.AttachmentSyncStatus.pending,
-              )
-              .length,
-          uploadingAttachments: attachments
-              .where(
-                (row) => row.syncStatus == local.AttachmentSyncStatus.uploading,
-              )
-              .length,
-          failedAttachments: attachments
-              .where(
-                (row) => row.syncStatus == local.AttachmentSyncStatus.failed,
-              )
-              .length,
+          hasInFlight: hasInFlight,
+          hasFailures: failedBundles || failedAttachments,
+          hasRetryableAttachments: failedAttachments,
         ),
       );
     }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../bundle/bundle_signer.dart';
 import '../security/device_request_signer.dart';
@@ -94,7 +95,12 @@ class SupabaseServerContract implements ServerContract {
         final receivedAtValue = data['server_received_at'] as String?;
         final receivedAt = DateTime.tryParse(receivedAtValue ?? '');
         final serverKeyId = data['server_key_id'] as String?;
-        final receiptSignature = _decodeBytes(data['signature'] as String?);
+        var receiptSignature = _decodeBytes(data['signature'] as String?);
+        // Recibos emitidos con noble "recovered" llevan un byte extra al final;
+        // la firma Ed25519 canonica son los primeros 64 bytes.
+        if (receiptSignature != null && receiptSignature.length > 64) {
+          receiptSignature = Uint8List.fromList(receiptSignature.sublist(0, 64));
+        }
         if (receiptId == null ||
             receiptMessageId == null ||
             receiptHashBase64 == null ||
@@ -129,13 +135,18 @@ class SupabaseServerContract implements ServerContract {
           receiptId,
           receiptMessageId,
           receiptHashBase64,
-          receivedAtValue,
+          _canonicalInstant(receivedAt),
           serverKeyId,
         ].join('\n');
         final verify = await _signer.verify(
           Uint8List.fromList(utf8.encode(canonicalReceipt)),
           receiptSignature,
           serverPublicKey,
+        );
+        debugPrint(
+          'bundle-ingest receipt verify=${verify.valueOrNull} '
+          'sigLen=${receiptSignature.length} '
+          'canonical=${canonicalReceipt.replaceAll('\n', '|')}',
         );
         if (verify.isFailure) {
           return DeliveryResult(
@@ -180,6 +191,11 @@ class SupabaseServerContract implements ServerContract {
         failure: _retryable('server_$status'),
       );
     } on DioException catch (e) {
+      debugPrint(
+        'bundle-ingest DioException type=${e.type} '
+        'status=${e.response?.statusCode} body=${e.response?.data} '
+        'error=${e.error}',
+      );
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.sendTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
@@ -195,7 +211,8 @@ class SupabaseServerContract implements ServerContract {
         DeliveryState.failed,
         failure: _retryable('network_error'),
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('bundle-ingest exception: $e');
       return DeliveryResult(
         messageId,
         DeliveryState.failed,
@@ -243,8 +260,19 @@ class SupabaseServerContract implements ServerContract {
       );
 
       final data = response.data as Map<String, dynamic>?;
+      debugPrint(
+        'attachment-authorize status=${response.statusCode} data=$data',
+      );
       return data?['upload_url'] as String?;
-    } catch (_) {
+    } on DioException catch (e) {
+      debugPrint(
+        'attachment-authorize DioException type=${e.type} '
+        'status=${e.response?.statusCode} body=${e.response?.data} '
+        'error=${e.error}',
+      );
+      return null;
+    } catch (e) {
+      debugPrint('attachment-authorize exception: $e');
       return null;
     }
   }
@@ -266,11 +294,25 @@ class SupabaseServerContract implements ServerContract {
         ),
       );
       final status = response.statusCode ?? 0;
+      debugPrint('attachment-upload status=$status url=$uploadUrl');
       return status >= 200 && status < 300;
-    } catch (_) {
+    } on DioException catch (e) {
+      debugPrint(
+        'attachment-upload DioException type=${e.type} '
+        'status=${e.response?.statusCode} body=${e.response?.data} '
+        'error=${e.error}',
+      );
+      return false;
+    } catch (e) {
+      debugPrint('attachment-upload exception: $e');
       return false;
     }
   }
+
+  /// Normaliza un instante al formato ISO-8601 UTC con milisegundos que usa
+  /// el servidor al firmar (`new Date().toISOString()`, p.ej. `…Z`).
+  static String _canonicalInstant(DateTime value) =>
+      value.toUtc().copyWith(microsecond: 0).toIso8601String();
 
   static DeliveryFailure _retryable(String code) =>
       DeliveryFailure(code, retryable: true);
