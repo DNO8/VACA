@@ -20,6 +20,7 @@ import 'bundle/bundle_codec.dart';
 import 'bundle/bundle_queue_service.dart';
 import 'bundle/bundle_scheduler.dart';
 import 'bundle/bundle_signer.dart';
+import 'links/external_link_service.dart';
 import 'permissions/permission_service.dart';
 import 'security/device_request_signer.dart';
 import 'security/identity_key_source.dart';
@@ -51,6 +52,10 @@ final adTrackingServiceProvider = Provider<AdTrackingService>((ref) {
   return RevenueCatAdTrackingService(
     apiKey: AppConfig.instance.revenueCatAndroidApiKey,
   );
+});
+
+final externalLinkServiceProvider = Provider<ExternalLinkService>((ref) {
+  return const UrlLauncherExternalLinkService();
 });
 
 /// Contrato de servidor para entrega de bundles por Internet.

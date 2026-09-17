@@ -11,6 +11,8 @@ class AppConfig {
     required this.flavor,
     required this.revenueCatAndroidApiKey,
     required this.adMobBannerAdUnitId,
+    required this.privacyPolicyUri,
+    required this.supportUri,
   });
 
   static final AppConfig _instance = _load();
@@ -27,6 +29,10 @@ class AppConfig {
     const adMobBannerAdUnitId = String.fromEnvironment(
       'ADMOB_BANNER_AD_UNIT_ID',
     );
+    const privacyPolicyUrl = String.fromEnvironment('PRIVACY_POLICY_URL');
+    const supportUrl = String.fromEnvironment('SUPPORT_URL');
+    final privacyPolicyUri = _httpsUri(privacyPolicyUrl);
+    final supportUri = _httpsUri(supportUrl);
     var flavor = configuredFlavor;
     if (flavor.isEmpty) {
       if (kDebugMode) {
@@ -43,25 +49,40 @@ class AppConfig {
     if (!known.contains(flavor)) {
       throw StateError('FLAVOR desconocido: $flavor. Valores: $known.');
     }
-    if (!kDebugMode &&
-        flavor == 'public' &&
-        (revenueCatAndroidApiKey.isEmpty || adMobBannerAdUnitId.isEmpty)) {
-      throw StateError(
-        'RevenueCat Ads requiere REVENUECAT_ANDROID_API_KEY y '
-        'ADMOB_BANNER_AD_UNIT_ID en public release.',
-      );
+    if (!kDebugMode && flavor == 'public') {
+      if (revenueCatAndroidApiKey.isEmpty || adMobBannerAdUnitId.isEmpty) {
+        throw StateError(
+          'RevenueCat Ads requiere REVENUECAT_ANDROID_API_KEY y '
+          'ADMOB_BANNER_AD_UNIT_ID en public release.',
+        );
+      }
+      if (privacyPolicyUri == null || supportUri == null) {
+        throw StateError(
+          'PRIVACY_POLICY_URL y SUPPORT_URL HTTPS son obligatorias en '
+          'public release.',
+        );
+      }
     }
 
     return AppConfig._(
       flavor: flavor,
       revenueCatAndroidApiKey: revenueCatAndroidApiKey,
       adMobBannerAdUnitId: adMobBannerAdUnitId,
+      privacyPolicyUri: privacyPolicyUri,
+      supportUri: supportUri,
     );
+  }
+
+  static Uri? _httpsUri(String value) {
+    final uri = Uri.tryParse(value);
+    return uri?.scheme == 'https' && uri!.host.isNotEmpty ? uri : null;
   }
 
   final String flavor;
   final String revenueCatAndroidApiKey;
   final String adMobBannerAdUnitId;
+  final Uri? privacyPolicyUri;
+  final Uri? supportUri;
 
   bool get isDev => flavor == 'dev';
   bool get isPublic => flavor == 'public';

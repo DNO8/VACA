@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/providers.dart';
 import '../../../core/result/result.dart';
 import '../../../core/theme/app_theme.dart';
@@ -65,6 +66,16 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
             'No se completó la eliminación remota.';
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openLink(Uri? uri) async {
+    final opened =
+        uri != null && await ref.read(externalLinkServiceProvider).open(uri);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enlace no disponible.')),
+      );
+    }
   }
 
   Future<void> _deleteLocalData() async {
@@ -191,11 +202,24 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                             subtitle: Text('Versión ${profile.consentVersion}'),
                           ),
                           const Divider(height: 1),
-                          const ListTile(
-                            leading: Icon(Icons.support_agent_outlined),
-                            title: Text('Soporte'),
-                            subtitle:
-                                Text('URL pública pendiente de aprobación.'),
+                          ListTile(
+                            leading: const Icon(Icons.policy_outlined),
+                            title: const Text('Política de privacidad'),
+                            subtitle: const Text('Abrir documento público'),
+                            trailing: const Icon(Icons.open_in_new),
+                            onTap: () => _openLink(
+                              AppConfig.instance.privacyPolicyUri,
+                            ),
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            leading: const Icon(Icons.support_agent_outlined),
+                            title: const Text('Soporte'),
+                            subtitle: const Text('Abrir canal público'),
+                            trailing: const Icon(Icons.open_in_new),
+                            onTap: () => _openLink(
+                              AppConfig.instance.supportUri,
+                            ),
                           ),
                           const Divider(height: 1),
                           ListTile(

@@ -19,6 +19,7 @@ class RevenueCatBannerAd extends ConsumerStatefulWidget {
 class _RevenueCatBannerAdState extends ConsumerState<RevenueCatBannerAd> {
   BannerAd? _banner;
   bool _loaded = false;
+  bool _privacyOptionsRequired = false;
 
   @override
   void initState() {
@@ -51,7 +52,19 @@ class _RevenueCatBannerAdState extends ConsumerState<RevenueCatBannerAd> {
       (error) => form.complete(error == null),
     );
     if (!await form.future) return false;
+    final privacyStatus =
+        await ConsentInformation.instance.getPrivacyOptionsRequirementStatus();
+    if (mounted) {
+      setState(() {
+        _privacyOptionsRequired =
+            privacyStatus == PrivacyOptionsRequirementStatus.required;
+      });
+    }
     return ConsentInformation.instance.canRequestAds();
+  }
+
+  Future<void> _showPrivacyOptions() async {
+    await ConsentForm.showPrivacyOptionsForm((_) {});
   }
 
   void _loadBanner(String adUnitId, AdTrackingService tracker) {
@@ -132,6 +145,11 @@ class _RevenueCatBannerAdState extends ConsumerState<RevenueCatBannerAd> {
             height: banner.size.height.toDouble(),
             child: AdWidget(ad: banner),
           ),
+          if (_privacyOptionsRequired)
+            TextButton(
+              onPressed: _showPrivacyOptions,
+              child: const Text('Opciones de privacidad de anuncios'),
+            ),
         ],
       ),
     );
