@@ -19,8 +19,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 1100));
 
-    expect(find.text('Coordinación local'), findsOneWidget);
-    expect(tester.widget<VacaBrandLogo>(find.byType(VacaBrandLogo)).size, 52);
+    expect(find.text('Respondedor Local'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -31,8 +31,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Coordinación local'), findsOneWidget);
-    expect(find.byIcon(Icons.add), findsOneWidget);
+    expect(find.text('Respondedor Local'), findsOneWidget);
+    expect(find.text('Nueva señal de incidente'), findsOneWidget);
   });
 
   testWidgets('onboarding muestra disclaimer antes de solicitar permisos',

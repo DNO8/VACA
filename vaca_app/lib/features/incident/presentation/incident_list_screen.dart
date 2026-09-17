@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
@@ -28,20 +29,200 @@ class IncidentListScreen extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          const VacaHero(
-            asset: 'assets/images/estetica-4.jpg',
-            title: 'Coordinación local',
-            subtitle: 'SEÑALES · OFFLINE-FIRST',
-            height: 180,
-            alignment: Alignment(0, 0.3),
-            trailing: VacaBrandLogo(size: 52),
+          SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/images/estetica-4.jpg',
+                  fit: BoxFit.cover,
+                  alignment: const Alignment(0, 0.3),
+                ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xAA1F3B30),
+                        Color(0x551F3B30),
+                        AppColors.celadon50,
+                      ],
+                      stops: [0, 0.5, 1],
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      0,
+                      AppSpacing.xl,
+                      AppSpacing.xl,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${vacaGreeting(ref.watch(vacaClockProvider)())},',
+                                style: AppTypography.body.copyWith(
+                                  color: AppColors.celadon300
+                                      .withValues(alpha: 0.85),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'Respondedor Local',
+                                style: TextStyle(
+                                  fontFamily: AppTypography.brandFont,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 22,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xB3456B58),
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                            border: Border.all(
+                              color:
+                                  AppColors.celadon300.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.shield_outlined,
+                            color: AppColors.celadon300,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          NetworkStatusBanner(
-            state: _networkState(sync?.phase ?? SyncPhase.offline),
-            pendingCount: sync?.pendingCount ?? 0,
-            onRetry: sync?.canRetry == true
-                ? () => ref.read(bundleSchedulerProvider).processQueue()
-                : null,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.sm,
+              AppSpacing.screenPadding,
+              0,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: NetworkStatusBanner(
+                state: _networkState(sync?.phase ?? SyncPhase.offline),
+                pendingCount: sync?.pendingCount ?? 0,
+                onRetry: sync?.canRetry == true
+                    ? () => ref.read(bundleSchedulerProvider).processQueue()
+                    : null,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.sm,
+              AppSpacing.screenPadding,
+              AppSpacing.sm,
+            ),
+            child: Semantics(
+              button: true,
+              label: 'Nueva señal de incidente. Funciona sin conexión.',
+              child: Material(
+                color: AppColors.celadon700,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                child: InkWell(
+                  onTap: () => _create(context),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xl,
+                      vertical: AppSpacing.lg,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            color: AppColors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Nueva señal de incidente',
+                                style: TextStyle(
+                                  fontFamily: AppTypography.brandFont,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 17,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                              Text(
+                                'Funciona sin conexión',
+                                style: AppTypography.body.copyWith(
+                                  color: AppColors.white.withValues(alpha: 0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: AppColors.white.withValues(alpha: 0.7),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text('Actividad reciente', style: AppTypography.h3),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      ref.read(shellTabProvider.notifier).state = 1,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.celadon700,
+                    minimumSize: const Size(48, 36),
+                  ),
+                  child: const Text('Ver entrega →'),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: StreamBuilder<List<UserIncident>>(
@@ -61,7 +242,9 @@ class IncidentListScreen extends ConsumerWidget {
                   );
                 }
                 return ListView.builder(
-                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenPadding,
+                  ),
                   itemCount: incidents.length,
                   itemBuilder: (context, index) {
                     final incident = incidents[index];
@@ -73,6 +256,8 @@ class IncidentListScreen extends ConsumerWidget {
                         status: incident.status,
                         locationLabel: _locationLabel(incident),
                         capturedAt: incident.createdAt,
+                        incidentId: incident.id,
+                        note: incident.shortNote,
                         attachmentStatus: attachmentSnapshot.data,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
@@ -89,15 +274,6 @@ class IncidentListScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-      floatingActionButton: Semantics(
-        button: true,
-        label: 'Nueva señal',
-        child: FloatingActionButton(
-          onPressed: () => _create(context),
-          backgroundColor: AppColors.celadon700,
-          child: const Icon(Icons.add, color: AppColors.white),
-        ),
       ),
     );
   }

@@ -1,17 +1,16 @@
-import 'dart:async';
-
+import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
 import '../../../core/result/result.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../data/local/database.dart';
 import '../../../data/local/enums.dart';
 import '../domain/incident.dart';
-import '../domain/incident_service.dart';
 
-/// Detalle de un incidente y controles de ciclo de vida.
 class IncidentDetailScreen extends ConsumerStatefulWidget {
   const IncidentDetailScreen({required this.incidentId, super.key});
 
@@ -23,204 +22,391 @@ class IncidentDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
-  Future<UserIncident?>? _incident;
+  final _updateController = TextEditingController();
+  bool _busy = false;
 
   @override
-  void initState() {
-    super.initState();
-    _load();
+  void dispose() {
+    _updateController.dispose();
+    super.dispose();
   }
 
-  void _load() {
-    final service = ref.read(incidentServiceProvider);
-    setState(() {
-      _incident = service.get(widget.incidentId);
-    });
+  Future<void> _run(
+    Future<Result<UserIncident>> Function() operation,
+    String failureFallback,
+  ) async {
+    setState(() => _busy = true);
+    try {
+      final result = await operation();
+      if (!mounted) return;
+      if (result case Failure(error: final error)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message ?? failureFallback),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
-  Future<void> _update(IncidentService service, UserIncident incident) async {
-    final controller = TextEditingController(text: incident.shortNote);
-    final note = await showDialog<String>(
+  Future<void> _publishUpdate() async {
+    final note = _updateController.text.trim();
+    await _run(
+      () => ref.read(incidentServiceProvider).updateNote(widget.incidentId, note),
+      'No se pudo actualizar.',
+    );
+    if (mounted) {
+      _updateController.clear();
+      ref.read(bundleSchedulerProvider).processQueue();
+    }
+  }
+
+  Future<void> _confirmCancel(UserIncident incident) async {
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Actualizar señal'),
-        content: TextField(
-          controller: controller,
-          maxLength: 280,
-          maxLines: 4,
-          decoration: const InputDecoration(labelText: 'Nota actualizada'),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.md,
+            AppSpacing.xl,
+            AppSpacing.xl,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stone300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const Text('¿Cancelar esta señal?', style: AppTypography.h2),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Se encolará un evento de cancelación firmado para el servidor. '
+                'El registro original se conserva en este dispositivo.',
+                style: AppTypography.body
+                    .copyWith(color: AppColors.neutral500),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Navigator.of(sheetContext).pop(false),
+                      child: const Text('No, volver'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.danger,
+                      ),
+                      onPressed: () =>
+                          Navigator.of(sheetContext).pop(true),
+                      child: const Text('Sí, cancelar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Guardar actualización'),
-          ),
-        ],
       ),
     );
-    controller.dispose();
-    if (note == null || note.isEmpty) return;
-    final result = await service.updateNote(incident.id, note);
-    if (!mounted) return;
-    switch (result) {
-      case Success():
-        unawaited(ref.read(bundleSchedulerProvider).processQueue());
-        _load();
-        _show('Actualización guardada y en cola.');
-      case Failure(error: final error):
-        _show(error.message ?? 'No se pudo guardar la actualización.');
-    }
-  }
-
-  Future<void> _cancel(IncidentService service, UserIncident incident) async {
-    final result = await service.cancel(incident.id);
-    if (!mounted) return;
-    switch (result) {
-      case Success():
-        unawaited(ref.read(bundleSchedulerProvider).processQueue());
-        _load();
-        _show('Cancelación guardada y en cola.');
-      case Failure(error: final error):
-        _show(error.message ?? 'No se pudo guardar la cancelación.');
-    }
-  }
-
-  void _show(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: AppTypography.body.copyWith(color: AppColors.white),
-        ),
-        backgroundColor: AppColors.celadon700,
-      ),
+    if (confirmed != true || !mounted) return;
+    await _run(
+      () => ref.read(incidentServiceProvider).cancel(widget.incidentId),
+      'No se pudo cancelar.',
     );
+    if (mounted) ref.read(bundleSchedulerProvider).processQueue();
   }
 
   @override
   Widget build(BuildContext context) {
+    final database = ref.watch(databaseProvider);
+    final service = ref.watch(incidentServiceProvider);
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.celadon900,
-        foregroundColor: AppColors.white,
-        title: Text(
-          'Detalle',
-          style: AppTypography.h3.copyWith(color: AppColors.white),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Gestionar señal')),
       body: FutureBuilder<UserIncident?>(
-        future: _incident,
+        future: service.get(widget.incidentId),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) {
+            return const EmptyState(kind: EmptyStateKind.loading);
           }
           final incident = snapshot.data;
           if (incident == null) {
             return const EmptyState(
               kind: EmptyStateKind.error,
               title: 'Señal no encontrada',
+              message: 'Ya no existe en este dispositivo.',
             );
           }
-          return _buildBody(incident);
+          return StreamBuilder<List<IncidentEvent>>(
+            stream: (database.select(database.incidentEvents)
+                  ..where((row) => row.incidentId.equals(incident.id))
+                  ..orderBy([(row) => OrderingTerm.desc(row.timestamp)]))
+                .watch(),
+            builder: (context, eventsSnapshot) {
+              return ListView(
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        vacaShortId(incident.id),
+                        style: AppTypography.dataSm
+                            .copyWith(color: AppColors.neutral500),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      PriorityBadge(priority: incident.priority),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _SummaryCard(incident: incident),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Historial', style: AppTypography.h3),
+                  const SizedBox(height: AppSpacing.sm),
+                  _Timeline(
+                    events: eventsSnapshot.data ?? const [],
+                    status: incident.status,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Agregar actualización', style: AppTypography.h3),
+                  const SizedBox(height: AppSpacing.xs),
+                  TextField(
+                    controller: _updateController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText:
+                          'Qué cambió, qué se resolvió, qué se necesita ahora…',
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  VacaButton(
+                    label: _busy ? 'Procesando…' : 'Publicar actualización',
+                    loading: _busy,
+                    onPressed: _busy ? null : _publishUpdate,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  OutlinedButton(
+                    onPressed: _busy ? null : () => _confirmCancel(incident),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                      side: const BorderSide(
+                        color: AppColors.danger,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Text('Cancelar señal'),
+                  ),
+                ],
+              );
+            },
+          );
         },
       ),
     );
   }
+}
 
-  Widget _buildBody(UserIncident incident) {
-    final service = ref.read(incidentServiceProvider);
-    final canCancel = !{
-      IncidentStatus.cancelledLocally,
-      IncidentStatus.cancellationQueued,
-      IncidentStatus.cancellationReceived,
-      IncidentStatus.expired,
-    }.contains(incident.status);
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({required this.incident});
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+  final UserIncident incident;
+
+  @override
+  Widget build(BuildContext context) {
+    final meta = categoryMeta(incident.category);
+    final statusColor = incidentStatusColor(incident.status, context.tokens);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(meta.label, style: AppTypography.h3),
+            if (incident.shortNote != null && incident.shortNote!.isNotEmpty)
+              Text(
+                incident.shortNote!,
+                style: AppTypography.body
+                    .copyWith(color: AppColors.neutral500),
+              ),
+            if (incident.peopleCount != null)
+              Text(
+                '${incident.peopleCount} personas aprox.',
+                style: AppTypography.body
+                    .copyWith(color: AppColors.neutral500),
+              ),
+            if (incident.latitude != null && incident.longitude != null)
+              Text(
+                '${incident.latitude!.toStringAsFixed(5)}, '
+                '${incident.longitude!.toStringAsFixed(5)}',
+                style: AppTypography.dataSm
+                    .copyWith(color: AppColors.neutral500),
+              ),
+            if (incident.identityAssurance == IdentityAssurance.verified)
+              Row(
+                children: [
+                  const Icon(
+                    Icons.verified_user_outlined,
+                    size: 14,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: AppSpacing.xxs),
+                  Text(
+                    'Identidad verificada',
+                    style: AppTypography.caption
+                        .copyWith(color: AppColors.success),
+                  ),
+                ],
+              ),
+            const Divider(height: AppSpacing.xl),
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Registrada',
+                      style: AppTypography.caption
+                          .copyWith(color: AppColors.neutral500),
+                    ),
+                    Text(
+                      vacaTimestamp(incident.createdAt),
+                      style: AppTypography.dataSm,
+                    ),
+                  ],
+                ),
+                const SizedBox(width: AppSpacing.lg),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Estado',
+                      style: AppTypography.caption
+                          .copyWith(color: AppColors.neutral500),
+                    ),
+                    Text(
+                      incidentStatusLabel(incident.status),
+                      style: AppTypography.caption.copyWith(
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Timeline extends StatelessWidget {
+  const _Timeline({required this.events, required this.status});
+
+  final List<IncidentEvent> events;
+  final IncidentStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final items = <({String text, Color color, DateTime? at})>[
+      if (status == IncidentStatus.cancelledLocally ||
+          status == IncidentStatus.cancellationQueued ||
+          status == IncidentStatus.cancellationReceived)
+        (
+          text: incidentStatusLabel(status),
+          color: tokens.danger,
+          at: null,
+        ),
+      if (status == IncidentStatus.receivedByServer ||
+          status == IncidentStatus.acknowledgedInstitutionally)
+        (
+          text: incidentStatusLabel(status),
+          color: tokens.success,
+          at: null,
+        ),
+      for (final event in events)
+        (
+          text: switch (event.eventType) {
+            EventType.created => 'Guardada localmente',
+            EventType.updated => 'Actualización publicada',
+            EventType.cancelled => 'Cancelación registrada',
+            EventType.receipt => 'Recibida por el servidor',
+          },
+          color: switch (event.eventType) {
+            EventType.created => AppColors.celadon700,
+            EventType.updated => tokens.info,
+            EventType.cancelled => tokens.danger,
+            EventType.receipt => tokens.success,
+          },
+          at: event.timestamp,
+        ),
+    ];
+    return Column(
       children: [
-        PriorityBadge(priority: incident.priority),
-        const SizedBox(height: AppSpacing.md),
-        Text(_categoryLabel(incident.category), style: AppTypography.h2),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'Estado: ${_statusLabel(incident.status)}',
-          style: AppTypography.bodyLg,
-        ),
-        Text(
-          'Confianza: ${_assuranceLabel(incident.identityAssurance)}',
-          style: AppTypography.body,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        if (incident.shortNote != null) ...[
-          Text(incident.shortNote!, style: AppTypography.bodyLg),
-          const SizedBox(height: AppSpacing.xl),
-        ],
-        if (incident.peopleCount != null) ...[
-          Text('Personas: ${incident.peopleCount}', style: AppTypography.data),
-          const SizedBox(height: AppSpacing.xl),
-        ],
-        if (incident.latitude != null && incident.longitude != null) ...[
-          Text(
-            'Ubicación: ${incident.latitude!.toStringAsFixed(5)}, ${incident.longitude!.toStringAsFixed(5)}',
-            style: AppTypography.data,
+        for (var i = 0; i < items.length; i++)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.only(top: 6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: items[i].color,
+                    ),
+                  ),
+                  if (i < items.length - 1)
+                    Container(
+                      width: 1,
+                      height: 28,
+                      margin: const EdgeInsets.only(top: 4),
+                      color: AppColors.stone300,
+                    ),
+                ],
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: i < items.length - 1 ? AppSpacing.sm : 0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(items[i].text, style: AppTypography.body),
+                      if (items[i].at != null)
+                        Text(
+                          vacaTimestamp(items[i].at!),
+                          style: AppTypography.dataSm
+                              .copyWith(color: AppColors.neutral500),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.xl),
-        ],
-        if (canCancel) ...[
-          VacaButton(
-            label: 'Actualizar señal',
-            icon: Icons.edit_outlined,
-            onPressed: () => _update(service, incident),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          VacaButton(
-            label: 'Cancelar señal',
-            variant: VacaButtonVariant.destructive,
-            onPressed: () => _cancel(service, incident),
-          ),
-          const SizedBox(height: AppSpacing.md),
-        ],
-        VacaButton(
-          label: 'Volver',
-          variant: VacaButtonVariant.secondary,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ],
     );
   }
-
-  String _categoryLabel(IncidentCategory c) => switch (c) {
-        IncidentCategory.sos => 'SOS · Vida en riesgo',
-        IncidentCategory.medical => 'Emergencia médica',
-        IncidentCategory.person => 'Persona / ubicación',
-        IncidentCategory.hazard => 'Peligro / infraestructura',
-        IncidentCategory.coordination => 'Coordinación',
-      };
-
-  String _statusLabel(IncidentStatus s) => switch (s) {
-        IncidentStatus.draft => 'Borrador',
-        IncidentStatus.savedLocally => 'Guardada localmente',
-        IncidentStatus.queued => 'En cola',
-        IncidentStatus.relaying => 'Reenviando',
-        IncidentStatus.uploading => 'Subiendo',
-        IncidentStatus.receivedByServer => 'Recibida',
-        IncidentStatus.acknowledgedInstitutionally => 'Confirmada',
-        IncidentStatus.cancelledLocally => 'Cancelada',
-        IncidentStatus.cancellationQueued => 'Cancelando',
-        IncidentStatus.cancellationReceived => 'Cancelada',
-        IncidentStatus.expired => 'Expirada',
-        IncidentStatus.failedRetryable => 'Reintentable',
-      };
-
-  String _assuranceLabel(IdentityAssurance a) => switch (a) {
-        IdentityAssurance.unverified => 'Identidad no verificada',
-        IdentityAssurance.verified => 'Identidad verificada',
-        IdentityAssurance.expired => 'Credencial vencida',
-        IdentityAssurance.revoked => 'Credencial revocada',
-      };
 }
