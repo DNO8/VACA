@@ -40,12 +40,14 @@ class IncidentService {
     double? accuracyMeters,
     required LocationSource locationSource,
     required IdentityAssurance identityAssurance,
+    String? id,
+    DateTime? now,
   }) async {
-    final id = const Uuid().v4();
-    final now = DateTime.now();
+    final incidentId = id ?? const Uuid().v4();
+    final created = now ?? DateTime.now();
     await _database.into(_database.incidents).insert(
           IncidentsCompanion.insert(
-            id: id,
+            id: incidentId,
             reporterProfileId: reporterProfileId,
             category: category,
             priority: priority,
@@ -55,15 +57,15 @@ class IncidentService {
             longitude: Value(longitude),
             accuracyMeters: Value(accuracyMeters),
             locationSource: locationSource,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: created,
+            updatedAt: created,
             status: IncidentStatus.savedLocally,
             identityAssurance: identityAssurance,
           ),
         );
 
     return UserIncident(
-      id: id,
+      id: incidentId,
       reporterProfileId: reporterProfileId,
       category: category,
       priority: priority,
@@ -73,8 +75,8 @@ class IncidentService {
       longitude: longitude,
       accuracyMeters: accuracyMeters,
       locationSource: locationSource,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: created,
+      updatedAt: created,
       status: IncidentStatus.savedLocally,
       identityAssurance: identityAssurance,
     );
@@ -90,6 +92,8 @@ class IncidentService {
     double? accuracyMeters,
     required LocationSource locationSource,
     PendingAttachment? attachment,
+    String? id,
+    DateTime? now,
   }) async {
     final profile = await _identity.getOrCreateLocalProfile();
     try {
@@ -106,6 +110,8 @@ class IncidentService {
           accuracyMeters: accuracyMeters,
           locationSource: locationSource,
           identityAssurance: profile.identityAssurance,
+          id: id,
+          now: now,
         );
         final attachments = <Attachment>[];
         if (attachment != null) {
