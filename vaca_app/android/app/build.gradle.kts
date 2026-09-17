@@ -5,6 +5,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val adMobAppId = providers.gradleProperty("ADMOB_APP_ID")
+    .orElse(providers.environmentVariable("ADMOB_APP_ID"))
+    .orNull
+val buildsPublicRelease = gradle.startParameter.taskNames.any {
+    it.contains("PublicRelease", ignoreCase = true)
+}
+val googleTestAdMobAppId = "ca-app-pub-3940256099942544~3347511713"
+
 android {
     namespace = "cl.vaca.vaca_app"
     // Desde el 31 de agosto de 2026, apps y actualizaciones en Google Play
@@ -39,15 +47,23 @@ android {
         create("dev") {
             dimension = "track"
             applicationIdSuffix = ".dev"
+            manifestPlaceholders["adMobAppId"] = googleTestAdMobAppId
             resValue("string", "app_name", "VACA Dev")
         }
         create("public") {
             dimension = "track"
+            if (buildsPublicRelease && adMobAppId.isNullOrBlank()) {
+                throw GradleException(
+                    "ADMOB_APP_ID is required for public release builds.",
+                )
+            }
+            manifestPlaceholders["adMobAppId"] = adMobAppId ?: googleTestAdMobAppId
             resValue("string", "app_name", "VACA")
         }
         create("municipalPilot") {
             dimension = "track"
             applicationIdSuffix = ".pilot"
+            manifestPlaceholders["adMobAppId"] = googleTestAdMobAppId
             resValue("string", "app_name", "VACA Piloto")
         }
     }

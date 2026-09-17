@@ -50,6 +50,7 @@ dependencies:
   didit_sdk: ^4.7.4
   cryptography: 2.9.0
   purchases_flutter: 10.12.0
+  google_mobile_ads: 9.1.0
 
 dev_dependencies:
   flutter_test:

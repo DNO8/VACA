@@ -6,6 +6,7 @@ import '../../../core/result/result.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/enums.dart';
+import '../../about/presentation/about_vaca_screen.dart';
 import '../domain/identity_profile.dart';
 
 class IdentityDataScreen extends ConsumerStatefulWidget {
@@ -159,6 +160,23 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: widget.onOpenWallet,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Card(
+                      child: ListTile(
+                        minVerticalPadding: AppSpacing.md,
+                        leading: const Icon(Icons.info_outline),
+                        title: const Text('Acerca de VACA'),
+                        subtitle: const Text(
+                          'Misión, transparencia y publicidad responsable.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) => const AboutVacaScreen(),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xl),
