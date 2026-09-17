@@ -33,7 +33,9 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
 
   void _load() {
     final service = ref.read(incidentServiceProvider);
-    setState(() => _incident = service.get(widget.incidentId));
+    setState(() {
+      _incident = service.get(widget.incidentId);
+    });
   }
 
   Future<void> _update(IncidentService service, UserIncident incident) async {
