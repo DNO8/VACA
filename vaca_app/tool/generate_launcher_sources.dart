@@ -58,8 +58,7 @@ void _generateShipatonIcon() {
   );
   if (source == null) throw StateError('Could not decode Shipaton icon source');
   final output = image.copyResize(source, width: 1024, height: 1024);
-  File('store/android/icon-1024.png')
-      .writeAsBytesSync(image.encodePng(output));
+  File('store/android/icon-1024.png').writeAsBytesSync(image.encodePng(output));
 }
 
 void _generateAndroidNightResources() {
