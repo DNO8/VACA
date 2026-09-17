@@ -247,3 +247,11 @@ final attachmentServiceProvider = Provider<AttachmentService>((ref) {
   final db = ref.watch(databaseProvider);
   return AttachmentService(db);
 });
+
+/// Pestaña activa del [AppShell]. Permite que pantallas hijas (p. ej. la
+/// confirmación de guardado local) soliciten cambiar de pestaña.
+final shellTabProvider = StateProvider<int>((ref) => 0);
+
+/// Reloj de presentación (instante actual). Sobreescribible en tests para
+/// mantener goldens y pruebas de UI deterministas.
+final vacaClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
