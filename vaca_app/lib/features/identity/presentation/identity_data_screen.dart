@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
 import '../../../core/result/result.dart';
 import '../../../core/theme/app_theme.dart';
@@ -21,6 +23,7 @@ class IdentityDataScreen extends ConsumerStatefulWidget {
 
 class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
   Future<UserIdentityProfile>? _profile;
+  Future<_LocalStats>? _stats;
   bool _verifying = false;
   bool _deleting = false;
 
@@ -32,6 +35,22 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
 
   void _reload() {
     _profile = ref.read(identityServiceProvider).getOrCreateLocalProfile();
+    _stats = _loadStats();
+  }
+
+  Future<_LocalStats> _loadStats() async {
+    final db = ref.read(databaseProvider);
+    final incidents = await db.select(db.incidents).get();
+    final attachments = await db.select(db.attachments).get();
+    final receipts = await (db.select(db.serverReceipts)
+          ..orderBy([(r) => OrderingTerm.desc(r.serverReceivedAt)])
+          ..limit(1))
+        .get();
+    return _LocalStats(
+      incidents.length,
+      attachments.length,
+      receipts.firstOrNull?.serverReceivedAt,
+    );
   }
 
   Future<void> _verify() async {
@@ -102,7 +121,10 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
     setState(() => _deleting = true);
     final result = await ref.read(identityServiceProvider).deleteLocalData();
     if (!mounted) return;
-    setState(() => _deleting = false);
+    setState(() {
+      _deleting = false;
+      _reload();
+    });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -114,6 +136,67 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
       ),
     );
   }
+
+  void _showCredential(UserIdentityProfile profile) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Credencial del dispositivo'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'CLAVE PÚBLICA',
+              style:
+                  AppTypography.caption.copyWith(color: AppColors.neutral500),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            SelectableText(
+              profile.devicePublicKey,
+              style: AppTypography.dataSm,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'ESTADO',
+              style:
+                  AppTypography.caption.copyWith(color: AppColors.neutral500),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              _assuranceLabel(profile.identityAssurance),
+              style: AppTypography.body,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'CONSENTIMIENTO',
+              style:
+                  AppTypography.caption.copyWith(color: AppColors.neutral500),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              'Versión ${profile.consentVersion}',
+              style: AppTypography.body,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _assuranceLabel(IdentityAssurance assurance) => switch (assurance) {
+        IdentityAssurance.unverified =>
+          'No verificada · las señales se guardan igualmente',
+        IdentityAssurance.verified => 'Verificada · credencial opaca vigente',
+        IdentityAssurance.expired => 'Credencial caducada',
+        IdentityAssurance.revoked => 'Credencial revocada',
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +218,8 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                   return const EmptyState(kind: EmptyStateKind.loading);
                 }
                 final profile = snapshot.data!;
+                final verified =
+                    profile.identityAssurance == IdentityAssurance.verified;
                 return ListView(
                   padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
@@ -142,17 +227,68 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                     const SizedBox(height: AppSpacing.lg),
                     const Text('Preparación', style: AppTypography.h2),
                     const SizedBox(height: AppSpacing.sm),
-                    VacaButton(
-                      label: profile.identityAssurance ==
-                              IdentityAssurance.verified
-                          ? 'Identidad verificada'
-                          : 'Verificar identidad',
-                      icon: Icons.verified_user_outlined,
-                      loading: _verifying,
-                      onPressed: profile.identityAssurance ==
-                              IdentityAssurance.verified
-                          ? null
-                          : _verify,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: VacaButton(
+                            label: verified
+                                ? 'Identidad verificada'
+                                : 'Verificar identidad',
+                            icon: Icons.verified_user_outlined,
+                            loading: _verifying,
+                            onPressed: verified ? null : _verify,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: VacaButton(
+                            label: 'Ver credencial',
+                            variant: VacaButtonVariant.secondary,
+                            onPressed: () => _showCredential(profile),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    const Text('Datos locales', style: AppTypography.h2),
+                    const SizedBox(height: AppSpacing.sm),
+                    FutureBuilder<_LocalStats>(
+                      future: _stats,
+                      builder: (context, statsSnapshot) {
+                        final stats = statsSnapshot.data;
+                        return Card(
+                          child: Column(
+                            children: [
+                              _StatsRow(
+                                label: 'Señales guardadas',
+                                value: stats == null
+                                    ? '—'
+                                    : '${stats.incidentCount} '
+                                        'señal${stats.incidentCount == 1 ? '' : 'es'}',
+                              ),
+                              _StatsRow(
+                                label: 'Fotos adjuntas',
+                                value: stats == null
+                                    ? '—'
+                                    : '${stats.attachmentCount} '
+                                        'archivo${stats.attachmentCount == 1 ? '' : 's'}',
+                              ),
+                              _StatsRow(
+                                label: 'Última recepción',
+                                value: stats == null
+                                    ? '—'
+                                    : stats.lastReceiptAt == null
+                                        ? 'Sin recepciones'
+                                        : vacaRelativeTime(
+                                            stats.lastReceiptAt!,
+                                            now: ref.watch(vacaClockProvider)(),
+                                          ),
+                                last: true,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     const Text(
@@ -254,6 +390,55 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LocalStats {
+  const _LocalStats(
+    this.incidentCount,
+    this.attachmentCount,
+    this.lastReceiptAt,
+  );
+
+  final int incidentCount;
+  final int attachmentCount;
+  final DateTime? lastReceiptAt;
+}
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({
+    required this.label,
+    required this.value,
+    this.last = false,
+  });
+
+  final String label;
+  final String value;
+  final bool last;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        border: last
+            ? null
+            : const Border(bottom: BorderSide(color: AppColors.stone100)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppTypography.body),
+          Text(
+            value,
+            style: AppTypography.dataSm.copyWith(color: AppColors.neutral500),
           ),
         ],
       ),

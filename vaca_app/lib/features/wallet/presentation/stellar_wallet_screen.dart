@@ -55,8 +55,89 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Wallet Stellar')),
-      body: FutureBuilder<Result<StellarWalletSnapshot?>>(
+      body: Column(
+        children: [
+          Container(
+            color: AppColors.celadon900,
+            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                  AppSpacing.xl,
+                  0,
+                ),
+                child: Row(
+                  children: [
+                    IconButton.filledTonal(
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: 'Volver',
+                      icon: const Icon(Icons.arrow_back),
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color(0x33456B58),
+                        foregroundColor: AppColors.white,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Wallet Stellar',
+                                style: TextStyle(
+                                  fontFamily: AppTypography.brandFont,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 20,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xs,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.celadon300
+                                      .withValues(alpha: 0.16),
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.full),
+                                ),
+                                child: const Text(
+                                  'TESTNET',
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.monoFont,
+                                    fontSize: 10,
+                                    letterSpacing: 0.8,
+                                    color: AppColors.celadon300,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Text(
+                            'Entorno de demostración sin valor monetario real',
+                            style: TextStyle(
+                              fontFamily: AppTypography.brandFont,
+                              fontSize: 12,
+                              color: Color(0xB8B8D9C6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<Result<StellarWalletSnapshot?>>(
         future: _wallet,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -121,9 +202,21 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                     ref.read(stellarWalletServiceProvider).refresh,
                   ),
                 ),
+              if (wallet == null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Volver a identidad y datos'),
+                  ),
+                ),
+              ],
             ],
           );
         },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -283,6 +376,13 @@ class _WalletDetails extends StatelessWidget {
               : wallet.funded
                   ? onRefresh
                   : onFund,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Center(
+          child: TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Volver a identidad y datos'),
+          ),
         ),
       ],
     );
