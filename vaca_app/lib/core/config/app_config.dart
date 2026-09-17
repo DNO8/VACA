@@ -26,7 +26,7 @@ class AppConfig {
     const revenueCatAndroidApiKey = String.fromEnvironment(
       'REVENUECAT_ANDROID_API_KEY',
     );
-    const adMobBannerAdUnitId = String.fromEnvironment(
+    const configuredAdMobBannerAdUnitId = String.fromEnvironment(
       'ADMOB_BANNER_AD_UNIT_ID',
     );
     const privacyPolicyUrl = String.fromEnvironment('PRIVACY_POLICY_URL');
@@ -49,11 +49,16 @@ class AppConfig {
     if (!known.contains(flavor)) {
       throw StateError('FLAVOR desconocido: $flavor. Valores: $known.');
     }
+    final adMobBannerAdUnitId = configuredAdMobBannerAdUnitId.isNotEmpty
+        ? configuredAdMobBannerAdUnitId
+        : flavor == 'public'
+            ? 'ca-app-pub-4732294050798203/3390895689'
+            : '';
     if (!kDebugMode && flavor == 'public') {
-      if (revenueCatAndroidApiKey.isEmpty || adMobBannerAdUnitId.isEmpty) {
+      if (revenueCatAndroidApiKey.isEmpty) {
         throw StateError(
-          'RevenueCat Ads requiere REVENUECAT_ANDROID_API_KEY y '
-          'ADMOB_BANNER_AD_UNIT_ID en public release.',
+          'RevenueCat Ads requiere REVENUECAT_ANDROID_API_KEY en '
+          'public release.',
         );
       }
       if (privacyPolicyUri == null || supportUri == null) {

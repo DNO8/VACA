@@ -8,9 +8,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val adMobAppId = providers.gradleProperty("ADMOB_APP_ID")
-    .orElse(providers.environmentVariable("ADMOB_APP_ID"))
-    .orNull
+val productionAdMobAppId = "ca-app-pub-4732294050798203~9439455403"
 val buildsPublicRelease = gradle.startParameter.taskNames.any {
     it.contains("PublicRelease", ignoreCase = true)
 }
@@ -69,12 +67,7 @@ android {
         }
         create("public") {
             dimension = "track"
-            if (buildsPublicRelease && adMobAppId.isNullOrBlank()) {
-                throw GradleException(
-                    "ADMOB_APP_ID is required for public release builds.",
-                )
-            }
-            manifestPlaceholders["adMobAppId"] = adMobAppId ?: googleTestAdMobAppId
+            manifestPlaceholders["adMobAppId"] = productionAdMobAppId
             resValue("string", "app_name", "VACA")
         }
         create("municipalPilot") {
