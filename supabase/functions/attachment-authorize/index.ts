@@ -3,7 +3,7 @@
 // Genera una URL firmada de subida para un adjunto de un bundle.
 
 import { createClient } from 'npm:@supabase/supabase-js@2.115.0';
-import { authenticateDeviceRequest } from '../_shared/device-auth.ts';
+import { authenticateDeviceRequestDetailed } from '../_shared/device-auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,13 +43,16 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: { persistSession: false },
   });
-  const publicKey = await authenticateDeviceRequest(
+  const auth = await authenticateDeviceRequestDetailed(
     req,
     supabase,
     'attachment-authorize',
     [bundleId, contentHash],
   );
-  if (!publicKey) return jsonResponse({ error: 'unauthorized' }, 401);
+  if (!auth.publicKey) {
+    return jsonResponse({ error: 'unauthorized', reason: auth.reason }, 401);
+  }
+  const publicKey = auth.publicKey;
 
   const { data: bundle } = await supabase
     .from('origin_bundles')
@@ -81,5 +84,10 @@ Deno.serve(async (req) => {
     .eq('incident_id', bundle.incident_id)
     .eq('content_hash', contentHash);
 
-  return jsonResponse({ upload_url: signed.signedUrl }, 200);
+  // createSignedUploadUrl devuelve una ruta relativa (/storage/v1/...);
+  // el cliente necesita la URL absoluta para el PUT.
+  const uploadUrl = signed.signedUrl.startsWith('http')
+    ? signed.signedUrl
+    : `${supabaseUrl}${signed.signedUrl}`;
+  return jsonResponse({ upload_url: uploadUrl }, 200);
 });
