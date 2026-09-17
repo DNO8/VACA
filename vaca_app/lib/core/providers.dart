@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/local/database.dart';
+import '../features/ads/data/revenuecat_ad_tracking_service.dart';
+import '../features/ads/domain/ad_tracking_service.dart';
 import '../features/delivery/domain/sync_status_service.dart';
 import '../features/identity/data/account_deletion_service.dart';
 import '../features/identity/data/didit_kyc_adapter.dart';
@@ -13,6 +15,7 @@ import '../features/incident/domain/incident_service.dart';
 import '../features/onboarding/domain/onboarding_service.dart';
 import '../features/wallet/domain/stellar_wallet_service.dart';
 import 'bundle/bundle_cipher.dart';
+import 'config/app_config.dart';
 import 'bundle/bundle_codec.dart';
 import 'bundle/bundle_queue_service.dart';
 import 'bundle/bundle_scheduler.dart';
@@ -42,6 +45,12 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 /// Servicio de permisos (cámara + GPS).
 final permissionServiceProvider = Provider<PermissionService>((ref) {
   return const PermissionService();
+});
+
+final adTrackingServiceProvider = Provider<AdTrackingService>((ref) {
+  return RevenueCatAdTrackingService(
+    apiKey: AppConfig.instance.revenueCatAndroidApiKey,
+  );
 });
 
 /// Contrato de servidor para entrega de bundles por Internet.
