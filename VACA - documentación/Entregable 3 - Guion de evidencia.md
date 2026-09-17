@@ -86,10 +86,11 @@ Duración objetivo: 60–90 segundos.
 
 | Evidencia | Estado actual |
 | --- | --- |
-| UI offline/online/sync/error/success | Implementada; prueba física pendiente |
-| Retry durable, expiración y adjuntos | Implementado con tests |
-| Aceptación backend atómica | Migración `005` aplicada en Supabase |
-| Supabase vivo actualizado | Migraciones `001–005` y cinco Edge Functions activas |
-| Demo de reconexión | Pendiente de teléfono Android conectado |
+| UI offline/online/sync/error/success | Verificada en Android físico (SM A075M) |
+| Retry durable, expiración y adjuntos | Verificado: 3 adjuntos subieron de forma independiente tras entrega del bundle |
+| Aceptación backend atómica | Migraciones `005`–`008` aplicadas en Supabase |
+| Supabase vivo actualizado | Migraciones `001–008` y Edge Functions `bundle-ingest` + `attachment-authorize` verificadas end-to-end |
+| Demo de reconexión | Verificado: 4 bundles entregados con recibo firmado validado en cliente; idempotencia confirmada (mismo `receipt_id` en replay) |
+| Capturas y video del escenario | Pendiente de ejecución guiada con capturas |
 | Memo Passkeys/biometría | Completo en Markdown y PDF |
 | Pipeline ≥15 contactos | Sin evidencia disponible en el repositorio |
