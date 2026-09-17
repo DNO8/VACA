@@ -1,4 +1,4 @@
-package cl.vaca.vaca_app
+package cl.vaca.app
 
 import io.flutter.embedding.android.FlutterActivity
 

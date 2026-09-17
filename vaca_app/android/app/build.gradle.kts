@@ -11,9 +11,6 @@ plugins {
 val adMobAppId = providers.gradleProperty("ADMOB_APP_ID")
     .orElse(providers.environmentVariable("ADMOB_APP_ID"))
     .orNull
-val publicApplicationId = providers.gradleProperty("VACA_APPLICATION_ID")
-    .orElse(providers.environmentVariable("VACA_APPLICATION_ID"))
-    .orNull
 val buildsPublicRelease = gradle.startParameter.taskNames.any {
     it.contains("PublicRelease", ignoreCase = true)
 }
@@ -24,9 +21,6 @@ if (keystorePropertiesFile.exists()) {
     FileInputStream(keystorePropertiesFile).use(keystoreProperties::load)
 }
 if (buildsPublicRelease) {
-    require(!publicApplicationId.isNullOrBlank()) {
-        "VACA_APPLICATION_ID is required for public release builds."
-    }
     require(keystorePropertiesFile.exists()) {
         "android/key.properties is required for public release signing."
     }
@@ -38,7 +32,7 @@ if (buildsPublicRelease) {
 }
 
 android {
-    namespace = "cl.vaca.vaca_app"
+    namespace = "cl.vaca.app"
     // Desde el 31 de agosto de 2026, apps y actualizaciones en Google Play
     // requieren targetSdkVersion >= 36 (Android 16).
     compileSdk = 36
@@ -54,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = publicApplicationId ?: "cl.vaca.vaca_app"
+        applicationId = "cl.vaca.app"
         // VACA requiere Android 8.0+ (API 26) — alineado con el SOW y con la
         // futura interoperabilidad mesh (bitchat-android usa API 26+).
         minSdk = 26

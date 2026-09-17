@@ -2,7 +2,8 @@
 
 ## Valores externos obligatorios
 
-- [ ] `VACA_APPLICATION_ID` definitivo y reservado en Google Play.
+- [x] Application ID definitivo: `cl.vaca.app`.
+- [ ] `cl.vaca.app` reservado en Google Play, AdMob y RevenueCat.
 - [ ] `ADMOB_APP_ID` asociado al mismo application ID.
 - [ ] `ADMOB_BANNER_AD_UNIT_ID` de producción.
 - [ ] `REVENUECAT_ANDROID_API_KEY` del proyecto Android.
