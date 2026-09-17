@@ -7,7 +7,7 @@
 - [x] AdMob App ID asociado a `cl.vaca.app`.
 - [x] AdMob banner ID de producción.
 - [x] RevenueCat Project ID: `0f1cc1a2-261f-466f-920a-195a214aa44c`.
-- [ ] `REVENUECAT_ANDROID_API_KEY` pública con prefijo `goog_`.
+- [x] RevenueCat Android SDK key pública configurada (`goog_…`).
 - [ ] RevenueCat Ads/Charts v3 habilitado y recibiendo eventos ILRD.
 - [ ] `PRIVACY_POLICY_URL` HTTPS pública.
 - [ ] `SUPPORT_URL` HTTPS pública.

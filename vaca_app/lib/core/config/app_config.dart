@@ -23,7 +23,7 @@ class AppConfig {
 
   static AppConfig _load() {
     const configuredFlavor = String.fromEnvironment('FLAVOR');
-    const revenueCatAndroidApiKey = String.fromEnvironment(
+    const configuredRevenueCatAndroidApiKey = String.fromEnvironment(
       'REVENUECAT_ANDROID_API_KEY',
     );
     const configuredAdMobBannerAdUnitId = String.fromEnvironment(
@@ -49,6 +49,11 @@ class AppConfig {
     if (!known.contains(flavor)) {
       throw StateError('FLAVOR desconocido: $flavor. Valores: $known.');
     }
+    final revenueCatAndroidApiKey = configuredRevenueCatAndroidApiKey.isNotEmpty
+        ? configuredRevenueCatAndroidApiKey
+        : flavor == 'public'
+            ? 'goog_BXkRalBAZezAZoynMpueiqJiydy'
+            : '';
     final adMobBannerAdUnitId = configuredAdMobBannerAdUnitId.isNotEmpty
         ? configuredAdMobBannerAdUnitId
         : flavor == 'public'
