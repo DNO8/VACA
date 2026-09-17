@@ -29,9 +29,6 @@ port = 54327
 [analytics]
 port = 54328
 
-[functions]
-port = 54329
-
 [functions.bundle-ingest]
 verify_jwt = false
 
