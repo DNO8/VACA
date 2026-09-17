@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -8,10 +11,31 @@ plugins {
 val adMobAppId = providers.gradleProperty("ADMOB_APP_ID")
     .orElse(providers.environmentVariable("ADMOB_APP_ID"))
     .orNull
+val publicApplicationId = providers.gradleProperty("VACA_APPLICATION_ID")
+    .orElse(providers.environmentVariable("VACA_APPLICATION_ID"))
+    .orNull
 val buildsPublicRelease = gradle.startParameter.taskNames.any {
     it.contains("PublicRelease", ignoreCase = true)
 }
 val googleTestAdMobAppId = "ca-app-pub-3940256099942544~3347511713"
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    FileInputStream(keystorePropertiesFile).use(keystoreProperties::load)
+}
+if (buildsPublicRelease) {
+    require(!publicApplicationId.isNullOrBlank()) {
+        "VACA_APPLICATION_ID is required for public release builds."
+    }
+    require(keystorePropertiesFile.exists()) {
+        "android/key.properties is required for public release signing."
+    }
+    listOf("storeFile", "storePassword", "keyAlias", "keyPassword").forEach { key ->
+        require(!keystoreProperties.getProperty(key).isNullOrBlank()) {
+            "Missing $key in android/key.properties."
+        }
+    }
+}
 
 android {
     namespace = "cl.vaca.vaca_app"
@@ -30,8 +54,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "cl.vaca.vaca_app"
+        applicationId = publicApplicationId ?: "cl.vaca.vaca_app"
         // VACA requiere Android 8.0+ (API 26) — alineado con el SOW y con la
         // futura interoperabilidad mesh (bitchat-android usa API 26+).
         minSdk = 26
@@ -80,11 +103,24 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

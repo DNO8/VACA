@@ -1,0 +1,4 @@
+storeFile=C:\\secure-path\\vaca-upload.jks
+storePassword=<set-outside-version-control>
+keyAlias=vaca-upload
+keyPassword=<set-outside-version-control>
