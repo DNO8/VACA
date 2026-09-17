@@ -88,8 +88,8 @@ Duración objetivo: 60–90 segundos.
 | --- | --- |
 | UI offline/online/sync/error/success | Implementada; prueba física pendiente |
 | Retry durable, expiración y adjuntos | Implementado con tests |
-| Aceptación backend atómica | Implementada en migración `005`; despliegue pendiente |
-| Supabase vivo actualizado | Bloqueado por CLI/autenticación del proyecto |
-| Demo de reconexión | Pendiente de backend desplegado y teléfono conectado |
+| Aceptación backend atómica | Migración `005` aplicada en Supabase |
+| Supabase vivo actualizado | Migraciones `001–005` y cinco Edge Functions activas |
+| Demo de reconexión | Pendiente de teléfono Android conectado |
 | Memo Passkeys/biometría | Completo en Markdown y PDF |
 | Pipeline ≥15 contactos | Sin evidencia disponible en el repositorio |
