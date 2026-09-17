@@ -10,12 +10,14 @@ import { decodeBase64, encodeBase64 } from './encoding.ts';
 const decoder = new Decoder({
   useMaps: true,
   useRecords: false,
+  mapsAsObjects: false,
   tagUint8Array: false,
 });
 
 const encoder = new Encoder({
   useMaps: true,
   useRecords: false,
+  mapsAsObjects: false,
   tagUint8Array: false,
 });
 

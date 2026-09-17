@@ -230,7 +230,11 @@ function signReceipt(
     serverReceivedAt,
     serverKeyId,
   ].join("\n");
-  return ed25519.sign(new TextEncoder().encode(canonical), privateKey);
+  // noble v2 devuelve firma "recovered" de 65 bytes (sig + recovery bit);
+  // el contrato VACA exige la firma Ed25519 canonica de 64 bytes.
+  return ed25519
+    .sign(new TextEncoder().encode(canonical), privateKey)
+    .subarray(0, 64);
 }
 
 function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
@@ -250,12 +254,14 @@ function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
 const decoder = new Decoder({
   useMaps: true,
   useRecords: false,
+  mapsAsObjects: false,
   tagUint8Array: false,
 });
 
 const encoder = new Encoder({
   useMaps: true,
   useRecords: false,
+  mapsAsObjects: false,
   tagUint8Array: false,
 });
 
@@ -544,6 +550,7 @@ Deno.serve(async (req) => {
     );
   } catch (e) {
     console.error("ingest_error", e);
-    return jsonResponse({ error: "ingest_failed", detail: String(e) }, 500);
+    const detail = e instanceof Error ? e.message : JSON.stringify(e);
+    return jsonResponse({ error: "ingest_failed", detail }, 500);
   }
 });
