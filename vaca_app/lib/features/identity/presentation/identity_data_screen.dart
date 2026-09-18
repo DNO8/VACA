@@ -70,6 +70,17 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
         ),
       );
     }
+    if (result case Success(value: final profile)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            profile.identityAssurance == IdentityAssurance.verified
+                ? 'Identidad verificada.'
+                : 'Verificación enviada; el servidor confirmará el resultado.',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _requestRemoteDeletion(UserIdentityProfile profile) async {
@@ -216,6 +227,7 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
         IdentityAssurance.verified => 'Verificada · credencial opaca vigente',
         IdentityAssurance.expired => 'Credencial caducada',
         IdentityAssurance.revoked => 'Credencial revocada',
+        IdentityAssurance.pending => 'En revisión por el proveedor',
       };
 
   @override
@@ -240,6 +252,8 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                 final profile = snapshot.data!;
                 final verified =
                     profile.identityAssurance == IdentityAssurance.verified;
+                final pending =
+                    profile.identityAssurance == IdentityAssurance.pending;
                 return ListView(
                   padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
@@ -253,10 +267,12 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                           child: VacaButton(
                             label: verified
                                 ? 'Identidad verificada'
-                                : 'Verificar identidad',
+                                : pending
+                                    ? 'Verificación en revisión'
+                                    : 'Verificar identidad',
                             icon: Icons.verified_user_outlined,
                             loading: _verifying,
-                            onPressed: verified ? null : _verify,
+                            onPressed: (verified || pending) ? null : _verify,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),

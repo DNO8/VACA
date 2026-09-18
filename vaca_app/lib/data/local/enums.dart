@@ -10,6 +10,7 @@ enum IdentityAssurance {
   verified, // Credencial opaca firmada y vigente.
   expired, // Credencial presente pero caducada.
   revoked, // Credencial revocada.
+  pending, // Verificación enviada, pendiente de decisión del proveedor.
 }
 
 /// Categoría de incidente visible para el usuario.

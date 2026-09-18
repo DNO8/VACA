@@ -143,9 +143,7 @@ class IdentityService {
   ) async {
     try {
       final now = DateTime.now();
-      final assurance = kyc.credential == null
-          ? IdentityAssurance.unverified
-          : kyc.identityAssurance;
+      final assurance = kyc.identityAssurance;
       await (database.update(database.identityProfiles)
             ..where((row) => row.id.equals(local.id)))
           .write(

@@ -169,7 +169,7 @@ class DiditKycAdapter implements KycAdapter {
   IdentityAssurance _mapStatus(VerificationStatus status) {
     return switch (status) {
       VerificationStatus.approved => IdentityAssurance.verified,
-      VerificationStatus.pending => IdentityAssurance.unverified,
+      VerificationStatus.pending => IdentityAssurance.pending,
       VerificationStatus.declined => IdentityAssurance.unverified,
     };
   }
