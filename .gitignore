@@ -1,1 +1,6 @@
 /supabase/.temp/
+
+# Android release signing — nunca versionar
+**/key.properties
+**/*.jks
+**/*.keystore
