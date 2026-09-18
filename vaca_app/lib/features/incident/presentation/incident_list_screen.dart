@@ -48,9 +48,9 @@ class IncidentListScreen extends ConsumerWidget {
               fit: StackFit.expand,
               children: [
                 Image.asset(
-                  'assets/images/estetica-4.jpg',
+                  'assets/images/estetica.jpg',
                   fit: BoxFit.cover,
-                  alignment: const Alignment(0, 0.3),
+                  alignment: const Alignment(0, 0.35),
                 ),
                 DecoratedBox(
                   decoration: BoxDecoration(
