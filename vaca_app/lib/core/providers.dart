@@ -13,6 +13,7 @@ import '../features/identity/domain/identity_service.dart';
 import '../features/incident/domain/attachment_service.dart';
 import '../features/incident/domain/incident_service.dart';
 import '../features/onboarding/domain/onboarding_service.dart';
+import '../features/vaquita/domain/vaquita_feed_service.dart';
 import '../features/wallet/domain/stellar_wallet_service.dart';
 import 'bundle/bundle_cipher.dart';
 import 'config/app_config.dart';
@@ -117,6 +118,16 @@ final onboardingServiceProvider = Provider<OnboardingService>((ref) {
 
 final stellarWalletServiceProvider = Provider<StellarWalletService>((ref) {
   return StellarWalletService(ref.watch(secureStorageProvider));
+});
+
+/// Feed público de Vaquitas (estado de promoción autoritativo del servidor).
+final vaquitaFeedServiceProvider = Provider<VaquitaFeedService>((ref) {
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  return VaquitaFeedService(
+    supabaseUrl: supabaseUrl,
+    supabaseAnonKey: supabaseAnonKey,
+  );
 });
 
 /// Fuente de claves de dispositivo.

@@ -6,6 +6,7 @@ import '../../delivery/presentation/delivery_screen.dart';
 import '../../identity/presentation/identity_data_screen.dart';
 import '../../incident/presentation/create_incident_screen.dart';
 import '../../incident/presentation/incident_list_screen.dart';
+import '../../vaquita/presentation/vaquita_screen.dart';
 import '../../wallet/presentation/stellar_wallet_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -47,6 +48,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final pages = [
       const IncidentListScreen(),
       const DeliveryScreen(),
+      VaquitaScreen(onOpenWallet: _openWallet),
       IdentityDataScreen(onOpenWallet: _openWallet),
     ];
     return Scaffold(
@@ -73,6 +75,11 @@ class _AppShellState extends ConsumerState<AppShell> {
               child: const Icon(Icons.outbox),
             ),
             label: 'Entrega',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.volunteer_activism_outlined),
+            selectedIcon: Icon(Icons.volunteer_activism),
+            label: 'Vaquita',
           ),
           const NavigationDestination(
             icon: Icon(Icons.person_outline),
