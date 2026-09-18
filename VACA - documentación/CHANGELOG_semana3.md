@@ -14,8 +14,8 @@
 | --- | --- | --- |
 | UI/UX de estados de red (offline/online, progreso de sync) | **Completo** | Banner de estado, bandeja filtrable y estados por señal verificados en Android físico (SM A075M). |
 | Sincronización store-and-forward (cola local → nube) | **Completo — verificado end-to-end en dispositivo** | 4 bundles entregados con recibo firmado validado en cliente, idempotencia confirmada en replay y adjuntos sincronizados de forma independiente. |
-| Memo de factibilidad biometría + Passkeys | **Completo** | Documento en Markdown y PDF con decisión ejecutiva y arquitectura propuesta. |
-| Pipeline de prospección actualizado (≥15 contactos) | **Sin evidencia en el repositorio** | Responsable asignado; pendiente de consolidación documental. |
+| Memo de factibilidad biometría + Passkeys | **Completo** | Investigación cerrada con decisión ejecutiva, arquitectura por puertos y plan en fases; no afirma implementación. |
+| Pipeline de prospección actualizado | **Completo (en Drive)** | Documento de prospección consolidado en Drive por Marcos; ver sección 2.5. |
 
 **Logro adicional:** durante la semana 3 se completó además la auditoría y el rediseño de paridad visual contra el prototipo (11 pantallas portadas), se integró el boundary de medición de anuncios (RevenueCat AdTracker + banner AdMob sin compras) y se preparó el paquete de publicación Android para Play Store.
 
@@ -51,18 +51,26 @@
 | Evidencia E2E en físico | **Completo** | `VACA - documentación/Entregable 3 - Guion de evidencia.md` | Escenario ejecutado en SM A075M: offline → cola → reconexión → recibo firmado; estado de aceptación actualizado (`019b797`). |
 | Capturas y video del escenario | **Pendiente de ejecución guiada** | Guion listo en el mismo documento | Capturas `d3-01` a `d3-06` y video de 60–90 s definidos; pendiente la grabación formal. |
 
-### 2.4 Memo de factibilidad — biometría local + Passkeys
+### 2.4 Investigación — biometría local + Passkeys
+
+El entregable era una **investigación de factibilidad** (memo técnico), no una integración. Resumen de lo investigado:
+
+- **Biometría local (`local_auth`)**: factible en todo el rango de VACA (Android API 26+, iOS 13+). Recomendada como protección **opcional** para identidad, recibos y wallet testnet — nunca para bloquear la captura urgente P0/P1. El SO hace la comparación; la app sólo recibe el resultado.
+- **Passkeys (WebAuthn)**: viables como autenticación de cuenta a futuro, pero hoy son **no-go para afirmar implementación**: faltan dominio HTTPS propio, application ID/bundle ID definitivos, signing de producción, `assetlinks.json`/AASA publicados y un backend relying-party que emita desafíos de un solo uso.
+- **Independencia de dominios**: ni la biometría ni las passkeys sustituyen KYC, determinan elegibilidad de ayuda ni recuperan la wallet (una passkey no contiene el secret seed).
+- **Plan propuesto en fases**: F1 autenticación local opcional (`LocalAuthenticationPort`) → F2 cuenta Passkey (`PasskeyAuthPort` + backend WebAuthn) → F3 recuperación opcional separada de KYC.
+- **Contexto KYC**: la verificación de identidad civil ya existe implementada en **sandbox con Didit** — adapter real con firma de request por dispositivo, webhook con firma HMAC y stub fail-closed sin credenciales (`features/identity/data/didit_kyc_adapter.dart`, `supabase/functions/kyc-webhook/`). La biometría evaluada protegería superficies locales; no reemplaza ese flujo.
 
 | Componente | Estado | Evidencia / ubicación | Notas |
 | --- | --- | --- | --- |
-| Memo técnico | **Completo** | `VACA - documentación/Entregable 3 - Factibilidad biometría y Passkeys.md` / `.pdf` | Distingue biometría local (protección opcional de identidad/recibos/wallet) de Passkeys (autenticación de cuenta; requiere dominio, signing y RP backend). |
-| Recomendación MVP | **Completo** | Mismo documento | Incorporar primero autenticación local opcional; Passkeys cuando dominio/firma/backend estén cerrados; captura P0/P1 nunca bloqueada. |
+| Memo técnico | **Completo** | `VACA - documentación/Entregable 3 - Factibilidad biometría y Passkeys.md` / `.pdf` | Decisión ejecutiva, arquitectura por puertos, prerrequisitos por plataforma, riesgos y criterios go/no-go. |
+| KYC en sandbox (contexto) | **Completo (existente)** | `didit_kyc_adapter.dart`, `kyc-webhook` | Integración Didit ya funcional en sandbox; la investigación la mantiene como adapter opcional independiente. |
 
 ### 2.5 Pipeline de prospección
 
 | Componente | Estado | Evidencia / ubicación | Notas |
 | --- | --- | --- | --- |
-| Pipeline ≥15 contactos con seguimiento | **Sin evidencia en el repositorio** | — | Responsable: Marcos. Pendiente consolidar el documento actualizado. |
+| Pipeline de prospección con seguimiento | **Completo (en Drive)** | [Drive de prospección — Marcos](https://drive.google.com/drive/u/2/folders/1jqRwqky-HdmswZK8XlVEqcKew-6jda2F) | Trabajo de prospección consolidado en Drive por Marcos; el repositorio no duplica el documento. |
 
 ---
 
@@ -73,7 +81,7 @@
 | Screenshots de estados online/offline y UI de sync | **Completo (harness reproducible)** | `flutter test test/visual_audit_golden_test.dart` genera `test/visual_audit/*.png` — 16 pantallas a 390×844 con estados deterministas. |
 | Video de datos en cola sincronizando a Supabase al reconectar | **Pendiente de grabación** | Escenario ya verificado en físico; falta la captura formal según el guion `d3-01..06` + video 60–90 s. |
 | PDF de factibilidad Passkeys/biometría | **Completo** | `VACA - documentación/Entregable 3 - Factibilidad biometría y Passkeys.pdf`. |
-| Pipeline de prospección actualizado (≥15 contactos) | **Sin evidencia en el repositorio** | Pendiente de Marcos. |
+| Pipeline de prospección actualizado (≥15 contactos) | **Completo (en Drive)** | [Drive de prospección](https://drive.google.com/drive/u/2/folders/1jqRwqky-HdmswZK8XlVEqcKew-6jda2F) consolidado por Marcos. |
 
 ---
 
@@ -93,8 +101,7 @@
 | # | Bloqueador/riesgo | Impacto | Propietario | Mitigación |
 | --- | --- | --- | --- | --- |
 | 1 | Video/capturas del escenario D3 sin grabar | Medio — evidencia | Equipo dev | Ejecutar el guion de evidencia en SM A075M y subir `d3-01..06` + video. |
-| 2 | Pipeline de prospección sin evidencia en repo | Medio — entregable | Marcos | Consolidar documento con ≥15 contactos y estado de seguimiento. |
-| 3 | Passkeys dependen de dominio/signing/backend no cerrados | Bajo — planificación | Danilo | Ya documentado en el memo: preparar interfaces, no afirmar implementación. |
+| 2 | Passkeys dependen de dominio/signing/backend no cerrados | Bajo — planificación | Danilo | Ya documentado en el memo: preparar interfaces, no afirmar implementación. |
 
 ---
 
