@@ -44,8 +44,8 @@ Aid"*. Vaquita **no** reintroduce esos mecanismos:
 - **Orbes brillantes** = Vaquitas (donaciones habilitadas).
 - **Luceros** en los colores de la categoría = señales visibles no
   aprobadas.
-- Usuarios con wallet pueden votar para elevar un lucero a Vaquita
-  Comunitaria.
+- Usuarios con wallet **KYC-verificada o con antigüedad mínima** pueden
+  votar para elevar un lucero a Vaquita Comunitaria.
 - Dos vistas conmutables: globo (existente en el prototipo visual) y
   panel de CARDS; ambas con filtros país → región → provincia/comuna.
 - Navegación progresiva: país → región → provincia/comuna, donde se ven
@@ -54,18 +54,40 @@ Aid"*. Vaquita **no** reintroduce esos mecanismos:
   sector/región: la geolocalización del donante lo acerca a puntos
   cercanos.
 
-## Problemas abiertos de diseño
+## Decisiones de implementación (2026-09-18)
 
-- **Resistencia Sybil del voto**: 1 wallet = 1 voto es farmeable.
-  Candidatos: voto con KYC, ponderado por reputación/antigüedad de
-  wallet, o costo por voto.
-- **Canal servidor→dispositivo**: notificar "tu incidente fue promovido"
-  requiere push (FCM) o polling — no existe hoy; la app solo empuja
-  datos.
-- **Seguridad de ubicación pública**: coordenadas exactas de emergencias
-  en un mapa público son riesgo — probablemente se necesite fuzzing a
-  nivel comuna/provincia, con precisión solo para el receptor verificado.
+- **Promoción autoritativa en backend**: el estado "incidente promovido"
+  vive en el servidor; la app lo descubre al próximo sync cuando vuelve
+  conectividad. No se requiere push (FCM) — la notificación es eventual
+  por diseño, consistente con store-and-forward.
+- **Donaciones pendientes con Claimable Balances nativos de Stellar**:
+  el donante crea un claimable balance hacia la wallet del receptor;
+  este lo reclama cuando se conecta. Encaja con el modelo offline:
+  donar no requiere que el receptor esté en línea. Es un uso acotado del
+  primitivo (donación pendiente de claim), distinto de la distribución
+  automática de ayuda que el handoff retiró.
+- **Voto con barrera anti-Sybil**: requisito KYC-verificado o wallet con
+  antigüedad mínima (parámetro a definir). 1 wallet = 1 voto sin barrera
+  es farmeable.
+- **Mock-first**: todo el flujo Vaquita se prototipa en mock/web; los
+  riesgos quedan documentados abajo — apertura honesta del concepto.
+- **Fuzzing de ubicación**: los puntos públicos no muestran coordenadas
+  exactas. Radio propuesto por producto: 20–50 m como "sector". Riesgo
+  registrado: en zonas rurales/poco densas 50 m sigue identificando una
+  vivienda — evaluar cuantizado a grilla (geohash ~1 km) o agregación
+  comunal antes de producción.
+
+## Riesgos documentados
+
+- **Resistencia Sybil residual**: KYC/antigüedad mitiga pero no elimina;
+  una billetera vieja comprada sigue votando. Monitorear clustering de
+  votos por región.
+- **Seguridad de ubicación pública**: ver fuzzing arriba; la precisión
+  exacta queda solo para el receptor verificado y la curaduría VACA.
 - **Marco legal**: fondos donados cruzan Ley de Donaciones (Chile) y AML
   transfronterizo; mantener framing testnet hasta revisión legal.
 - **Curaduría "aprobado por VACA"**: implica un flujo operativo humano
   (quién revisa, SLA, criterios), no solo código.
+- **Claimable Balances = fondos reales esperando**: sin expiración
+  definida, una donación puede quedar huérfana si el receptor nunca se
+  conecta — definir TTL/reembolso al donante.
