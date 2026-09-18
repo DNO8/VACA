@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
+import '../../../core/share/share_payload.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/database.dart';
@@ -155,6 +157,14 @@ class ReceiptScreen extends ConsumerWidget {
                       .copyWith(color: AppColors.neutral500),
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                VacaButton(
+                  label: 'Compartir comprobante',
+                  icon: Icons.share_outlined,
+                  onPressed: () => SharePlus.instance.share(
+                    ShareParams(text: receiptShareText(receipt)),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
                 VacaButton(
                   label: 'Ver señal y actualizar',
                   variant: VacaButtonVariant.secondary,

@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
 import '../../../core/result/result.dart';
+import '../../../core/share/share_payload.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/database.dart';
@@ -134,6 +136,36 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
     if (mounted) ref.read(bundleSchedulerProvider).processQueue();
   }
 
+  Future<void> _shareSignal(UserIncident incident) async {
+    final database = ref.read(databaseProvider);
+    final bundle = await (database.select(database.originBundles)
+          ..where((row) => row.incidentId.equals(incident.id))
+          ..where((row) => row.state.equals(DeliveryState.delivered.index))
+          ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+          ..limit(1))
+        .getSingleOrNull();
+    ServerReceipt? receipt;
+    if (bundle != null) {
+      receipt = await (database.select(database.serverReceipts)
+            ..where((row) => row.messageId.equals(bundle.id)))
+          .getSingleOrNull();
+    }
+    await SharePlus.instance.share(
+      ShareParams(
+        text: signalShareText(
+          incidentId: incident.id,
+          categoryLabel: categoryMeta(incident.category).label,
+          statusLabel: incidentStatusLabel(incident.status),
+          latitude: incident.latitude,
+          longitude: incident.longitude,
+          createdAt: incident.createdAt,
+          shortNote: incident.shortNote,
+          receipt: receipt,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final database = ref.watch(databaseProvider);
@@ -172,6 +204,13 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       PriorityBadge(priority: incident.priority),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: 'Compartir señal',
+                        onPressed: () => _shareSignal(incident),
+                        icon: const Icon(Icons.share_outlined, size: 20),
+                        color: AppColors.celadon700,
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
