@@ -42,6 +42,8 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   Widget build(BuildContext context) {
     final index = ref.watch(shellTabProvider);
+    final pending =
+        ref.watch(syncSnapshotProvider).valueOrNull?.pendingCount ?? 0;
     final pages = [
       const IncidentListScreen(),
       const DeliveryScreen(),
@@ -53,18 +55,26 @@ class _AppShellState extends ConsumerState<AppShell> {
         selectedIndex: index,
         onDestinationSelected: (value) =>
             ref.read(shellTabProvider.notifier).state = value,
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Inicio',
           ),
           NavigationDestination(
-            icon: Icon(Icons.outbox_outlined),
-            selectedIcon: Icon(Icons.outbox),
+            icon: Badge(
+              isLabelVisible: pending > 0,
+              label: Text('$pending'),
+              child: const Icon(Icons.outbox_outlined),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: pending > 0,
+              label: Text('$pending'),
+              child: const Icon(Icons.outbox),
+            ),
             label: 'Entrega',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Identidad',
