@@ -56,8 +56,8 @@ class SupabaseServerContract implements ServerContract {
         supabaseAnonKey.isEmpty) {
       return DeliveryResult(
         messageId,
-        DeliveryState.failed,
-        failure: _permanent('server_not_configured'),
+        DeliveryState.queued,
+        failure: _retryable('server_not_configured'),
       );
     }
 
@@ -204,6 +204,18 @@ class SupabaseServerContract implements ServerContract {
           messageId,
           DeliveryState.queued,
           failure: _retryable('network_unavailable'),
+        );
+      }
+      final statusCode = e.response?.statusCode;
+      if (e.type == DioExceptionType.badResponse &&
+          statusCode != null &&
+          statusCode >= 400 &&
+          statusCode < 500 &&
+          statusCode != 429) {
+        return DeliveryResult(
+          messageId,
+          DeliveryState.failed,
+          failure: _permanent('server_$statusCode'),
         );
       }
       return DeliveryResult(

@@ -261,11 +261,22 @@ class BundleQueueService {
                 verifiedAt: Value(now),
               ),
             );
+        final incidentRow = await (_database.select(_database.incidents)
+              ..where((row) => row.id.equals(bundle.incidentId)))
+            .getSingleOrNull();
+        final cancelled = incidentRow != null &&
+            (incidentRow.status == IncidentStatus.cancelledLocally ||
+                incidentRow.status == IncidentStatus.cancellationQueued ||
+                incidentRow.status == IncidentStatus.cancellationReceived);
         await (_database.update(_database.incidents)
               ..where((row) => row.id.equals(bundle.incidentId)))
             .write(
           IncidentsCompanion(
-            status: const Value(IncidentStatus.receivedByServer),
+            status: Value(
+              cancelled
+                  ? IncidentStatus.cancellationReceived
+                  : IncidentStatus.receivedByServer,
+            ),
             updatedAt: Value(now),
           ),
         );
@@ -380,9 +391,13 @@ class BundleQueueService {
   Future<void> retryNow(String bundleId) async {
     await (_database.update(_database.originBundles)
           ..where((row) => row.id.equals(bundleId))
-          ..where((row) => row.state.equals(DeliveryState.queued.index)))
+          ..where((row) => row.state.isIn([
+                DeliveryState.queued.index,
+                DeliveryState.failed.index,
+              ])))
         .write(
       const OriginBundlesCompanion(
+        state: Value(DeliveryState.queued),
         nextAttemptAt: Value(null),
         lastErrorCode: Value(null),
       ),
