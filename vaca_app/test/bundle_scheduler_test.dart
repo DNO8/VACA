@@ -168,6 +168,14 @@ void main() {
     expect(bundle.copyBudget, 3);
     expect(bundle.retryCount, 1);
     expect(bundle.nextAttemptAt, isNull);
+
+    // Un reintento manual desde la UI sí puede reabrir un fallo permanente.
+    await queue.retryNow(bundle.id);
+    final retried =
+        await database.select(database.originBundles).getSingle();
+    expect(retried.state, local.DeliveryState.queued);
+    expect(retried.lastErrorCode, isNull);
+    expect(await queue.pendingBundles(), hasLength(1));
   });
 
   test('expired bundle closes without a network send', () async {

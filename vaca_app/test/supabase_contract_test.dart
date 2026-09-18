@@ -75,7 +75,8 @@ void main() {
   final serverReceiptPublicKey = base64Encode(Uint8List(32));
 
   group('SupabaseServerContract fail-closed', () {
-    test('fails with server_not_configured when env is empty', () async {
+    test('keeps bundle queued with server_not_configured when env is empty',
+        () async {
       final signer = _FakeBundleSigner();
       final contract = SupabaseServerContract(signer);
 
@@ -86,8 +87,9 @@ void main() {
         Uint8List.fromList([4, 5, 6]),
       );
 
-      expect(result.state, DeliveryState.failed);
+      expect(result.state, DeliveryState.queued);
       expect(result.failure?.code, 'server_not_configured');
+      expect(result.failure?.retryable, isTrue);
     });
 
     test('requestAttachmentUrl returns null when not configured', () async {
