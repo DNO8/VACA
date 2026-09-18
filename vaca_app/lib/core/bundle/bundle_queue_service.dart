@@ -120,6 +120,47 @@ class BundleQueueService {
     }
   }
 
+  /// Incidentes cuya señal fue cancelada: sus bundles ya no deben viajar.
+  BaseSelectStatement _cancelledIncidentIds() =>
+      _database.selectOnly(_database.incidents)
+        ..addColumns([_database.incidents.id])
+        ..where(
+          _database.incidents.status.isIn([
+            IncidentStatus.cancelledLocally.index,
+            IncidentStatus.cancellationQueued.index,
+            IncidentStatus.cancellationReceived.index,
+          ]),
+        );
+
+  /// Cierra los bundles aún pendientes de un incidente cancelado.
+  ///
+  /// Se invoca al cancelar una señal: el único bundle que debe seguir
+  /// viajando es el de la propia cancelación ([exceptBundleId]).
+  Future<void> closePendingForIncident(
+    String incidentId, {
+    String? exceptBundleId,
+  }) async {
+    final query = _database.update(_database.originBundles)
+      ..where(
+        (b) =>
+            b.incidentId.equals(incidentId) &
+            b.state.isIn([
+              DeliveryState.queued.index,
+              DeliveryState.sent.index,
+            ]),
+      );
+    if (exceptBundleId != null) {
+      query.where((b) => b.id.equals(exceptBundleId).not());
+    }
+    await query.write(
+      const OriginBundlesCompanion(
+        state: Value(DeliveryState.failed),
+        nextAttemptAt: Value(null),
+        lastErrorCode: Value('cancelled'),
+      ),
+    );
+  }
+
   /// Recupera los bundles pendientes ordenados por prioridad y antigüedad.
   Future<List<OriginBundle>> pendingBundles({int limit = 10}) async {
     final now = DateTime.now();
@@ -136,6 +177,7 @@ class BundleQueueService {
             b.nextAttemptAt.isNull() |
             b.nextAttemptAt.isSmallerOrEqual(Variable(now)),
       )
+      ..where((b) => b.incidentId.isNotInQuery(_cancelledIncidentIds()))
       ..orderBy([
         (b) => OrderingTerm.asc(b.priority),
         (b) => OrderingTerm.asc(b.createdAt),
@@ -153,6 +195,7 @@ class BundleQueueService {
         ]),
       )
       ..where((row) => row.nextAttemptAt.isNotNull())
+      ..where((row) => row.incidentId.isNotInQuery(_cancelledIncidentIds()))
       ..orderBy([(row) => OrderingTerm.asc(row.nextAttemptAt)])
       ..limit(1);
     return (await query.getSingleOrNull())?.nextAttemptAt;

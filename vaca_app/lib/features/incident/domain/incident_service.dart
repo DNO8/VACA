@@ -274,6 +274,10 @@ class IncidentService {
         if (queued case Failure(error: final error)) {
           throw _AtomicCaptureFailure(error);
         }
+        await _queue.closePendingForIncident(
+          id,
+          exceptBundleId: queued.valueOrNull?.bundleId,
+        );
         updated = (await _updateStatus(
           id,
           IncidentStatus.cancellationQueued,

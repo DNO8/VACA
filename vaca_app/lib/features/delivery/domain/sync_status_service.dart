@@ -54,9 +54,11 @@ class SyncStatusService {
     late StreamController<SyncSnapshot> controller;
     StreamSubscription<List<OriginBundle>>? bundlesSubscription;
     StreamSubscription<List<Attachment>>? attachmentsSubscription;
+    StreamSubscription<List<Incident>>? incidentsSubscription;
     StreamSubscription<TransportStatus>? transportSubscription;
     var bundles = const <OriginBundle>[];
     var attachments = const <Attachment>[];
+    var incidents = const <Incident>[];
     var availability = _transport.currentStatus.availability;
 
     void emit() {
@@ -64,30 +66,45 @@ class SyncStatusService {
       // Una "senal pendiente" es un incidente con trabajo sin terminar: su
       // bundle no llego o alguno de sus adjuntos no se sincronizo. Contar
       // incidentes (no items) evita que una señal con foto aparezca como 2.
+      // Las señales canceladas no cuentan: su trabajo pendiente queda
+      // abortado por la cancelación.
+      final cancelledIds = <String>{
+        for (final row in incidents)
+          if (row.status == local.IncidentStatus.cancelledLocally ||
+              row.status == local.IncidentStatus.cancellationQueued ||
+              row.status == local.IncidentStatus.cancellationReceived)
+            row.id,
+      };
+      final activeBundles = bundles
+          .where((row) => !cancelledIds.contains(row.incidentId))
+          .toList();
+      final activeAttachments = attachments
+          .where((row) => !cancelledIds.contains(row.incidentId))
+          .toList();
       final pendingIncidentIds = <String>{
-        for (final row in bundles)
+        for (final row in activeBundles)
           if (row.state != local.DeliveryState.delivered) row.incidentId,
-        for (final row in attachments)
+        for (final row in activeAttachments)
           if (row.syncStatus != local.AttachmentSyncStatus.synced)
             row.incidentId,
       };
-      final hasInFlight = bundles.any(
+      final hasInFlight = activeBundles.any(
             (row) => row.state == local.DeliveryState.sent,
           ) ||
-          attachments.any(
+          activeAttachments.any(
             (row) => row.syncStatus == local.AttachmentSyncStatus.uploading,
           );
-      final failedBundles = bundles.any(
+      final failedBundles = activeBundles.any(
         (row) => row.state == local.DeliveryState.failed,
       );
-      final failedAttachments = attachments.any(
+      final failedAttachments = activeAttachments.any(
         (row) => row.syncStatus == local.AttachmentSyncStatus.failed,
       );
       controller.add(
         SyncSnapshot.derive(
           availability: availability,
           pendingIncidentIds: pendingIncidentIds,
-          delivered: bundles
+          delivered: activeBundles
               .where((row) => row.state == local.DeliveryState.delivered)
               .length,
           hasInFlight: hasInFlight,
@@ -109,6 +126,11 @@ class SyncStatusService {
           attachments = value;
           emit();
         });
+        incidentsSubscription =
+            _database.select(_database.incidents).watch().listen((value) {
+          incidents = value;
+          emit();
+        });
         transportSubscription = _transport.status.listen((value) {
           availability = value.availability;
           emit();
@@ -118,6 +140,7 @@ class SyncStatusService {
       onCancel: () async {
         await bundlesSubscription?.cancel();
         await attachmentsSubscription?.cancel();
+        await incidentsSubscription?.cancel();
         await transportSubscription?.cancel();
       },
     );
