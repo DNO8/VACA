@@ -40,6 +40,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
   LocationSource _locationSource = LocationSource.unavailable;
   CaptureResult? _photo;
   bool _saving = false;
+  bool _locating = true;
   int _step = 0;
 
   static const _maxNoteLength = 160;
@@ -59,17 +60,22 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
   }
 
   Future<void> _acquireLocation() async {
-    final service = ref.read(permissionServiceProvider);
-    final position = await service.currentPosition();
-    if (position != null && mounted) {
-      setState(() {
-        _latitude = position.latitude;
-        _longitude = position.longitude;
-        _accuracy = position.accuracy;
-        _latitudeController.text = position.latitude.toStringAsFixed(6);
-        _longitudeController.text = position.longitude.toStringAsFixed(6);
-        _locationSource = LocationSource.gps;
-      });
+    if (mounted && !_locating) setState(() => _locating = true);
+    try {
+      final service = ref.read(permissionServiceProvider);
+      final position = await service.currentPosition();
+      if (position != null && mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _accuracy = position.accuracy;
+          _latitudeController.text = position.latitude.toStringAsFixed(6);
+          _longitudeController.text = position.longitude.toStringAsFixed(6);
+          _locationSource = LocationSource.gps;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
     }
   }
 
@@ -329,17 +335,28 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
                 left: AppSpacing.md,
                 bottom: AppSpacing.md,
                 child: _MapChip(
-                  text: hasGps
-                      ? 'Precisión: ~${_accuracy?.toStringAsFixed(0) ?? '—'} m'
-                      : 'Sin señal GPS',
+                  text: _locating
+                      ? 'Obteniendo…'
+                      : hasGps
+                          ? 'Precisión: ~${_accuracy?.toStringAsFixed(0) ?? '—'} m'
+                          : 'Sin señal GPS',
                 ),
               ),
               Positioned(
                 right: AppSpacing.md,
                 bottom: AppSpacing.md,
                 child: _MapChip(
-                  dot: hasGps ? AppColors.success : AppColors.warning,
-                  text: hasGps ? 'GPS activo' : 'Sin GPS',
+                  dot: _locating
+                      ? null
+                      : hasGps
+                          ? AppColors.success
+                          : AppColors.warning,
+                  loading: _locating,
+                  text: _locating
+                      ? 'Sincronizando GPS…'
+                      : hasGps
+                          ? 'GPS activo'
+                          : 'Sin GPS',
                 ),
               ),
             ],
@@ -353,9 +370,11 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.ivory,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(color: AppColors.stone300),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,10 +443,11 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
         ),
               const SizedBox(height: AppSpacing.sm),
               VacaButton(
-                label: 'Actualizar GPS',
+                label: _locating ? 'Sincronizando GPS…' : 'Actualizar GPS',
                 icon: Icons.my_location,
                 variant: VacaButtonVariant.secondary,
-                onPressed: _acquireLocation,
+                loading: _locating,
+                onPressed: _locating ? null : _acquireLocation,
               ),
             ],
           ),
@@ -498,6 +518,10 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
                     '$_peopleCount',
                     style: AppTypography.display.copyWith(
                       fontFamily: AppTypography.monoFont,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.celadon300
+                              : AppColors.celadon700,
                     ),
                   ),
                   Text(
@@ -770,7 +794,9 @@ class _CategoryCard extends StatelessWidget {
       selected: selected,
       label: '${meta.label}. ${meta.examples}.',
       child: Material(
-        color: selected ? meta.color.withValues(alpha: 0.08) : AppColors.ivory,
+        color: selected
+            ? meta.color.withValues(alpha: 0.08)
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: InkWell(
           onTap: onTap,
@@ -780,7 +806,9 @@ class _CategoryCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: selected ? meta.color : AppColors.stone300,
+                color: selected
+                    ? meta.color
+                    : Theme.of(context).colorScheme.outline,
                 width: selected ? 2 : 1,
               ),
             ),
@@ -864,10 +892,11 @@ class _CategoryCard extends StatelessWidget {
 }
 
 class _MapChip extends StatelessWidget {
-  const _MapChip({required this.text, this.dot});
+  const _MapChip({required this.text, this.dot, this.loading = false});
 
   final String text;
   final Color? dot;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -883,7 +912,10 @@ class _MapChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (dot != null) ...[
+          if (loading) ...[
+            const _PulsingDot(color: AppColors.celadon300, size: 8),
+            const SizedBox(width: 6),
+          ] else if (dot != null) ...[
             Container(
               width: 6,
               height: 6,
@@ -907,6 +939,48 @@ class _MapChip extends StatelessWidget {
   }
 }
 
+/// Punto animado que rebota suavemente mientras se sincroniza el GPS.
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot({required this.color, this.size = 8});
+
+  final Color color;
+  final double size;
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 650),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: Tween(begin: 0.6, end: 1.4).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      ),
+      child: Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: widget.color,
+        ),
+      ),
+    );
+  }
+}
+
 class _StepperButton extends StatelessWidget {
   const _StepperButton({required this.icon, this.onPressed});
 
@@ -923,12 +997,18 @@ class _StepperButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 48),
           padding: EdgeInsets.zero,
-          side: const BorderSide(color: AppColors.stone300, width: 1.5),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+            width: 1.5,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
         ),
-        child: Icon(icon, color: AppColors.ink),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
     );
   }
@@ -965,7 +1045,8 @@ class _CountChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           textStyle: AppTypography.body.copyWith(
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            fontFamily: AppTypography.monoFont,
+            fontWeight: FontWeight.w700,
           ),
         ),
         child: Text(label),
