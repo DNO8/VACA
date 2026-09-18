@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
@@ -27,6 +28,12 @@ class IncidentService {
   final BundleQueueService _queue;
   final IdentityService _identity;
   final AttachmentService _attachments;
+
+  /// Radio en metros para considerar dos señales "en el mismo lugar".
+  static const double _duplicateRadiusMeters = 100;
+
+  /// Ventana temporal para buscar duplicados: solo señales recientes cuentan.
+  static const Duration _duplicateWindow = Duration(hours: 24);
 
   /// Crea un incidente local a partir de los datos capturados.
   Future<UserIncident> create({
@@ -95,6 +102,22 @@ class IncidentService {
     String? id,
     DateTime? now,
   }) async {
+    final duplicate = await _findDuplicate(
+      category: category,
+      shortNote: shortNote,
+      latitude: latitude,
+      longitude: longitude,
+      now: now ?? DateTime.now(),
+    );
+    if (duplicate != null) {
+      return const Failure(
+        VacaError(
+          code: 'duplicate_signal',
+          message:
+              'Ya registraste una señal igual cerca de aquí hace poco. Revisala en Inicio antes de volver a enviar.',
+        ),
+      );
+    }
     final profile = await _identity.getOrCreateLocalProfile();
     try {
       late UserIncident incident;
@@ -288,6 +311,80 @@ class IncidentService {
       return Failure(failure.error);
     }
   }
+
+  /// Detecta una señal duplicada por contenido: misma categoría, nota
+  /// equivalente y misma zona, creada dentro de [_duplicateWindow] y no
+  /// cerrada por cancelación o expiración.
+  ///
+  /// Sirve para que un mismo evento no se encole varias veces: en BLE/mesh
+  /// cada copia inunda los nodos, así que el duplicado se rechaza acá, antes
+  /// de crear bundle.
+  Future<Incident?> _findDuplicate({
+    required IncidentCategory category,
+    String? shortNote,
+    double? latitude,
+    double? longitude,
+    required DateTime now,
+  }) async {
+    final cutoff = now.subtract(_duplicateWindow);
+    final candidates = await (_database.select(_database.incidents)
+          ..where(
+            (i) =>
+                i.category.equals(category.index) &
+                i.createdAt.isBiggerThan(Variable(cutoff)) &
+                i.status.isNotIn([
+                  IncidentStatus.cancelledLocally.index,
+                  IncidentStatus.cancellationQueued.index,
+                  IncidentStatus.cancellationReceived.index,
+                  IncidentStatus.expired.index,
+                ]),
+          ))
+        .get();
+    final newNote = _normalizeNote(shortNote);
+    for (final candidate in candidates) {
+      if (_normalizeNote(candidate.shortNote) != newNote) continue;
+      final hasBothCoords = latitude != null &&
+          longitude != null &&
+          candidate.latitude != null &&
+          candidate.longitude != null;
+      if (hasBothCoords) {
+        final distance = _distanceMeters(
+          latitude,
+          longitude,
+          candidate.latitude!,
+          candidate.longitude!,
+        );
+        if (distance <= _duplicateRadiusMeters) return candidate;
+      } else if (latitude == null && candidate.latitude == null) {
+        return candidate;
+      } else if (newNote.isNotEmpty) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  static String _normalizeNote(String? note) =>
+      (note ?? '').trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+  static double _distanceMeters(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const radius = 6371000.0;
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(lat1)) *
+            math.cos(_toRadians(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+    return 2 * radius * math.asin(math.sqrt(a));
+  }
+
+  static double _toRadians(double degrees) => degrees * math.pi / 180;
 
   Future<OriginBundle?> _latestBundle(String incidentId) {
     return (_database.select(_database.originBundles)

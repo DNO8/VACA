@@ -27,8 +27,20 @@ class IncidentListScreen extends ConsumerWidget {
     final attachments = ref.watch(attachmentServiceProvider);
     final sync = ref.watch(syncSnapshotProvider).valueOrNull;
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity:
+                  Theme.of(context).brightness == Brightness.dark ? 0.12 : 0.06,
+              child: Image.asset(
+                'assets/images/textura-3.jpg',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Column(
+            children: [
           SizedBox(
             height: 200,
             width: double.infinity,
@@ -40,17 +52,17 @@ class IncidentListScreen extends ConsumerWidget {
                   fit: BoxFit.cover,
                   alignment: const Alignment(0, 0.3),
                 ),
-                const DecoratedBox(
+                DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xAA1F3B30),
-                        Color(0x551F3B30),
-                        AppColors.celadon50,
+                        const Color(0xAA1F3B30),
+                        const Color(0x551F3B30),
+                        Theme.of(context).scaffoldBackgroundColor,
                       ],
-                      stops: [0, 0.5, 1],
+                      stops: const [0, 0.5, 1],
                     ),
                   ),
                 ),
@@ -272,6 +284,8 @@ class IncidentListScreen extends ConsumerWidget {
                 );
               },
             ),
+          ),
+            ],
           ),
         ],
       ),

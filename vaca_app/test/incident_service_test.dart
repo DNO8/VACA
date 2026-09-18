@@ -190,6 +190,134 @@ void main() {
     expect(await database.select(database.tombstones).get(), hasLength(1));
   });
 
+  test('rejects a duplicate signal at the same place with same note',
+      () async {
+    final first = await service.createAndEnqueue(
+      category: IncidentCategory.sos,
+      priority: IncidentPriority.p0,
+      shortNote: 'Inundación en calle 12',
+      latitude: -34.6,
+      longitude: -70.66,
+      locationSource: LocationSource.gps,
+    );
+    expect(first.isSuccess, isTrue);
+
+    final second = await service.createAndEnqueue(
+      category: IncidentCategory.sos,
+      priority: IncidentPriority.p0,
+      shortNote: '  inundación   en CALLE 12 ',
+      latitude: -34.60005,
+      longitude: -70.66005,
+      locationSource: LocationSource.gps,
+    );
+
+    expect(second.isFailure, isTrue);
+    expect(second.errorOrNull?.code, 'duplicate_signal');
+    expect(await database.select(database.incidents).get(), hasLength(1));
+  });
+
+  test('allows the same note far enough away', () async {
+    await service.createAndEnqueue(
+      category: IncidentCategory.sos,
+      priority: IncidentPriority.p0,
+      shortNote: 'Incendio forestal',
+      latitude: -34.6,
+      longitude: -70.66,
+      locationSource: LocationSource.gps,
+    );
+
+    final far = await service.createAndEnqueue(
+      category: IncidentCategory.sos,
+      priority: IncidentPriority.p0,
+      shortNote: 'Incendio forestal',
+      latitude: -35.6,
+      longitude: -70.66,
+      locationSource: LocationSource.gps,
+    );
+
+    expect(far.isSuccess, isTrue);
+    expect(await database.select(database.incidents).get(), hasLength(2));
+  });
+
+  test('allows the same note in a different category', () async {
+    await service.createAndEnqueue(
+      category: IncidentCategory.sos,
+      priority: IncidentPriority.p0,
+      shortNote: 'Zona afectada',
+      locationSource: LocationSource.unavailable,
+    );
+
+    final other = await service.createAndEnqueue(
+      category: IncidentCategory.hazard,
+      priority: IncidentPriority.p3,
+      shortNote: 'Zona afectada',
+      locationSource: LocationSource.unavailable,
+    );
+
+    expect(other.isSuccess, isTrue);
+    expect(await database.select(database.incidents).get(), hasLength(2));
+  });
+
+  test('rejects a no-GPS duplicate with same category and note', () async {
+    await service.createAndEnqueue(
+      category: IncidentCategory.medical,
+      priority: IncidentPriority.p1,
+      shortNote: 'Posta colapsada',
+      locationSource: LocationSource.unavailable,
+    );
+
+    final second = await service.createAndEnqueue(
+      category: IncidentCategory.medical,
+      priority: IncidentPriority.p1,
+      shortNote: 'posta colapsada',
+      locationSource: LocationSource.unavailable,
+    );
+
+    expect(second.isFailure, isTrue);
+    expect(second.errorOrNull?.code, 'duplicate_signal');
+  });
+
+  test('allows recreating a signal after the first was cancelled', () async {
+    final first = await service.createAndEnqueue(
+      category: IncidentCategory.hazard,
+      priority: IncidentPriority.p3,
+      shortNote: 'Cable caído',
+      locationSource: LocationSource.unavailable,
+    );
+    await service.cancel(first.valueOrNull!.id);
+
+    final second = await service.createAndEnqueue(
+      category: IncidentCategory.hazard,
+      priority: IncidentPriority.p3,
+      shortNote: 'Cable caído',
+      locationSource: LocationSource.unavailable,
+    );
+
+    expect(second.isSuccess, isTrue);
+    expect(await database.select(database.incidents).get(), hasLength(2));
+  });
+
+  test('allows the same signal after the dedup window', () async {
+    final old = DateTime.now().subtract(const Duration(hours: 25));
+    await service.createAndEnqueue(
+      category: IncidentCategory.hazard,
+      priority: IncidentPriority.p3,
+      shortNote: 'Sin agua',
+      locationSource: LocationSource.unavailable,
+      now: old,
+    );
+
+    final second = await service.createAndEnqueue(
+      category: IncidentCategory.hazard,
+      priority: IncidentPriority.p3,
+      shortNote: 'Sin agua',
+      locationSource: LocationSource.unavailable,
+    );
+
+    expect(second.isSuccess, isTrue);
+    expect(await database.select(database.incidents).get(), hasLength(2));
+  });
+
   test('rolls back incident and attachment when bundle creation fails',
       () async {
     service = _buildService(

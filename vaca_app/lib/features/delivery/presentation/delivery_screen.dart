@@ -96,11 +96,26 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
                   return ListView(
                     padding: const EdgeInsets.all(AppSpacing.screenPadding),
                     children: [
-                      Text(
-                        '${bundles.length} señal${bundles.length == 1 ? '' : 'es'} · '
-                        '$pending pendiente${pending == 1 ? '' : 's'} de envío',
-                        style: AppTypography.body
-                            .copyWith(color: AppColors.neutral500),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${bundles.length} señal${bundles.length == 1 ? '' : 'es'} · '
+                              '$pending pendiente${pending == 1 ? '' : 's'} de envío',
+                              style: AppTypography.body
+                                  .copyWith(color: AppColors.neutral500),
+                            ),
+                          ),
+                          if (pending > 0)
+                            TextButton.icon(
+                              onPressed: _retryAll,
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: const Text('Reintentar todo'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.celadon700,
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       _SyncBanner(sync: sync),
@@ -147,6 +162,11 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
 
   Future<void> _retry(OriginBundle bundle) async {
     await ref.read(bundleQueueServiceProvider).retryNow(bundle.id);
+    await ref.read(bundleSchedulerProvider).processQueue();
+  }
+
+  Future<void> _retryAll() async {
+    await ref.read(bundleQueueServiceProvider).retryAllNow();
     await ref.read(bundleSchedulerProvider).processQueue();
   }
 }

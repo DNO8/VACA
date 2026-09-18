@@ -447,6 +447,29 @@ class BundleQueueService {
     );
   }
 
+  /// Quita el backoff de todos los bundles reintentables.
+  ///
+  /// El backoff existe para esperar mientras no hay camino de entrega; cuando
+  /// la red vuelve (o el usuario pide reintentar), seguir esperando no tiene
+  /// sentido: todos los bundles vuelven a ser elegibles de inmediato.
+  Future<void> retryAllNow() async {
+    await (_database.update(_database.originBundles)
+          ..where((row) => row.state.isIn([
+                DeliveryState.queued.index,
+                DeliveryState.sent.index,
+              ]))
+          ..where(
+            (row) => row.incidentId.isNotInQuery(_cancelledIncidentIds()),
+          ))
+        .write(
+      const OriginBundlesCompanion(
+        state: Value(DeliveryState.queued),
+        nextAttemptAt: Value(null),
+        lastErrorCode: Value(null),
+      ),
+    );
+  }
+
   Future<void> updateAttachmentStatus(
     String attachmentId,
     AttachmentSyncStatus status,

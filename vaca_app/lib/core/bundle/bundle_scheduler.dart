@@ -57,7 +57,9 @@ class BundleScheduler {
 
   void _onStatusChanged(TransportStatus status) {
     if (status.availability == TransportAvailability.available) {
-      processQueue();
+      // La red volvió: el backoff previo asumía que no había camino; todos
+      // los bundles vuelven a ser elegibles de inmediato.
+      _queue.retryAllNow().then((_) => processQueue());
     }
   }
 
