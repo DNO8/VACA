@@ -73,6 +73,26 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
   }
 
   Future<void> _requestRemoteDeletion(UserIdentityProfile profile) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar cuenta del servidor'),
+        content: const Text(
+          'Se eliminarán de forma permanente tu identidad y todas las señales, adjuntos y recibos asociados en el servidor. Los datos guardados en este dispositivo no se borran. Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
     setState(() => _deleting = true);
     final result = await ref
         .read(accountDeletionServiceProvider)
