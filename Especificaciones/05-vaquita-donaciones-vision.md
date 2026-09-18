@@ -77,6 +77,20 @@ Aid"*. Vaquita **no** reintroduce esos mecanismos:
   vivienda — evaluar cuantizado a grilla (geohash ~1 km) o agregación
   comunal antes de producción.
 
+## Implementado (2026-09-18)
+
+- **Backend real**: migración `009_vaquita_feed.sql` (`donation_status`:
+  signal/community/vaquita) + Edge Function `vaquita-feed` (GET público,
+  coords fuzzeadas ~1.1 km, sin nota ni device key).
+- **Web (VACA-demo)**: orbes/luceros sobre el globo desde el feed,
+  `VaquitaDetail` (donar mock, voto con wallet mock), `VaquitaCards`
+  (vista panel con filtro región por point-in-polygon + estado), voto
+  comunitario mock con umbral 20 → promueve a `community`.
+- **App**: pestaña "Vaquita" en el shell — gate de wallet con tour
+  implícito + lista de promovidos desde el feed real.
+- **Mock explícito**: votos (sin backend anti-Sybil), claimable balances
+  (botón donar solo informativo), curaduría VACA (flag SQL manual).
+
 ## Riesgos documentados
 
 - **Resistencia Sybil residual**: KYC/antigüedad mitiga pero no elimina;
