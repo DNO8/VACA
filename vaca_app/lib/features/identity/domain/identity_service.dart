@@ -123,6 +123,46 @@ class IdentityService {
     }
   }
 
+  /// Revierte el perfil local a no verificado tras una eliminación remota.
+  ///
+  /// La cuenta del servidor deja de existir; si el perfil local conservara
+  /// `verified` o `pending`, la app quedaría en un estado inconsistente y el
+  /// usuario no podría volver a verificarse.
+  Future<Result<UserIdentityProfile>> resetVerification() async {
+    final local = await getOrCreateLocalProfile();
+    try {
+      final now = DateTime.now();
+      await (database.update(database.identityProfiles)
+            ..where((row) => row.id.equals(local.id)))
+          .write(
+        const IdentityProfilesCompanion(
+          opaqueSubjectId: Value(null),
+          identityAssurance: Value(IdentityAssurance.unverified),
+          credential: Value(null),
+          credentialExpiresAt: Value(null),
+        ),
+      );
+      return Success(
+        UserIdentityProfile(
+          id: local.id,
+          identityAssurance: IdentityAssurance.unverified,
+          devicePublicKey: local.devicePublicKey,
+          consentVersion: local.consentVersion,
+          createdAt: local.createdAt,
+          updatedAt: now,
+        ),
+      );
+    } catch (e) {
+      return Failure(
+        VacaError(
+          code: 'identity_reset_verification',
+          message: 'No se pudo reiniciar el estado de verificación.',
+          cause: e,
+        ),
+      );
+    }
+  }
+
   /// Intenta verificar la identidad con KYC.
   Future<Result<UserIdentityProfile>> verifyWithKyc() async {
     final local = await getOrCreateLocalProfile();

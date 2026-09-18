@@ -94,3 +94,11 @@ Duración objetivo: 60–90 segundos.
 | Capturas y video del escenario | Pendiente de ejecución guiada con capturas |
 | Memo Passkeys/biometría | Completo en Markdown y PDF |
 | Pipeline ≥15 contactos | Sin evidencia disponible en el repositorio |
+
+## Limitaciones conocidas
+
+- **Eliminación remota ≠ borrado local**: `account-deletion` borra identidad, incidentes, eventos, bundles y recibos del servidor en una sola llamada (hard delete, irreversible), pero los datos del dispositivo permanecen hasta que el usuario ejecuta "Eliminar datos locales". Tras la eliminación remota el perfil local vuelve a `unverified` para permitir re-verificación; queda pendiente evaluar si el flujo completo debe encadenar también el wipe local (Play suele pedir cuenta y datos juntos).
+- **Sin re-sincronización de `kyc_assurance`**: el webhook Didit actualiza `identities` en el servidor, pero no existe endpoint de lectura para que la app consulte el resultado después. El estado local refleja solo lo que el SDK devolvió al completar la sesión.
+- **Webhook tardío puede re-crear la identidad**: el upsert del webhook es por `device_public_key`; un evento Didit posterior a la eliminación remota recrearía la fila en `identities`.
+- **Sin rotación de claves**: el cliente compila una sola clave pública por rol (`SERVER_BUNDLE_PUBLIC_KEY`, `SERVER_RECEIPT_PUBLIC_KEY`). Rotar los secretos del servidor rompe los clientes hasta una nueva compilación; falta keyring o doble aceptación.
+- **Bundles cifrados con clave errónea son irrecuperables**: si un build con `SERVER_BUNDLE_PUBLIC_KEY` incorrecto cifra bundles, esos ciphertexts nunca podrán desenvolverse en el servidor (AES-GCM `invalid tag`). Cierran como `failed` permanente (`server_400`).

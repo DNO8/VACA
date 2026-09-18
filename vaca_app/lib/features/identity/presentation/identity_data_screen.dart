@@ -108,8 +108,14 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
     final result = await ref
         .read(accountDeletionServiceProvider)
         .requestDeletion(profile.devicePublicKey);
+    if (result.isSuccess) {
+      await ref.read(identityServiceProvider).resetVerification();
+    }
     if (!mounted) return;
-    setState(() => _deleting = false);
+    setState(() {
+      _deleting = false;
+      _reload();
+    });
     final message = result.isSuccess
         ? 'El servidor confirmó la eliminación remota.'
         : result.errorOrNull?.message ??
