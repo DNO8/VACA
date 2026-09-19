@@ -4,3 +4,17 @@
 **/key.properties
 **/*.jks
 **/*.keystore
+
+# Documentación y assets viven en Drive de Fundación Camada — repo = solo vaca_app
+/Especificaciones/
+/estetica/
+/FIBE-docs/
+/font/
+/Markdowns/
+/shipaton/
+/supabase/
+/VACA - documentación/
+
+# Tooling local de agentes
+/.atl/
+/.windsurf/
