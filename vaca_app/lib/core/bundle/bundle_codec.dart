@@ -54,6 +54,7 @@ class BundleCodec {
     int? hopLimit,
     String? replacesMessageId,
     List<BundleAttachmentManifestEntry> attachmentManifest = const [],
+    String? stellarPubkey,
   }) async {
     final effectiveKeyId = keyId ?? _destination;
     final messageId = const Uuid().v4();
@@ -71,6 +72,7 @@ class BundleCodec {
       identityAssuranceIndex: incident.identityAssurance.index,
       attachmentManifest: attachmentManifest,
       replacesMessageId: replacesMessageId,
+      stellarPubkey: stellarPubkey,
     );
 
     final payloadJson = jsonEncode(payload.toJson());

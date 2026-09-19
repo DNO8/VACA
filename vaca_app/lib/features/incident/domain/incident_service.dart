@@ -21,13 +21,19 @@ class IncidentService {
     this._database,
     this._queue,
     this._identity,
-    this._attachments,
-  );
+    this._attachments, {
+    this.stellarPubkeyProvider,
+  });
 
   final AppDatabase _database;
   final BundleQueueService _queue;
   final IdentityService _identity;
   final AttachmentService _attachments;
+
+  /// Proveedor opcional de la pubkey Stellar del reportante. Se invoca al
+  /// crear la señal para incluirla en el payload cifrado del bundle; si no
+  /// hay wallet el campo simplemente no viaja.
+  final Future<String?> Function()? stellarPubkeyProvider;
 
   /// Radio en metros para considerar dos señales "en el mismo lugar".
   static const double _duplicateRadiusMeters = 100;
@@ -153,11 +159,16 @@ class IncidentService {
           await _database.into(_database.attachments).insert(row);
           attachments.add(row);
         }
+        var stellarPubkey = await stellarPubkeyProvider?.call();
+        if (stellarPubkey == null || stellarPubkey.isEmpty) {
+          stellarPubkey = null;
+        }
         final queued = await _queue.enqueue(
           incident,
           profile,
           eventType: EventType.created,
           attachments: attachments,
+          stellarPubkey: stellarPubkey,
         );
         if (queued case Failure(error: final error)) {
           throw _AtomicCaptureFailure(error);

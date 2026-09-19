@@ -250,7 +250,16 @@ final incidentServiceProvider = Provider<IncidentService>((ref) {
   final queue = ref.watch(bundleQueueServiceProvider);
   final identity = ref.watch(identityServiceProvider);
   final attachments = ref.watch(attachmentServiceProvider);
-  return IncidentService(db, queue, identity, attachments);
+  return IncidentService(
+    db,
+    queue,
+    identity,
+    attachments,
+    stellarPubkeyProvider: () async {
+      final wallet = await ref.read(stellarWalletServiceProvider).load();
+      return wallet.valueOrNull?.accountId;
+    },
+  );
 });
 
 /// Servicio de adjuntos de incidentes.

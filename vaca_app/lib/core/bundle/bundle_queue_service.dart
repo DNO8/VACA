@@ -37,6 +37,7 @@ class BundleQueueService {
     required EventType eventType,
     List<Attachment> attachments = const [],
     String? replacesMessageId,
+    String? stellarPubkey,
   }) async {
     final manifest = attachments.map(_toManifestEntry).toList();
 
@@ -46,6 +47,7 @@ class BundleQueueService {
       eventType: eventType,
       attachmentManifest: manifest,
       replacesMessageId: replacesMessageId,
+      stellarPubkey: stellarPubkey,
     );
     if (bundleResult.isFailure) {
       return Failure((bundleResult as Failure<Bundle>).error);

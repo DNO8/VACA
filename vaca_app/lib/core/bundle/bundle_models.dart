@@ -36,6 +36,7 @@ class BundlePayload {
     required this.identityAssuranceIndex,
     this.attachmentManifest = const [],
     this.replacesMessageId,
+    this.stellarPubkey,
   });
 
   final int categoryIndex;
@@ -49,6 +50,11 @@ class BundlePayload {
   final int identityAssuranceIndex;
   final List<BundleAttachmentManifestEntry> attachmentManifest;
   final String? replacesMessageId;
+
+  /// Pubkey Stellar testnet del reportante. Viaja dentro del payload
+  /// cifrado y autenticado: permite que el servidor cree claimable
+  /// balances dirigidos al receptor cuando su señal se promueve a Vaquita.
+  final String? stellarPubkey;
 
   BundlePayload copyWith({
     List<BundleAttachmentManifestEntry>? attachmentManifest,
@@ -65,6 +71,7 @@ class BundlePayload {
         identityAssuranceIndex: identityAssuranceIndex,
         attachmentManifest: attachmentManifest ?? this.attachmentManifest,
         replacesMessageId: replacesMessageId,
+        stellarPubkey: stellarPubkey,
       );
 
   Map<String, dynamic> toJson() => {
@@ -80,6 +87,7 @@ class BundlePayload {
         'attachmentManifest':
             attachmentManifest.map((e) => e.toJson()).toList(),
         'replacesMessageId': replacesMessageId,
+        'stellarPubkey': stellarPubkey,
       };
 
   factory BundlePayload.fromJson(Map<String, dynamic> json) => BundlePayload(
@@ -101,6 +109,7 @@ class BundlePayload {
                 .toList() ??
             const [],
         replacesMessageId: json['replacesMessageId'] as String?,
+        stellarPubkey: json['stellarPubkey'] as String?,
       );
 }
 
