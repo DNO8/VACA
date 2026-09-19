@@ -103,6 +103,89 @@ class StellarWalletService {
     }
   }
 
+  /// Balances reclamables (claimable balances) pendientes para esta wallet.
+  Future<Result<List<ClaimableBalanceResponse>>> pendingClaims() async {
+    final stored = await _storage.read(_secretKey);
+    if (stored case Failure(error: final error)) return Failure(error);
+    final secret = stored.valueOrNull;
+    if (secret == null || secret.isEmpty) {
+      return const Failure(
+        VacaError(
+          code: 'stellar_wallet_missing',
+          message: 'Primero crea una wallet testnet.',
+        ),
+      );
+    }
+    try {
+      final keyPair = KeyPair.fromSecretSeed(secret);
+      final page = await _sdk.claimableBalances
+          .forClaimant(keyPair.accountId)
+          .execute();
+      return Success(page.records);
+    } catch (error) {
+      return Failure(
+        VacaError(
+          code: 'stellar_claims_query',
+          message: 'No se pudo consultar la ayuda pendiente.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
+  /// Reclama todos los balances pendientes hacia la wallet.
+  /// Fondea con Friendbot si la cuenta aún no existe (paga fee + reservas).
+  Future<Result<StellarWalletSnapshot>> claimAll() async {
+    final stored = await _storage.read(_secretKey);
+    if (stored case Failure(error: final error)) return Failure(error);
+    final secret = stored.valueOrNull;
+    if (secret == null || secret.isEmpty) {
+      return const Failure(
+        VacaError(
+          code: 'stellar_wallet_missing',
+          message: 'Primero crea una wallet testnet.',
+        ),
+      );
+    }
+    try {
+      final keyPair = KeyPair.fromSecretSeed(secret);
+      if (!(await _snapshot(keyPair)).funded) {
+        await FriendBot.fundTestAccount(keyPair.accountId);
+        await Future<void>.delayed(const Duration(seconds: 2));
+      }
+      final page = await _sdk.claimableBalances
+          .forClaimant(keyPair.accountId)
+          .execute();
+      for (final balance in page.records) {
+        final account = await _sdk.accounts.account(keyPair.accountId);
+        final tx = TransactionBuilder(account)
+            .addOperation(
+              ClaimClaimableBalanceOperation(balance.balanceId),
+            )
+            .build();
+        tx.sign(keyPair, Network.TESTNET);
+        final res = await _sdk.submitTransaction(tx);
+        if (!res.success) {
+          return const Failure(
+            VacaError(
+              code: 'stellar_claim_failed',
+              message: 'No se pudo reclamar la ayuda.',
+            ),
+          );
+        }
+      }
+      return refresh();
+    } catch (error) {
+      return Failure(
+        VacaError(
+          code: 'stellar_claim_error',
+          message: 'Error al reclamar la ayuda.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
   Future<Result<StellarWalletSnapshot>> refresh() async {
     final stored = await _storage.read(_secretKey);
     if (stored case Failure(error: final error)) return Failure(error);

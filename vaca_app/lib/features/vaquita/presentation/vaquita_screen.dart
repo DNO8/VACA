@@ -82,46 +82,195 @@ class _WalletGate extends StatelessWidget {
   }
 }
 
-class _PromotedList extends ConsumerWidget {
+class _PromotedList extends ConsumerStatefulWidget {
   const _PromotedList();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder<Result<List<VaquitaFeedItem>>>(
-      future: ref.read(vaquitaFeedServiceProvider).fetchFeed(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final result = snapshot.data!;
-        if (result case Failure(error: final error)) {
-          return EmptyState(
-            kind: EmptyStateKind.error,
-            title: 'Sin conexión',
-            message: error.message ?? 'No se pudo cargar Vaquitas.',
+  ConsumerState<_PromotedList> createState() => _PromotedListState();
+}
+
+class _PromotedListState extends ConsumerState<_PromotedList> {
+  List<VaquitaFeedItem> _items = const [];
+  double _pendingXlm = 0;
+  bool _loading = true;
+  bool _claiming = false;
+  String? _error;
+  String? _notice;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final feed = await ref.read(vaquitaFeedServiceProvider).fetchFeed();
+    final claims = await ref
+        .read(stellarWalletServiceProvider)
+        .pendingClaims();
+    if (!mounted) return;
+    var pending = 0.0;
+    if (claims case Success(value: final balances)) {
+      for (final b in balances) {
+        pending += double.tryParse(b.amount) ?? 0;
+      }
+    }
+    setState(() {
+      _loading = false;
+      _pendingXlm = pending;
+      if (feed case Success(value: final items)) {
+        _items = items;
+        _error = null;
+      } else if (feed case Failure(error: final error)) {
+        _error = error.message ?? 'No se pudo cargar Vaquitas.';
+      }
+    });
+  }
+
+  Future<void> _claim() async {
+    setState(() {
+      _claiming = true;
+      _notice = null;
+      _error = null;
+    });
+    final res = await ref.read(stellarWalletServiceProvider).claimAll();
+    if (!mounted) return;
+    if (res case Failure(error: final error)) {
+      setState(() {
+        _claiming = false;
+        _error = error.message ?? 'No se pudo reclamar.';
+      });
+      return;
+    }
+    setState(() {
+      _claiming = false;
+      _notice = 'Ayuda recibida en tu wallet.';
+    });
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null && _items.isEmpty) {
+      return EmptyState(
+        kind: EmptyStateKind.error,
+        title: 'Sin conexión',
+        message: _error!,
+      );
+    }
+    final promoted = _items.where((i) => i.isPromoted).toList();
+    if (promoted.isEmpty && _pendingXlm <= 0) {
+      return const EmptyState(
+        kind: EmptyStateKind.empty,
+        title: 'Sin Vaquitas aún',
+        message:
+            'Cuando una señal verificada sea promovida por la comunidad '
+            'o por VACA aparecerá aquí.',
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      itemCount: promoted.length + 1,
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return _ClaimCard(
+            pendingXlm: _pendingXlm,
+            claiming: _claiming,
+            error: _error,
+            notice: _notice,
+            onClaim: _claim,
           );
         }
-        final promoted =
-            result.valueOrNull?.where((i) => i.isPromoted).toList() ??
-                const <VaquitaFeedItem>[];
-        if (promoted.isEmpty) {
-          return const EmptyState(
-            kind: EmptyStateKind.empty,
-            title: 'Sin Vaquitas aún',
-            message:
-                'Cuando una señal verificada sea promovida por la comunidad '
-                'o por VACA aparecerá aquí.',
-          );
-        }
-        return ListView.separated(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          itemCount: promoted.length,
-          separatorBuilder: (_, __) =>
-              const SizedBox(height: AppSpacing.sm),
-          itemBuilder: (context, index) =>
-              _VaquitaCard(item: promoted[index]),
-        );
+        return _VaquitaCard(item: promoted[index - 1]);
       },
+    );
+  }
+}
+
+/// Tarjeta de ayuda pendiente: muestra el XLM reclamable y ejecuta el
+/// claim de todos los claimable balances dirigidos a la wallet.
+class _ClaimCard extends StatelessWidget {
+  const _ClaimCard({
+    required this.pendingXlm,
+    required this.claiming,
+    required this.onClaim,
+    this.error,
+    this.notice,
+  });
+
+  final double pendingXlm;
+  final bool claiming;
+  final VoidCallback onClaim;
+  final String? error;
+  final String? notice;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.volunteer_activism_outlined,
+                  size: 18,
+                  color: AppColors.success,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  'Ayuda para tu señal',
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            if (pendingXlm > 0)
+              Text(
+                '${pendingXlm.toStringAsFixed(2)} XLM testnet reclamables',
+                style: AppTypography.caption,
+              )
+            else
+              const Text(
+                'Sin ayuda pendiente por ahora.',
+                style: AppTypography.caption,
+              ),
+            if (notice != null)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxs),
+                child: Text(
+                  notice!,
+                  style: AppTypography.caption
+                      .copyWith(color: AppColors.success),
+                ),
+              ),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxs),
+                child: Text(
+                  error!,
+                  style: AppTypography.caption
+                      .copyWith(color: AppColors.danger),
+                ),
+              ),
+            if (pendingXlm > 0) ...[
+              const SizedBox(height: AppSpacing.xs),
+              VacaButton(
+                label: claiming ? 'Reclamando…' : 'Reclamar ayuda',
+                onPressed: claiming ? null : onClaim,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
