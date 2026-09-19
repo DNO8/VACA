@@ -16,7 +16,7 @@ import { StrKey } from 'npm:@stellar/stellar-sdk@13.3.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 const ACTIONS = new Set(['check', 'set_status']);
