@@ -90,12 +90,15 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'bad_signature' }, 400);
   }
 
-  const keyBytes = StrKey.decodeEd25519PublicKey(publicKey);
-  const valid = ed25519.verify(
-    signatureBytes,
-    new TextEncoder().encode(canonical),
-    keyBytes,
+  // SEP-53: las wallets firman sha256(prefix + mensaje), no el mensaje crudo.
+  const preimage = new TextEncoder().encode(
+    `Stellar Signed Message:\n${canonical}`,
   );
+  const digest = new Uint8Array(
+    await crypto.subtle.digest('SHA-256', preimage),
+  );
+  const keyBytes = StrKey.decodeEd25519PublicKey(publicKey);
+  const valid = ed25519.verify(signatureBytes, digest, keyBytes);
   if (!valid) return jsonResponse({ error: 'signature_invalid' }, 401);
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
