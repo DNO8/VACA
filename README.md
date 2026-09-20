@@ -11,7 +11,7 @@ Infraestructura cívica de resiliencia para emergencias, desarrollada por **Fund
 | `vaca_app/` | App móvil Flutter offline-first (Android/iOS): captura de incidentes, outbox durable, entrega cifrada y recibos verificables. |
 
 > [!NOTE]
-> La documentación del proyecto (especificaciones, brandboard, whitepaper, SOW, changelogs y evidencia de entregables) vive en el **Drive de Fundación Camada**, carpeta `VACA/`. Este repositorio se mantiene deliberadamente como repo de código de la app.
+> La documentación del proyecto (especificaciones, brandboard, whitepaper, SOW, changelogs y evidencia de entregables) vive en **Fundación Camada**. Este repositorio se mantiene deliberadamente como repo de código de la app.
 
 ## Repos relacionados
 
@@ -43,4 +43,4 @@ Detalles de setup, flavors y fundamentos en [`vaca_app/README.md`](vaca_app/READ
 ## Alcance honesto
 
 > [!WARNING]
-> VACA es una herramienta comunitaria independiente — **no está afiliada ni respaldada por organismos de gobierno ni servicios de emergencia**. Ante riesgo vital, usar siempre los canales oficiales (Chile: 131 SAMU, 132 Bomberos, 133 Carabineros). Una señal guardada localmente aún no fue recibida por ninguna institución: el recibo del servidor prueba recepción técnica, nunca atención.
+> VACA es una herramienta comunitaria independiente. Ante riesgo vital, usar siempre los canales oficiales (Chile: 131 SAMU, 132 Bomberos, 133 Carabineros). Una señal guardada localmente aún no fue recibida por ninguna institución: el recibo del servidor prueba recepción técnica, nunca atención.
