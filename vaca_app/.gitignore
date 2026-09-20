@@ -47,3 +47,5 @@ app.*.map.json
 # Config local con claves — nunca versionar
 .env
 .env.*
+
+test/failures/
