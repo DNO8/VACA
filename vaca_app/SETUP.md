@@ -31,7 +31,8 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-No edites manualmente `database.g.dart`. Toda evolución de esquema requiere migración y regeneración verificable.
+> [!IMPORTANT]
+> No edites manualmente `database.g.dart`. Toda evolución de esquema requiere migración y regeneración verificable.
 
 ## Flavors
 
@@ -49,14 +50,16 @@ Ejemplo local:
 flutter run --flavor dev --dart-define=FLAVOR=dev
 ```
 
-No coloques en el cliente:
+> [!CAUTION]
+> Nunca coloques en el cliente:
+>
+> - Secretos de Didit/KYC.
+> - Service-role keys.
+> - Claves privadas de recibos.
+> - Claves simétricas globales capaces de descifrar payloads.
 
-- Secretos de Didit/KYC.
-- Service-role keys.
-- Claves privadas de recibos.
-- Claves simétricas globales capaces de descifrar payloads.
-
-La anon/publishable key de Supabase puede identificar el proyecto, pero no reemplaza autenticación ni autorización.
+> [!NOTE]
+> La anon/publishable key de Supabase puede identificar el proyecto, pero no reemplaza autenticación ni autorización.
 
 ## Fuentes
 
@@ -108,7 +111,7 @@ lib/
     identity/     perfil y KYC boundary
     incident/     dominio y pantallas
     capture/      cámara y metadata
-../supabase/
-  migrations/
-  functions/
 ```
+
+> [!NOTE]
+> El backend Supabase (migraciones `001`–`010` y Edge Functions) no vive en este repo: está en Drive `VACA/01 Producto/Desarrollo y QA/supabase/`.

@@ -15,7 +15,7 @@ class VacaBrandLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final asset = Theme.of(context).brightness == Brightness.dark
-        ? 'assets/images/icono-app-oscuro-v2.webp'
+        ? 'assets/images/icono-app-oscuro-sin-fondo.png'
         : 'assets/images/icono-app-claro-v2.png';
     final logo = Semantics(
       image: true,

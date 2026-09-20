@@ -98,7 +98,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                 'Se encolará un evento de cancelación firmado para el servidor. '
                 'El registro original se conserva en este dispositivo.',
                 style: AppTypography.body
-                    .copyWith(color: AppColors.neutral500),
+                    .copyWith(color: context.tokens.muted),
               ),
               const SizedBox(height: AppSpacing.lg),
               Row(
@@ -134,6 +134,95 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
       'No se pudo cancelar.',
     );
     if (mounted) ref.read(bundleSchedulerProvider).processQueue();
+  }
+
+  static bool _isCancelled(UserIncident incident) =>
+      incident.status == IncidentStatus.cancelledLocally ||
+      incident.status == IncidentStatus.cancellationQueued ||
+      incident.status == IncidentStatus.cancellationReceived;
+
+  Future<void> _confirmDelete(UserIncident incident) async {
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.md,
+            AppSpacing.xl,
+            AppSpacing.xl,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stone300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const Text(
+                '¿Borrar del dispositivo?',
+                style: AppTypography.h2,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Se eliminarán la señal, su historial, sus adjuntos y los '
+                'paquetes de entrega pendientes. Esta acción no se puede '
+                'deshacer.',
+                style: AppTypography.body
+                    .copyWith(color: context.tokens.muted),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Navigator.of(sheetContext).pop(false),
+                      child: const Text('No, volver'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.danger,
+                      ),
+                      onPressed: () =>
+                          Navigator.of(sheetContext).pop(true),
+                      child: const Text('Sí, borrar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    final result =
+        await ref.read(incidentServiceProvider).deleteLocal(widget.incidentId);
+    if (!mounted) return;
+    if (result case Failure(error: final error)) {
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.message ?? 'No se pudo borrar.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).pop();
   }
 
   Future<void> _shareSignal(UserIncident incident) async {
@@ -200,7 +289,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                       Text(
                         vacaShortId(incident.id),
                         style: AppTypography.dataSm
-                            .copyWith(color: AppColors.neutral500),
+                            .copyWith(color: context.tokens.muted),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       PriorityBadge(priority: incident.priority),
@@ -209,7 +298,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                         tooltip: 'Compartir señal',
                         onPressed: () => _shareSignal(incident),
                         icon: const Icon(Icons.share_outlined, size: 20),
-                        color: AppColors.celadon700,
+                        color: context.tokens.muted,
                       ),
                     ],
                   ),
@@ -223,34 +312,53 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                     status: incident.status,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const Text('Agregar actualización', style: AppTypography.h3),
-                  const SizedBox(height: AppSpacing.xs),
-                  TextField(
-                    controller: _updateController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText:
-                          'Qué cambió, qué se resolvió, qué se necesita ahora…',
+                  if (_isCancelled(incident)) ...[
+                    OutlinedButton(
+                      onPressed:
+                          _busy ? null : () => _confirmDelete(incident),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.danger,
+                        side: const BorderSide(
+                          color: AppColors.danger,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Text('Borrar del dispositivo'),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  VacaButton(
-                    label: _busy ? 'Procesando…' : 'Publicar actualización',
-                    loading: _busy,
-                    onPressed: _busy ? null : _publishUpdate,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  OutlinedButton(
-                    onPressed: _busy ? null : () => _confirmCancel(incident),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.danger,
-                      side: const BorderSide(
-                        color: AppColors.danger,
-                        width: 1.5,
+                  ] else ...[
+                    const Text(
+                      'Agregar actualización',
+                      style: AppTypography.h3,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    TextField(
+                      controller: _updateController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText:
+                            'Qué cambió, qué se resolvió, qué se necesita ahora…',
                       ),
                     ),
-                    child: const Text('Cancelar señal'),
-                  ),
+                    const SizedBox(height: AppSpacing.sm),
+                    VacaButton(
+                      label: _busy ? 'Procesando…' : 'Publicar actualización',
+                      loading: _busy,
+                      onPressed: _busy ? null : _publishUpdate,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton(
+                      onPressed:
+                          _busy ? null : () => _confirmCancel(incident),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.danger,
+                        side: const BorderSide(
+                          color: AppColors.danger,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Text('Cancelar señal'),
+                    ),
+                  ],
                 ],
               );
             },
@@ -281,20 +389,20 @@ class _SummaryCard extends StatelessWidget {
               Text(
                 incident.shortNote!,
                 style: AppTypography.body
-                    .copyWith(color: AppColors.neutral500),
+                    .copyWith(color: context.tokens.muted),
               ),
             if (incident.peopleCount != null)
               Text(
                 '${incident.peopleCount} personas aprox.',
                 style: AppTypography.body
-                    .copyWith(color: AppColors.neutral500),
+                    .copyWith(color: context.tokens.muted),
               ),
             if (incident.latitude != null && incident.longitude != null)
               Text(
                 '${incident.latitude!.toStringAsFixed(5)}, '
                 '${incident.longitude!.toStringAsFixed(5)}',
                 style: AppTypography.dataSm
-                    .copyWith(color: AppColors.neutral500),
+                    .copyWith(color: context.tokens.muted),
               ),
             if (incident.identityAssurance == IdentityAssurance.verified)
               Row(
@@ -321,7 +429,7 @@ class _SummaryCard extends StatelessWidget {
                     Text(
                       'Registrada',
                       style: AppTypography.caption
-                          .copyWith(color: AppColors.neutral500),
+                          .copyWith(color: context.tokens.muted),
                     ),
                     Text(
                       vacaTimestamp(incident.createdAt),
@@ -336,7 +444,7 @@ class _SummaryCard extends StatelessWidget {
                     Text(
                       'Estado',
                       style: AppTypography.caption
-                          .copyWith(color: AppColors.neutral500),
+                          .copyWith(color: context.tokens.muted),
                     ),
                     Text(
                       incidentStatusLabel(incident.status),
@@ -437,7 +545,7 @@ class _Timeline extends StatelessWidget {
                         Text(
                           vacaTimestamp(items[i].at!),
                           style: AppTypography.dataSm
-                              .copyWith(color: AppColors.neutral500),
+                              .copyWith(color: context.tokens.muted),
                         ),
                     ],
                   ),

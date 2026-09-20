@@ -23,6 +23,7 @@ import 'bundle/bundle_scheduler.dart';
 import 'bundle/bundle_signer.dart';
 import 'links/external_link_service.dart';
 import 'permissions/permission_service.dart';
+import 'result/result.dart';
 import 'security/device_request_signer.dart';
 import 'security/identity_key_source.dart';
 import 'security/secure_storage.dart';
@@ -271,6 +272,29 @@ final attachmentServiceProvider = Provider<AttachmentService>((ref) {
 /// Pestaña activa del [AppShell]. Permite que pantallas hijas (p. ej. la
 /// confirmación de guardado local) soliciten cambiar de pestaña.
 final shellTabProvider = StateProvider<int>((ref) => 0);
+
+/// Alerta Vaquita para el nav: true cuando hay ayuda XLM reclamable o una
+/// señal propia fue promovida (community/vaquita en el feed ∩ DB local).
+/// La vaca del menú oscila mientras sea true y no se esté en la pestaña.
+final vaquitaAlertProvider = FutureProvider<bool>((ref) async {
+  final wallet = await ref.read(stellarWalletServiceProvider).load();
+  if (wallet case Success(value: final snapshot) when snapshot != null) {
+    final claims =
+        await ref.read(stellarWalletServiceProvider).pendingClaims();
+    if (claims case Success(value: final balances) when balances.isNotEmpty) {
+      return true;
+    }
+  }
+  final feed = await ref.read(vaquitaFeedServiceProvider).fetchFeed();
+  if (feed case Success(value: final items)) {
+    final db = ref.read(databaseProvider);
+    final localIds =
+        (await db.select(db.incidents).get()).map((i) => i.id).toSet();
+    return items
+        .any((i) => i.isPromoted && localIds.contains(i.incidentId));
+  }
+  return false;
+});
 
 /// Reloj de presentación (instante actual). Sobreescribible en tests para
 /// mantener goldens y pruebas de UI deterministas.

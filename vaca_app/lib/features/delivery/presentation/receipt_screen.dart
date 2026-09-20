@@ -71,7 +71,7 @@ class ReceiptScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -89,7 +89,8 @@ class ReceiptScreen extends ConsumerWidget {
                               style: TextStyle(
                                 fontFamily: AppTypography.brandFont,
                                 fontSize: 12,
-                                color: AppColors.stone600,
+                                // Fondo claro fijo (celadon100) → texto fijo.
+                                color: AppColors.neutral500,
                               ),
                             ),
                           ],
@@ -154,7 +155,7 @@ class ReceiptScreen extends ConsumerWidget {
                   'Este comprobante no garantiza atención ni reemplaza los '
                   'canales oficiales de emergencia.',
                   style: AppTypography.body
-                      .copyWith(color: AppColors.neutral500),
+                      .copyWith(color: context.tokens.muted),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 VacaButton(
@@ -220,7 +221,7 @@ class _ReceiptRow extends StatelessWidget {
           Text(
             label,
             style: AppTypography.body
-                .copyWith(color: AppColors.neutral500),
+                .copyWith(color: context.tokens.muted),
           ),
           const SizedBox(width: AppSpacing.sm),
           Flexible(
@@ -252,7 +253,7 @@ class _ReceiptField extends StatelessWidget {
         Text(
           label.toUpperCase(),
           style: AppTypography.caption
-              .copyWith(color: AppColors.neutral500),
+              .copyWith(color: context.tokens.muted),
         ),
         const SizedBox(height: AppSpacing.xxs),
         SelectableText(value, style: AppTypography.dataSm),

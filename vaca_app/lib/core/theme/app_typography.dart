@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 /// Tamaños en logical pixels; el escalado del sistema (hasta 200%) lo aplica
 /// Flutter vía MediaQuery.textScaler — NO fijar textScaleFactor.
 abstract final class AppTypography {
-  static const String brandFont = 'AndersonGrotesk';
+  static const String brandFont = 'SpaceGrotesk';
   static const String monoFont = 'JetBrainsMono';
 
   static const TextStyle display = TextStyle(

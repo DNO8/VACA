@@ -58,7 +58,7 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
       body: Column(
         children: [
           Container(
-            color: AppColors.celadon900,
+            color: AppColors.ink,
             padding: const EdgeInsets.only(bottom: AppSpacing.xl),
             child: SafeArea(
               bottom: false,
@@ -164,7 +164,7 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                   border: Border.all(color: AppColors.bronze),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.science_outlined, color: AppColors.bronze),
@@ -176,6 +176,7 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                           fontFamily: AppTypography.brandFont,
                           fontSize: 14,
                           height: 20 / 14,
+                          // Fondo claro fijo (0xFFFFF8EE) → texto fijo oscuro.
                           color: AppColors.ink,
                         ),
                       ),
@@ -235,10 +236,10 @@ class _EmptyWallet extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.account_balance_wallet_outlined,
               size: 52,
-              color: AppColors.celadon700,
+              color: context.tokens.muted,
             ),
             const SizedBox(height: AppSpacing.md),
             const Text('Crear wallet de prueba', style: AppTypography.h2),

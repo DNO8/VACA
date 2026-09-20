@@ -10,11 +10,12 @@ Infraestructura cívica de resiliencia para emergencias, desarrollada por **Fund
 | --- | --- |
 | `vaca_app/` | App móvil Flutter offline-first (Android/iOS): captura de incidentes, outbox durable, entrega cifrada y recibos verificables. |
 
-La documentación del proyecto (especificaciones, brandboard, whitepaper, SOW, changelogs y evidencia de entregables) vive en el **Drive de Fundación Camada**, carpeta `VACA/`. Este repositorio se mantiene deliberadamente como repo de código de la app.
+> [!NOTE]
+> La documentación del proyecto (especificaciones, brandboard, whitepaper, SOW, changelogs y evidencia de entregables) vive en el **Drive de Fundación Camada**, carpeta `VACA/`. Este repositorio se mantiene deliberadamente como repo de código de la app.
 
 ## Repos relacionados
 
-- [`VACA-demo`](https://github.com/DNO8/VACA-demo) — demo web del riel de ayuda sobre Stellar Testnet (globo interactivo, tokenización, claimable balances, multifirma).
+- [`VACA-web`](https://github.com/DNO8/VACA-web) — demo web del riel de ayuda sobre Stellar Testnet (globo interactivo, tokenización, claimable balances, multifirma).
 - [`VACA-prototipo-visual`](https://github.com/DNO8/VACA-prototipo-visual) — prototipo visual de referencia (Figma Make, 15 pantallas).
 
 ## Lo esencial de la app
@@ -41,4 +42,5 @@ Detalles de setup, flavors y fundamentos en [`vaca_app/README.md`](vaca_app/READ
 
 ## Alcance honesto
 
-VACA es una herramienta comunitaria independiente — **no está afiliada ni respaldada por organismos de gobierno ni servicios de emergencia**. Ante riesgo vital, usar siempre los canales oficiales (Chile: 131 SAMU, 132 Bomberos, 133 Carabineros).
+> [!WARNING]
+> VACA es una herramienta comunitaria independiente — **no está afiliada ni respaldada por organismos de gobierno ni servicios de emergencia**. Ante riesgo vital, usar siempre los canales oficiales (Chile: 131 SAMU, 132 Bomberos, 133 Carabineros). Una señal guardada localmente aún no fue recibida por ninguna institución: el recibo del servidor prueba recepción técnica, nunca atención.

@@ -323,6 +323,68 @@ class IncidentService {
     }
   }
 
+  /// Borra todos los datos locales de un incidente: archivos adjuntos,
+  /// historial de eventos, bundles de entrega (incluida la cancelación
+  /// pendiente), recibos y la fila del incidente.
+  ///
+  /// Pensado para incidentes ya cancelados: el usuario decide que la copia
+  /// local ya no es necesaria. Si la cancelación aún no llegó al servidor,
+  /// borrar la descarta — el incidente expirará allá por TTL.
+  Future<Result<void>> deleteLocal(String id) async {
+    final incident = await get(id);
+    if (incident == null) {
+      return const Failure(
+        VacaError(code: 'incident_not_found', message: 'Señal no encontrada.'),
+      );
+    }
+    try {
+      final files = await (_database.select(_database.attachments)
+            ..where((a) => a.incidentId.equals(id)))
+          .get();
+      final bundles = await (_database.select(_database.originBundles)
+            ..where((b) => b.incidentId.equals(id)))
+          .get();
+      await _database.transaction(() async {
+        for (final bundle in bundles) {
+          await (_database.delete(_database.deliveryAttempts)
+                ..where((d) => d.messageId.equals(bundle.id)))
+              .go();
+          await (_database.delete(_database.serverReceipts)
+                ..where((r) => r.messageId.equals(bundle.id)))
+              .go();
+        }
+        await (_database.delete(_database.originBundles)
+              ..where((b) => b.incidentId.equals(id)))
+            .go();
+        await (_database.delete(_database.attachments)
+              ..where((a) => a.incidentId.equals(id)))
+            .go();
+        await (_database.delete(_database.incidentEvents)
+              ..where((e) => e.incidentId.equals(id)))
+            .go();
+        await (_database.delete(_database.incidents)
+              ..where((i) => i.id.equals(id)))
+            .go();
+      });
+      for (final attachment in files) {
+        try {
+          await File(attachment.localPath).delete();
+        } on FileSystemException {
+          // El archivo ya no existe o no se pudo borrar; no bloquea.
+        }
+      }
+      return const Success(null);
+    } catch (error) {
+      return Failure(
+        VacaError(
+          code: 'incident_delete_failed',
+          message: 'No se pudo borrar la señal del dispositivo.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
   /// Detecta una señal duplicada por contenido: misma categoría, nota
   /// equivalente y misma zona, creada dentro de [_duplicateWindow] y no
   /// cerrada por cancelación o expiración.

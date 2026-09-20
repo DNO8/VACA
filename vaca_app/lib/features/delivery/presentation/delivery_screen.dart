@@ -82,13 +82,18 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
                     );
                   }
                   final pending = bundles
-                      .where((b) => b.state != DeliveryState.delivered)
+                      .where(
+                        (b) =>
+                            b.state != DeliveryState.delivered &&
+                            b.lastErrorCode != 'cancelled',
+                      )
                       .length;
                   final visible = bundles.where((b) {
                     return switch (_filter) {
                       _DeliveryFilter.all => true,
                       _DeliveryFilter.pending =>
-                        b.state != DeliveryState.delivered,
+                        b.state != DeliveryState.delivered &&
+                            b.lastErrorCode != 'cancelled',
                       _DeliveryFilter.delivered =>
                         b.state == DeliveryState.delivered,
                     };
@@ -103,7 +108,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
                               '${bundles.length} señal${bundles.length == 1 ? '' : 'es'} · '
                               '$pending pendiente${pending == 1 ? '' : 's'} de envío',
                               style: AppTypography.body
-                                  .copyWith(color: AppColors.neutral500),
+                                  .copyWith(color: context.tokens.muted),
                             ),
                           ),
                           if (pending > 0)
@@ -112,7 +117,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
                               icon: const Icon(Icons.refresh, size: 18),
                               label: const Text('Reintentar todo'),
                               style: TextButton.styleFrom(
-                                foregroundColor: AppColors.celadon700,
+                                foregroundColor: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                         ],
@@ -141,11 +146,19 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
                           now: ref.watch(vacaClockProvider)(),
                           onTap: bundle.state == DeliveryState.delivered
                               ? () => _openReceipt(context, ref, bundle)
-                              : bundle.state == DeliveryState.failed
+                              : bundle.state == DeliveryState.failed &&
+                                      bundle.lastErrorCode != 'cancelled'
                                   ? () => _retry(bundle)
                                   : null,
-                          onRetry: bundle.state == DeliveryState.queued ||
-                                  bundle.state == DeliveryState.failed
+                          // La cancelación viaja sola por el scheduler: no
+                          // se ofrece reintento manual en una señal ya
+                          // cancelada (ni en sus bundles muertos).
+                          onRetry: (bundle.state == DeliveryState.queued ||
+                                      bundle.state == DeliveryState.failed) &&
+                                  bundle.lastErrorCode != 'cancelled' &&
+                                  !_isCancelledIncident(
+                                    incidents[bundle.incidentId],
+                                  )
                               ? () => _retry(bundle)
                               : null,
                         ),
@@ -179,6 +192,14 @@ enum _DeliveryFilter {
   const _DeliveryFilter(this.label);
   final String label;
 }
+
+/// Incidente en alguna fase de cancelación: el único bundle que sigue
+/// viajando es el de la propia cancelación.
+bool _isCancelledIncident(Incident? incident) =>
+    incident != null &&
+    (incident.status == IncidentStatus.cancelledLocally ||
+        incident.status == IncidentStatus.cancellationQueued ||
+        incident.status == IncidentStatus.cancellationReceived);
 
 class _SyncBanner extends StatelessWidget {
   const _SyncBanner({required this.sync});
@@ -310,32 +331,43 @@ class _BundleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final (icon, color, label, bg) = switch (bundle.state) {
-      DeliveryState.queued => (
-          Icons.schedule,
-          tokens.warning,
-          'En cola',
-          const Color(0xFFFFF8EE),
-        ),
-      DeliveryState.sent => (
-          Icons.upload_outlined,
-          tokens.info,
-          'Enviando',
-          const Color(0xFFEEF5F8),
-        ),
-      DeliveryState.delivered => (
-          Icons.verified_outlined,
-          tokens.success,
-          'Recibida por el servidor',
-          const Color(0xFFEEF5F1),
-        ),
-      DeliveryState.failed => (
-          Icons.error_outline,
-          tokens.danger,
-          'Entrega pendiente de reintento',
-          const Color(0xFFFFF2F2),
-        ),
-    };
+    // Una señal cancelada manda su propio estado: los bundles originales
+    // quedan "muertos" (lastErrorCode=cancelled) y el único que viaja es
+    // la cancelación. El estado de entrega del bundle no refleja eso.
+    final cancelled = _isCancelledIncident(incident);
+    final (icon, color, label, bg) = cancelled
+        ? (
+            Icons.cancel_outlined,
+            tokens.muted,
+            incidentStatusLabel(incident!.status),
+            AppColors.stone100,
+          )
+        : switch (bundle.state) {
+            DeliveryState.queued => (
+                Icons.schedule,
+                tokens.warning,
+                'En cola',
+                const Color(0xFFFFF8EE),
+              ),
+            DeliveryState.sent => (
+                Icons.upload_outlined,
+                tokens.info,
+                'Enviando',
+                const Color(0xFFEEF5F8),
+              ),
+            DeliveryState.delivered => (
+                Icons.verified_outlined,
+                tokens.success,
+                'Recibida por el servidor',
+                const Color(0xFFEEF5F1),
+              ),
+            DeliveryState.failed => (
+                Icons.error_outline,
+                tokens.danger,
+                'Entrega pendiente de reintento',
+                const Color(0xFFFFF2F2),
+              ),
+          };
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: InkWell(
@@ -392,7 +424,7 @@ class _BundleCard extends StatelessWidget {
                       '${vacaShortId(bundle.incidentId)} · '
                       '${vacaRelativeTime(bundle.createdAt, now: now)}',
                       style: AppTypography.dataSm
-                          .copyWith(color: AppColors.neutral500),
+                          .copyWith(color: context.tokens.muted),
                     ),
                     if (bundle.state == DeliveryState.failed &&
                         bundle.lastErrorCode != null)
@@ -412,12 +444,12 @@ class _BundleCard extends StatelessWidget {
                       tooltip: 'Reintentar entrega',
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh, size: 20),
-                      color: AppColors.celadon700,
+                      color: context.tokens.muted,
                     ),
                     Text(
                       'Reintentar',
                       style: AppTypography.caption
-                          .copyWith(color: AppColors.celadon700),
+                          .copyWith(color: context.tokens.muted),
                     ),
                   ],
                 ),

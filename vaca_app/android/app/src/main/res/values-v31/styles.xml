@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Splash de sistema Android 12+: fondo celadon900 + logo de la app,
+         continuidad visual con el launch_background y StartupScreen. -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowSplashScreenBackground">#000000</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">#000000</item>
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSplashScreenBackground">#1F3B30</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/android12splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#1F3B30</item>
     </style>
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">#000000</item>
+        <item name="android:windowBackground">#1F3B30</item>
     </style>
 </resources>

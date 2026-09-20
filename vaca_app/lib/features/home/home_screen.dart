@@ -137,7 +137,7 @@ class _Field extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppTypography.caption.copyWith(color: AppColors.neutral500),
+            style: AppTypography.caption.copyWith(color: context.tokens.muted),
           ),
           Text(value, style: AppTypography.dataSm),
         ],

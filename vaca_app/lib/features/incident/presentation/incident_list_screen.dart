@@ -103,22 +103,10 @@ class IncidentListScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        Container(
+                        const SizedBox(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xB3456B58),
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                            border: Border.all(
-                              color:
-                                  AppColors.celadon300.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.shield_outlined,
-                            color: AppColors.celadon300,
-                            size: 20,
-                          ),
+                          child: VacaBrandLogo(size: 40),
                         ),
                       ],
                     ),
@@ -228,7 +216,7 @@ class IncidentListScreen extends ConsumerWidget {
                   onPressed: () =>
                       ref.read(shellTabProvider.notifier).state = 1,
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.celadon700,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
                     minimumSize: const Size(48, 36),
                   ),
                   child: const Text('Ver entrega →'),

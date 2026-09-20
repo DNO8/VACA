@@ -90,7 +90,7 @@ class ReportCard extends ConsumerWidget {
                       Text(
                         note!,
                         style: AppTypography.body
-                            .copyWith(color: AppColors.neutral500),
+                            .copyWith(color: tokens.muted),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -105,22 +105,22 @@ class ReportCard extends ConsumerWidget {
                         ),
                       ].join(' · '),
                       style: AppTypography.dataSm
-                          .copyWith(color: AppColors.neutral500),
+                          .copyWith(color: tokens.muted),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_on_outlined,
                           size: 13,
-                          color: AppColors.neutral500,
+                          color: tokens.muted,
                         ),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             locationLabel,
                             style: AppTypography.caption
-                                .copyWith(color: AppColors.neutral500),
+                                .copyWith(color: tokens.muted),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
+import '../../../core/result/result.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/incident.dart';
@@ -92,7 +93,7 @@ class LocalConfirmationScreen extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.celadon900.withValues(alpha: 0.7),
+                    color: AppColors.ink.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
                       color: AppColors.celadon300.withValues(alpha: 0.15),
@@ -161,6 +162,44 @@ class LocalConfirmationScreen extends ConsumerWidget {
                   ),
                 ),
                 const Spacer(),
+                // Sin wallet la señal se entrega igual, pero no lleva
+                // pubkey Stellar: no puede escalar a Vaquita ni recibir
+                // donaciones.
+                FutureBuilder<Result<dynamic>>(
+                  future: ref.read(stellarWalletServiceProvider).load(),
+                  builder: (context, snapshot) {
+                    final hasWallet = snapshot.hasData &&
+                        snapshot.data is Success &&
+                        (snapshot.data! as Success).value != null;
+                    if (!snapshot.hasData || hasWallet) {
+                      return const SizedBox.shrink();
+                    }
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        border: Border.all(
+                          color: AppColors.warning.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: const Text(
+                        'Sin wallet: la señal se entrega igual, pero no '
+                        'puede escalar a Vaquita ni recibir donaciones. '
+                        'Actívala en Identidad.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: AppTypography.brandFont,
+                          fontSize: 12,
+                          height: 18 / 12,
+                          color: Color(0xFFDDA85C),
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 VacaButton(
                   label: 'Ver estado de entrega',
                   onPressed: () {

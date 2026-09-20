@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/result/result.dart';
@@ -7,10 +8,12 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/vaquita_feed_service.dart';
 
-/// Pestaña Vaquita: incidentes promovidos a fase de donaciones.
+/// Pestaña Vaquita: solo las señales PROPIAS promovidas a donaciones.
 ///
-/// Gate: requiere wallet Stellar activa (receptores). Sin wallet se ofrece
-/// activarla primero — tour de una pantalla.
+/// Sin wallet: tour de 3 pasos que explica la mecánica y termina en el
+/// gate de activación. Con wallet: lista de las señales propias que el
+/// backend marcó como `community` o `vaquita` (descubierto en el próximo
+/// sync — sin push).
 class VaquitaScreen extends ConsumerWidget {
   const VaquitaScreen({required this.onOpenWallet, super.key});
 
@@ -19,56 +22,150 @@ class VaquitaScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: FutureBuilder<Result<dynamic>>(
-        future: ref.read(stellarWalletServiceProvider).load(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final wallet =
-              snapshot.data is Success ? (snapshot.data as Success).value : null;
-          if (wallet == null) {
-            return _WalletGate(onOpenWallet: onOpenWallet);
-          }
-          return const _PromotedList();
-        },
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity:
+                  Theme.of(context).brightness == Brightness.dark ? 0.12 : 0.06,
+              child: Image.asset(
+                'assets/images/gradiente-2.jpg',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          FutureBuilder<Result<dynamic>>(
+            future: ref.read(stellarWalletServiceProvider).load(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final wallet = snapshot.data is Success
+                  ? (snapshot.data as Success).value
+                  : null;
+              if (wallet == null) {
+                return _IntroPager(onActivate: onOpenWallet);
+              }
+              return const _MyVaquitas();
+            },
+          ),
+        ],
       ),
     );
   }
 }
 
-class _WalletGate extends StatelessWidget {
-  const _WalletGate({required this.onOpenWallet});
+/// Tour de 3 pasos: qué es la Vaquita, cómo llegan los aportes y por qué
+/// Stellar. El último paso lleva directo al gate de activación de wallet.
+class _IntroPager extends StatefulWidget {
+  const _IntroPager({required this.onActivate});
 
-  final VoidCallback onOpenWallet;
+  final VoidCallback onActivate;
+
+  @override
+  State<_IntroPager> createState() => _IntroPagerState();
+}
+
+class _IntroPagerState extends State<_IntroPager> {
+  final _controller = PageController();
+  int _page = 0;
+
+  static const _steps = [
+    (
+      icon: Icons.volunteer_activism_outlined,
+      title: '¿Qué es una Vaquita?',
+      body:
+          'Cuando tu señal es verificada por la comunidad o por VACA, '
+          'se promueve a Vaquita: un llamado de ayuda visible en el mapa '
+          'público de la web.',
+    ),
+    (
+      icon: Icons.payments_outlined,
+      title: 'Cómo llegan los aportes',
+      body:
+          'Las donaciones se coordinan desde la web de VACA y llegan como '
+          'saldo reclamable directo a tu wallet. Los ves aquí y los '
+          'reclamas con un toque.',
+    ),
+    (
+      icon: Icons.verified_outlined,
+      title: 'Blockchain verificable',
+      body:
+          'Usamos Stellar (testnet): cada aporte queda registrado en la '
+          'cadena, de forma auditable y sin intermediarios. Sin fondos '
+          'reales durante el piloto.',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final last = _page == _steps.length - 1;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.volunteer_activism_outlined,
-              size: 56,
-              color: AppColors.celadon700,
+            Expanded(
+              child: PageView.builder(
+                controller: _controller,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemCount: _steps.length,
+                itemBuilder: (context, i) {
+                  final step = _steps[i];
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        step.icon,
+                        size: 56,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(step.title, style: AppTypography.h1),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        step.body,
+                        style: AppTypography.body,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            const Text('Vaquita', style: AppTypography.h1),
-            const SizedBox(height: AppSpacing.sm),
-            const Text(
-              'Cuando tu señal sea verificada y promovida a donaciones, '
-              'los aportes llegan a tu wallet. Para participar necesitas '
-              'activarla primero.',
-              style: AppTypography.body,
-              textAlign: TextAlign.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (var i = 0; i < _steps.length; i++)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: i == _page ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: i == _page
+                          ? Theme.of(context).colorScheme.onSurface
+                          : context.tokens.muted.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
             VacaButton(
-              label: 'Activar mi wallet',
-              onPressed: onOpenWallet,
+              label: last ? 'Activar mi wallet' : 'Siguiente',
+              onPressed: last
+                  ? widget.onActivate
+                  : () => _controller.nextPage(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                      ),
             ),
             const SizedBox(height: AppSpacing.xs),
             const Text(
@@ -82,15 +179,17 @@ class _WalletGate extends StatelessWidget {
   }
 }
 
-class _PromotedList extends ConsumerStatefulWidget {
-  const _PromotedList();
+/// Lista solo las Vaquitas propias: señales del usuario que el backend
+/// promovió (status community/vaquita) y existen en la DB local.
+class _MyVaquitas extends ConsumerStatefulWidget {
+  const _MyVaquitas();
 
   @override
-  ConsumerState<_PromotedList> createState() => _PromotedListState();
+  ConsumerState<_MyVaquitas> createState() => _MyVaquitasState();
 }
 
-class _PromotedListState extends ConsumerState<_PromotedList> {
-  List<VaquitaFeedItem> _items = const [];
+class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
+  List<VaquitaFeedItem> _mine = const [];
   double _pendingXlm = 0;
   bool _loading = true;
   bool _claiming = false;
@@ -104,10 +203,14 @@ class _PromotedListState extends ConsumerState<_PromotedList> {
   }
 
   Future<void> _load() async {
+    final db = ref.read(databaseProvider);
     final feed = await ref.read(vaquitaFeedServiceProvider).fetchFeed();
     final claims = await ref
         .read(stellarWalletServiceProvider)
         .pendingClaims();
+    final localIds = (await db.select(db.incidents).get())
+        .map((i) => i.id)
+        .toSet();
     if (!mounted) return;
     var pending = 0.0;
     if (claims case Success(value: final balances)) {
@@ -119,7 +222,9 @@ class _PromotedListState extends ConsumerState<_PromotedList> {
       _loading = false;
       _pendingXlm = pending;
       if (feed case Success(value: final items)) {
-        _items = items;
+        _mine = items
+            .where((i) => i.isPromoted && localIds.contains(i.incidentId))
+            .toList();
         _error = null;
       } else if (feed case Failure(error: final error)) {
         _error = error.message ?? 'No se pudo cargar Vaquitas.';
@@ -154,26 +259,19 @@ class _PromotedListState extends ConsumerState<_PromotedList> {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_error != null && _items.isEmpty) {
+    if (_error != null && _mine.isEmpty) {
       return EmptyState(
         kind: EmptyStateKind.error,
         title: 'Sin conexión',
         message: _error!,
       );
     }
-    final promoted = _items.where((i) => i.isPromoted).toList();
-    if (promoted.isEmpty && _pendingXlm <= 0) {
-      return const EmptyState(
-        kind: EmptyStateKind.empty,
-        title: 'Sin Vaquitas aún',
-        message:
-            'Cuando una señal verificada sea promovida por la comunidad '
-            'o por VACA aparecerá aquí.',
-      );
+    if (_mine.isEmpty && _pendingXlm <= 0) {
+      return const _EmptyVaquitas();
     }
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      itemCount: promoted.length + 1,
+      itemCount: _mine.length + 1,
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -185,8 +283,47 @@ class _PromotedListState extends ConsumerState<_PromotedList> {
             onClaim: _claim,
           );
         }
-        return _VaquitaCard(item: promoted[index - 1]);
+        return _VaquitaCard(item: _mine[index - 1]);
       },
+    );
+  }
+}
+
+/// Estado vacío: vaca asomada + instrucción honesta.
+class _EmptyVaquitas extends StatelessWidget {
+  const _EmptyVaquitas();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/images/vaca-svg.svg',
+                width: 120,
+                height: 120,
+                colorFilter: ColorFilter.mode(
+                  context.tokens.muted,
+                  BlendMode.srcIn,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Text('Aún no tienes Vaquitas', style: AppTypography.h2),
+              const SizedBox(height: AppSpacing.sm),
+              const Text(
+                'Necesitas votos de la comunidad o aprobación '
+                'institucional para que tu señal se promueva a Vaquita.',
+                style: AppTypography.body,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -298,11 +435,11 @@ class _VaquitaCard extends StatelessWidget {
                   size: 18,
                   color: verified
                       ? AppColors.success
-                      : AppColors.celadon700,
+                      : context.tokens.muted,
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
-                  verified ? 'Vaquita verificada' : 'Vaquita Comunitaria',
+                  verified ? 'Vaquita validada' : 'Vaquita Comunitaria',
                   style: AppTypography.body.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -323,7 +460,7 @@ class _VaquitaCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             const Text(
               'Las donaciones se coordinan desde la web de VACA y llegan '
-              'como saldo reclamable a la wallet del receptor.',
+              'como saldo reclamable a tu wallet.',
               style: AppTypography.caption,
             ),
           ],

@@ -382,7 +382,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
               Text(
                 'Coordenadas capturadas',
                 style: AppTypography.caption
-                    .copyWith(color: AppColors.neutral500),
+                    .copyWith(color: context.tokens.muted),
               ),
               const SizedBox(height: AppSpacing.xxs),
               Text(
@@ -401,7 +401,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
                 child: Text(
                   'Las coordenadas exactas se entregan sólo al servidor autorizado.',
                   style: AppTypography.caption
-                      .copyWith(color: AppColors.neutral500),
+                      .copyWith(color: AppColors.celadon900),
                 ),
               ),
             ],
@@ -527,7 +527,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
                   Text(
                     _peopleCount == 0 ? 'sin dato' : 'personas aprox.',
                     style: AppTypography.caption
-                        .copyWith(color: AppColors.neutral500),
+                        .copyWith(color: context.tokens.muted),
                   ),
                 ],
               ),
@@ -569,7 +569,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
             counterStyle: AppTypography.dataSm.copyWith(
               color: _note.length > _maxNoteLength * 0.85
                   ? AppColors.warning
-                  : AppColors.neutral500,
+                  : context.tokens.muted,
             ),
           ),
         ),
@@ -588,12 +588,12 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
               Text(
                 'ID de señal: ',
                 style: AppTypography.caption
-                    .copyWith(color: AppColors.neutral500),
+                    .copyWith(color: AppColors.celadon900),
               ),
               Text(
                 'se generará al guardar',
                 style: AppTypography.dataSm
-                    .copyWith(color: AppColors.celadon700),
+                    .copyWith(color: AppColors.celadon900),
               ),
             ],
           ),
@@ -861,7 +861,7 @@ class _CategoryCard extends StatelessWidget {
                       Text(
                         meta.examples,
                         style: AppTypography.caption
-                            .copyWith(color: AppColors.neutral500),
+                            .copyWith(color: context.tokens.muted),
                       ),
                     ],
                   ),

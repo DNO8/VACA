@@ -34,7 +34,7 @@ class EmptyState extends StatelessWidget {
         ? Icons.error_outline
         : Icons.inbox_outlined;
     final iconColor =
-        kind == EmptyStateKind.error ? tokens.danger : AppColors.neutral500;
+        kind == EmptyStateKind.error ? tokens.danger : tokens.muted;
 
     return Center(
       child: Padding(
@@ -54,7 +54,7 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 message!,
-                style: AppTypography.body.copyWith(color: AppColors.neutral500),
+                style: AppTypography.body.copyWith(color: tokens.muted),
                 textAlign: TextAlign.center,
               ),
             ],

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,9 +36,21 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
         _showError('No se pudo guardar la configuración inicial.');
         return;
       }
+      // Wallet testnet + faucet al entrar: la señal ligada a wallet puede
+      // escalar a Vaquita. En segundo plano — no bloquea la entrada y si
+      // falla se reintenta desde Identidad.
+      unawaited(_provisionWallet());
       await widget.onComplete(startCapture);
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _provisionWallet() async {
+    final service = ref.read(stellarWalletServiceProvider);
+    final created = await service.create();
+    if (created case Success(value: final snapshot) when !snapshot.funded) {
+      await service.fund();
     }
   }
 
@@ -204,7 +218,7 @@ class _Disclaimer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(color: AppColors.danger, width: 1.5),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -232,7 +246,7 @@ class _Disclaimer extends StatelessWidget {
                           fontFamily: AppTypography.brandFont,
                           fontSize: 14,
                           height: 20 / 14,
-                          color: AppColors.ink,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ],
@@ -350,13 +364,13 @@ class _Permissions extends StatelessWidget {
                 color: AppColors.celadon100,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Text(
+              child: Text(
                 'Al continuar, aceptas el tratamiento descrito en la Política de Privacidad vigente. Los datos se procesan primero en tu dispositivo.',
                 style: TextStyle(
                   fontFamily: AppTypography.brandFont,
                   fontSize: 14,
                   height: 20 / 14,
-                  color: AppColors.ink,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -410,7 +424,7 @@ class _PermissionTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: AppColors.celadon700),
+                Icon(icon, color: context.tokens.muted),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(child: Text(title, style: AppTypography.h3)),
               ],
@@ -541,7 +555,7 @@ class _IdentityCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
           children: [
-            Icon(icon, size: 32, color: AppColors.celadon700),
+            Icon(icon, size: 32, color: context.tokens.muted),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -573,7 +587,7 @@ class _Fact extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.celadon700),
+          Icon(icon, color: context.tokens.muted),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(text, style: AppTypography.body)),
         ],

@@ -25,7 +25,8 @@ Las especificaciones viven en el Drive de Fundación Camada, carpeta `VACA/`:
 - `01 Producto/Diseño UX UI/` — sistema de diseño, brandboard y prompts del prototipo.
 - `SETUP.md` en esta carpeta — configuración de desarrollo.
 
-Los handoffs y backlogs de fecha controlan ejecución y evidencia; no sustituyen estas especificaciones permanentes.
+> [!NOTE]
+> Los handoffs y backlogs de fecha controlan ejecución y evidencia; no sustituyen estas especificaciones permanentes.
 
 ## Verificación básica
 
@@ -37,4 +38,5 @@ dart analyze
 flutter test
 ```
 
-Los builds de release requieren flavor, configuración productiva y firma aprobada. Nunca deben usar secretos del proveedor en `dart-define` ni fallback de desarrollo.
+> [!CAUTION]
+> Los builds de release requieren flavor, configuración productiva y firma aprobada. Nunca deben usar secretos del proveedor en `dart-define` ni fallback de desarrollo.

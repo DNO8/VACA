@@ -140,7 +140,7 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Eliminar datos locales'),
         content: const Text(
-          'Se eliminarán señales, adjuntos, recibos, identidad y claves de este dispositivo. Esta acción no se puede deshacer.',
+          'Se eliminarán señales, adjuntos, recibos, identidad y claves de este dispositivo. Primero se intentará borrar también tu cuenta en el servidor. Esta acción no se puede deshacer.',
         ),
         actions: [
           TextButton(
@@ -156,6 +156,50 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
     );
     if (confirmed != true) return;
     setState(() => _deleting = true);
+
+    // Orden obligatorio: el borrado local destruye las llaves del
+    // dispositivo y sin ellas el servidor no puede autenticar la
+    // eliminación — el remoto va primero.
+    var remoteDone = false;
+    try {
+      final profile = await _profile;
+      if (profile != null) {
+        final remote = await ref
+            .read(accountDeletionServiceProvider)
+            .requestDeletion(profile.devicePublicKey);
+        remoteDone = remote.isSuccess;
+      }
+    } catch (_) {
+      remoteDone = false;
+    }
+
+    if (!mounted) return;
+    if (!remoteDone) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Sin confirmación del servidor'),
+          content: const Text(
+            'No se pudo borrar tu cuenta en el servidor (sin conexión o rechazo). Tus señales seguirán visibles ahí hasta que expiren. ¿Borrar solo en este dispositivo?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Solo local'),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true || !mounted) {
+        setState(() => _deleting = false);
+        return;
+      }
+    }
+
     final result = await ref.read(identityServiceProvider).deleteLocalData();
     if (!mounted) return;
     setState(() {
@@ -166,7 +210,9 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
       SnackBar(
         content: Text(
           result.isSuccess
-              ? 'Datos locales eliminados. Reinicia VACA para configurar el dispositivo nuevamente.'
+              ? remoteDone
+                  ? 'Datos eliminados del servidor y del dispositivo. Reinicia VACA para configurar el dispositivo nuevamente.'
+                  : 'Datos locales eliminados (el servidor no respondió). Reinicia VACA para configurar el dispositivo nuevamente.'
               : result.errorOrNull?.message ??
                   'No se completó la eliminación local.',
         ),
@@ -186,7 +232,7 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
             Text(
               'CLAVE PÚBLICA',
               style:
-                  AppTypography.caption.copyWith(color: AppColors.neutral500),
+                  AppTypography.caption.copyWith(color: context.tokens.muted),
             ),
             const SizedBox(height: AppSpacing.xxs),
             SelectableText(
@@ -197,7 +243,7 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
             Text(
               'ESTADO',
               style:
-                  AppTypography.caption.copyWith(color: AppColors.neutral500),
+                  AppTypography.caption.copyWith(color: context.tokens.muted),
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
@@ -208,7 +254,7 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
             Text(
               'CONSENTIMIENTO',
               style:
-                  AppTypography.caption.copyWith(color: AppColors.neutral500),
+                  AppTypography.caption.copyWith(color: context.tokens.muted),
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
@@ -239,7 +285,19 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity:
+                  Theme.of(context).brightness == Brightness.dark ? 0.12 : 0.06,
+              child: Image.asset(
+                'assets/images/textura-3.jpg',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Column(
         children: [
           const VacaHero(
             asset: 'assets/images/estetica-5.jpg',
@@ -434,6 +492,8 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
             ),
           ),
         ],
+          ),
+        ],
       ),
     );
   }
@@ -480,7 +540,7 @@ class _StatsRow extends StatelessWidget {
           Text(label, style: AppTypography.body),
           Text(
             value,
-            style: AppTypography.dataSm.copyWith(color: AppColors.neutral500),
+            style: AppTypography.dataSm.copyWith(color: context.tokens.muted),
           ),
         ],
       ),

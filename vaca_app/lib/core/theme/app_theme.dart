@@ -28,6 +28,7 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
     required this.synced,
     required this.syncConflict,
     required this.syncError,
+    required this.muted,
   });
 
   final Color success;
@@ -48,6 +49,10 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
   final Color syncConflict;
   final Color syncError;
 
+  /// Texto/icono secundario: neutro sobrio en claro, celadon claro
+  /// (super claro del brandboard) en oscuro.
+  final Color muted;
+
   static const VacaTokens standard = VacaTokens(
     success: AppColors.success,
     warning: AppColors.warning,
@@ -62,6 +67,26 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
     synced: AppColors.success,
     syncConflict: AppColors.terracotta,
     syncError: AppColors.danger,
+    muted: AppColors.neutral500,
+  );
+
+  /// Variante oscura: mismos roles semánticos; solo `muted` sube a
+  /// celadon claro para texto secundario super legible.
+  static const VacaTokens dark = VacaTokens(
+    success: AppColors.success,
+    warning: AppColors.warning,
+    danger: AppColors.danger,
+    info: AppColors.info,
+    criticalGlow: AppColors.criticalGlow,
+    trust1: AppColors.trust1,
+    trust2: AppColors.trust2,
+    trust3: AppColors.trust3,
+    syncPending: AppColors.celadon300,
+    syncing: AppColors.orange,
+    synced: AppColors.success,
+    syncConflict: AppColors.terracotta,
+    syncError: AppColors.danger,
+    muted: AppColors.celadon300,
   );
 
   @override
@@ -79,6 +104,7 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
     Color? synced,
     Color? syncConflict,
     Color? syncError,
+    Color? muted,
   }) {
     return VacaTokens(
       success: success ?? this.success,
@@ -94,6 +120,7 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
       synced: synced ?? this.synced,
       syncConflict: syncConflict ?? this.syncConflict,
       syncError: syncError ?? this.syncError,
+      muted: muted ?? this.muted,
     );
   }
 
@@ -114,6 +141,7 @@ class VacaTokens extends ThemeExtension<VacaTokens> {
       synced: Color.lerp(synced, other.synced, t)!,
       syncConflict: Color.lerp(syncConflict, other.syncConflict, t)!,
       syncError: Color.lerp(syncError, other.syncError, t)!,
+      muted: Color.lerp(muted, other.muted, t)!,
     );
   }
 }
@@ -139,6 +167,7 @@ abstract final class AppTheme {
       onError: AppColors.white,
       surface: isDark ? AppColors.neutral800 : AppColors.ivory,
       onSurface: isDark ? AppColors.white : AppColors.ink,
+      onSurfaceVariant: isDark ? AppColors.celadon300 : AppColors.stone600,
       surfaceContainerHighest:
           isDark ? AppColors.celadon900 : AppColors.celadon100,
       outline: isDark ? AppColors.celadon500 : AppColors.stone300,
@@ -162,7 +191,9 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       fontFamily: AppTypography.brandFont,
       textTheme: textTheme,
-      extensions: const <ThemeExtension<dynamic>>[VacaTokens.standard],
+      extensions: <ThemeExtension<dynamic>>[
+        isDark ? VacaTokens.dark : VacaTokens.standard,
+      ],
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? AppColors.celadon900 : AppColors.ivory,
         foregroundColor: isDark ? AppColors.white : AppColors.ink,

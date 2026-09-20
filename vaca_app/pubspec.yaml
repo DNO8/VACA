@@ -53,6 +53,8 @@ dependencies:
   google_mobile_ads: 9.1.0
   url_launcher: 6.3.2
   share_plus: ^12.0.2
+  flutter_svg: ^2.3.0
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -73,29 +75,22 @@ flutter:
     - assets/images/
 
   fonts:
-    # Tipografía de marca (ver SETUP.md: copiar desde /font/Anderson Grotesk a assets/fonts/)
-    - family: AndersonGrotesk
+    # Tipografía de marca: Space Grotesk (OFL). La versión de Anderson
+    # Grotesk incluida (2017, ~30KB) mapea ñ→n, é→e, etc.: mata los
+    # acentos del español. Space Grotesk es la grotesque geométrica
+    # equivalente con cobertura latina completa.
+    - family: SpaceGrotesk
       fonts:
-        - asset: assets/fonts/AndersonGrotesk-Light.otf
+        - asset: assets/fonts/SpaceGrotesk-Light.ttf
           weight: 300
-        - asset: assets/fonts/AndersonGrotesk-LightOblique.otf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/AndersonGrotesk.otf
+        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
           weight: 400
-        - asset: assets/fonts/AndersonGrotesk-Oblique.otf
-          weight: 400
-          style: italic
-        - asset: assets/fonts/AndersonGrotesk-Bold.otf
+        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
           weight: 700
-        - asset: assets/fonts/AndersonGrotesk-BoldOblique.otf
-          weight: 700
-          style: italic
-        - asset: assets/fonts/AndersonGrotesk-Ultrabold.otf
+        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
           weight: 800
-        - asset: assets/fonts/AndersonGrotesk-UltraboldOblique.otf
-          weight: 800
-          style: italic
     # Datos técnicos / hashes (ver SETUP.md: descargar JetBrains Mono a assets/fonts/)
     - family: JetBrainsMono
       fonts:
@@ -127,3 +122,13 @@ dependency_overrides:
   # See: https://issuetracker.google.com/issues/543937345
   camera_android_camerax:
     path: packages/camera_android_camerax
+
+
+flutter_native_splash:
+  color: "#1F3B30"
+  image: assets/images/splash-logo-padded.png
+  fullscreen: true
+  android_12:
+    color: "#1F3B30"
+    image: assets/images/splash-logo-padded.png
+    icon_background_color: "#1F3B30"

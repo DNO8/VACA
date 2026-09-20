@@ -80,7 +80,7 @@ CategoryMeta categoryMeta(IncidentCategory c) => switch (c) {
           label: 'Coordinación',
           examples: 'Punto de reunión o aviso preventivo',
           icon: Icons.groups_outlined,
-          color: AppColors.stone600,
+          color: AppColors.celadon500,
           priority: IncidentPriority.p4,
         ),
     };
@@ -101,7 +101,7 @@ Color priorityColor(IncidentPriority p, VacaTokens tokens) => switch (p) {
       IncidentPriority.p2 => tokens.info,
       IncidentPriority.p3 => tokens.warning,
       IncidentPriority.p4 => tokens.success,
-      IncidentPriority.p5 => AppColors.neutral500,
+      IncidentPriority.p5 => tokens.muted,
     };
 
 /// Etiqueta honesta del estado local de una señal.
@@ -122,16 +122,16 @@ String incidentStatusLabel(IncidentStatus s) => switch (s) {
 
 /// Tono semántico para el estado de una señal.
 Color incidentStatusColor(IncidentStatus s, VacaTokens tokens) => switch (s) {
-      IncidentStatus.draft => AppColors.neutral500,
-      IncidentStatus.savedLocally => AppColors.neutral500,
+      IncidentStatus.draft => tokens.muted,
+      IncidentStatus.savedLocally => tokens.muted,
       IncidentStatus.queued => tokens.warning,
       IncidentStatus.relaying => tokens.info,
       IncidentStatus.uploading => tokens.info,
       IncidentStatus.receivedByServer => tokens.success,
       IncidentStatus.acknowledgedInstitutionally => tokens.success,
-      IncidentStatus.cancelledLocally => AppColors.neutral500,
+      IncidentStatus.cancelledLocally => tokens.muted,
       IncidentStatus.cancellationQueued => tokens.warning,
-      IncidentStatus.cancellationReceived => AppColors.neutral500,
-      IncidentStatus.expired => AppColors.neutral500,
+      IncidentStatus.cancellationReceived => tokens.muted,
+      IncidentStatus.expired => tokens.muted,
       IncidentStatus.failedRetryable => tokens.danger,
     };
