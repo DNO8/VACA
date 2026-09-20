@@ -2,13 +2,11 @@
 
 ## Fuentes normativas
 
-- `../Especificaciones/01-public-mvp-product-spec.md`
-- `../Especificaciones/flujo-app.md`
-- `../Especificaciones/modelo-datos-fibe.md` — nombre conservado por compatibilidad.
-- `../Especificaciones/02-hybrid-dtn-architecture.md`
-- `../Especificaciones/mesh-comunicaciones.md`
-- `../Especificaciones/03-release-security-readiness.md`
-- `../Especificaciones/sistema-diseno-app.md`
+Viven en el Drive de Fundación Camada, carpeta `VACA/`:
+
+- `01 Producto/Estrategia y requisitos/` — spec del MVP público y flujo de la app.
+- `01 Producto/Desarrollo y QA/` — arquitectura DTN híbrida, mesh-comunicaciones, modelo de datos y release/security readiness.
+- `01 Producto/Diseño UX UI/` — sistema de diseño de la app.
 
 Los handoffs y backlogs fechados no redefinen el producto.
 

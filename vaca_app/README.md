@@ -18,14 +18,12 @@ Aplicación Flutter offline-first para registrar incidentes, conservar bundles c
 
 ## Documentación
 
-- `../Especificaciones/01-public-mvp-product-spec.md`
-- `../Especificaciones/flujo-app.md`
-- `../Especificaciones/modelo-datos-fibe.md` — nombre conservado por compatibilidad; modelo activo genérico.
-- `../Especificaciones/02-hybrid-dtn-architecture.md`
-- `../Especificaciones/mesh-comunicaciones.md`
-- `../Especificaciones/03-release-security-readiness.md`
-- `../Especificaciones/sistema-diseno-app.md`
-- `SETUP.md`
+Las especificaciones viven en el Drive de Fundación Camada, carpeta `VACA/`:
+
+- `01 Producto/Estrategia y requisitos/` — spec del MVP público, flujo de la app, backlog y handoff.
+- `01 Producto/Desarrollo y QA/` — arquitectura DTN híbrida, mesh, modelo de datos y readiness de release.
+- `01 Producto/Diseño UX UI/` — sistema de diseño, brandboard y prompts del prototipo.
+- `SETUP.md` en esta carpeta — configuración de desarrollo.
 
 Los handoffs y backlogs de fecha controlan ejecución y evidencia; no sustituyen estas especificaciones permanentes.
 
