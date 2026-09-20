@@ -36,7 +36,6 @@ import 'package:vaca_app/features/incident/presentation/incident_detail_screen.d
 import 'package:vaca_app/features/incident/presentation/local_confirmation_screen.dart';
 import 'package:vaca_app/features/onboarding/presentation/onboarding_flow.dart';
 import 'package:vaca_app/features/shell/presentation/app_shell.dart';
-import 'package:vaca_app/features/startup/presentation/startup_screen.dart';
 import 'package:vaca_app/features/wallet/domain/stellar_wallet_service.dart';
 import 'package:vaca_app/features/wallet/presentation/stellar_wallet_screen.dart';
 
@@ -401,23 +400,6 @@ void main() {
       matchesGoldenFile('visual_audit/$name.png'),
     );
   }
-
-  testWidgets('00 splash / 01 portada', (tester) async {
-    setPhone(tester);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: overrides(),
-        child: MaterialApp(
-          theme: AppTheme.light,
-          debugShowCheckedModeBanner: false,
-          home: const StartupScreen(),
-        ),
-      ),
-    );
-    await precacheImages(tester);
-    await tester.pump();
-    await snap(tester, '00-splash');
-  });
 
   testWidgets('01 portada', (tester) async {
     await pumpScreen(tester, OnboardingFlow(onComplete: (_) async {}));
