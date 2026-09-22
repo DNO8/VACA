@@ -80,7 +80,7 @@ void main() {
       introAssets.where(
         (image) =>
             image.image ==
-            const AssetImage('assets/images/icono-app-oscuro-v2.webp'),
+            const AssetImage('assets/images/icono-app-oscuro-sin-fondo.png'),
       ),
       isNotEmpty,
     );

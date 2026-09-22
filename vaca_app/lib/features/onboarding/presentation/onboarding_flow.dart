@@ -246,7 +246,7 @@ class _Disclaimer extends StatelessWidget {
                           fontFamily: AppTypography.brandFont,
                           fontSize: 14,
                           height: 20 / 14,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: AppColors.ink,
                         ),
                       ),
                     ],
