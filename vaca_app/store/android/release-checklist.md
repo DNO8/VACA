@@ -31,8 +31,9 @@
 ## Verificación técnica
 
 - [ ] `dart format --output=none --set-exit-if-changed lib test tool`
-- [ ] `flutter analyze`
-- [ ] `flutter test`
+- [x] `flutter analyze` sin findings.
+- [x] `flutter test`: 69 tests aprobados.
+- [x] Build `devRelease` testnet firmado.
 - [ ] Build dev con AdMob test ID.
 - [ ] Build `publicRelease` con todas las variables y signing.
 - [x] `apksigner` confirma certificado VACA Upload en `devRelease`, no Android Debug.
@@ -47,9 +48,9 @@
 
 ## Evidencia Instawards — Semana 4
 
-- [x] APK `devRelease` testnet construido el 21-09-2026: 116.357.913 bytes.
-- [x] SHA-256: `36214EB61D72739599E4C4C99E8E3F7E041F94CD86691468DD3737D8DCB5D25C`.
-- [x] Copia en Drive: `VACA/06 Programas y Convocatorias/Instawards/Entregables formales/Semana 4/VACA-semana4-dev-testnet-2026-09-21.apk`.
+- [x] APK `devRelease` testnet final construido el 21-09-2026: 116.341.529 bytes.
+- [x] SHA-256: `C380C5B7FF85A65915B6225F55DC6EC8DE48BB866C746480B8F389BDE61A876B`.
+- [x] Copia en Drive: `VACA/06 Programas y Convocatorias/Instawards/Entregables formales/Semana 4/VACA-semana4-dev-testnet-final-2026-09-21.apk`.
 - [x] Claim desde app conserva y enlaza hashes de transacción Stellar testnet.
 - [ ] Video 3–5 min: captura offline → sync → donación → Claimable Balance → claim.
 - [ ] Registrar hashes reales de emisión y claim tras la corrida E2E.
