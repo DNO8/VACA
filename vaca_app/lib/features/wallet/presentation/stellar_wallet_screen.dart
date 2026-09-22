@@ -85,7 +85,10 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: AppSpacing.xs,
+                            runSpacing: AppSpacing.xxs,
                             children: [
                               const Text(
                                 'Wallet Stellar',
@@ -96,7 +99,6 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                                   color: AppColors.white,
                                 ),
                               ),
-                              const SizedBox(width: AppSpacing.xs),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.xs,
@@ -138,83 +140,83 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
           ),
           Expanded(
             child: FutureBuilder<Result<StellarWalletSnapshot?>>(
-        future: _wallet,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const EmptyState(kind: EmptyStateKind.loading);
-          }
-          final result = snapshot.data!;
-          if (result case Failure(error: final error)) {
-            return EmptyState(
-              kind: EmptyStateKind.error,
-              title: 'Wallet no disponible',
-              message: error.message,
-              actionLabel: 'Reintentar',
-              onAction: () => setState(_load),
-            );
-          }
-          final wallet = result.valueOrNull;
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8EE),
-                  border: Border.all(color: AppColors.bronze),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              future: _wallet,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const EmptyState(kind: EmptyStateKind.loading);
+                }
+                final result = snapshot.data!;
+                if (result case Failure(error: final error)) {
+                  return EmptyState(
+                    kind: EmptyStateKind.error,
+                    title: 'Wallet no disponible',
+                    message: error.message,
+                    actionLabel: 'Reintentar',
+                    onAction: () => setState(_load),
+                  );
+                }
+                final wallet = result.valueOrNull;
+                return ListView(
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
-                    Icon(Icons.science_outlined, color: AppColors.bronze),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'STELLAR TESTNET · XLM de prueba sin valor real y sin relación con señales, identidad o acceso a ayuda.',
-                        style: TextStyle(
-                          fontFamily: AppTypography.brandFont,
-                          fontSize: 14,
-                          height: 20 / 14,
-                          // Fondo claro fijo (0xFFFFF8EE) → texto fijo oscuro.
-                          color: AppColors.ink,
-                        ),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF8EE),
+                        border: Border.all(color: AppColors.bronze),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.science_outlined, color: AppColors.bronze),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              'STELLAR TESTNET · XLM de prueba sin valor real y sin relación con señales, identidad o acceso a ayuda.',
+                              style: TextStyle(
+                                fontFamily: AppTypography.brandFont,
+                                fontSize: 14,
+                                height: 20 / 14,
+                                // Fondo claro fijo (0xFFFFF8EE) → texto fijo oscuro.
+                                color: AppColors.ink,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(height: AppSpacing.xl),
+                    if (wallet == null)
+                      _EmptyWallet(
+                        busy: _busy,
+                        onCreate: () => _run(
+                          ref.read(stellarWalletServiceProvider).create,
+                        ),
+                      )
+                    else
+                      _WalletDetails(
+                        wallet: wallet,
+                        busy: _busy,
+                        onFund: () => _run(
+                          ref.read(stellarWalletServiceProvider).fund,
+                        ),
+                        onRefresh: () => _run(
+                          ref.read(stellarWalletServiceProvider).refresh,
+                        ),
+                      ),
+                    if (wallet == null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Center(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Volver a identidad y datos'),
+                        ),
+                      ),
+                    ],
                   ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              if (wallet == null)
-                _EmptyWallet(
-                  busy: _busy,
-                  onCreate: () => _run(
-                    ref.read(stellarWalletServiceProvider).create,
-                  ),
-                )
-              else
-                _WalletDetails(
-                  wallet: wallet,
-                  busy: _busy,
-                  onFund: () => _run(
-                    ref.read(stellarWalletServiceProvider).fund,
-                  ),
-                  onRefresh: () => _run(
-                    ref.read(stellarWalletServiceProvider).refresh,
-                  ),
-                ),
-              if (wallet == null) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Center(
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Volver a identidad y datos'),
-                  ),
-                ),
-              ],
-            ],
-          );
-        },
+                );
+              },
             ),
           ),
         ],
@@ -289,20 +291,28 @@ class _WalletDetails extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.xs,
                 children: [
-                  const Icon(
-                    Icons.account_balance_wallet_outlined,
-                    color: AppColors.celadon300,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.account_balance_wallet_outlined,
+                        color: AppColors.celadon300,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'STELLAR TESTNET',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.celadon300,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    'STELLAR TESTNET',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.celadon300,
-                    ),
-                  ),
-                  const Spacer(),
                   Text(
                     wallet.funded ? 'FINANCIADA' : 'SIN FONDOS',
                     style: AppTypography.caption.copyWith(
