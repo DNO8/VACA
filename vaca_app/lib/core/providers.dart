@@ -14,6 +14,7 @@ import '../features/incident/domain/attachment_service.dart';
 import '../features/incident/domain/incident_service.dart';
 import '../features/onboarding/domain/onboarding_service.dart';
 import '../features/vaquita/domain/vaquita_feed_service.dart';
+import '../features/wallet/data/stellar_sdk_wallet_gateway.dart';
 import '../features/wallet/domain/stellar_wallet_service.dart';
 import 'bundle/bundle_cipher.dart';
 import 'config/app_config.dart';
@@ -118,7 +119,10 @@ final onboardingServiceProvider = Provider<OnboardingService>((ref) {
 });
 
 final stellarWalletServiceProvider = Provider<StellarWalletService>((ref) {
-  return StellarWalletService(ref.watch(secureStorageProvider));
+  return StellarWalletService(
+    ref.watch(secureStorageProvider),
+    StellarSdkWalletGateway(),
+  );
 });
 
 /// Feed público de Vaquitas (estado de promoción autoritativo del servidor).
@@ -279,8 +283,7 @@ final shellTabProvider = StateProvider<int>((ref) => 0);
 final vaquitaAlertProvider = FutureProvider<bool>((ref) async {
   final wallet = await ref.read(stellarWalletServiceProvider).load();
   if (wallet case Success(value: final snapshot) when snapshot != null) {
-    final claims =
-        await ref.read(stellarWalletServiceProvider).pendingClaims();
+    final claims = await ref.read(stellarWalletServiceProvider).pendingClaims();
     if (claims case Success(value: final balances) when balances.isNotEmpty) {
       return true;
     }
@@ -290,8 +293,7 @@ final vaquitaAlertProvider = FutureProvider<bool>((ref) async {
     final db = ref.read(databaseProvider);
     final localIds =
         (await db.select(db.incidents).get()).map((i) => i.id).toSet();
-    return items
-        .any((i) => i.isPromoted && localIds.contains(i.incidentId));
+    return items.any((i) => i.isPromoted && localIds.contains(i.incidentId));
   }
   return false;
 });

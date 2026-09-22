@@ -1,29 +1,15 @@
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
 import '../../../core/result/result.dart';
 import '../../../core/security/secure_storage.dart';
+import 'stellar_wallet_gateway.dart';
 
-class StellarWalletSnapshot {
-  const StellarWalletSnapshot({
-    required this.accountId,
-    required this.balance,
-    required this.funded,
-  });
-
-  final String accountId;
-  final String balance;
-  final bool funded;
-}
+export 'stellar_wallet_gateway.dart' show StellarWalletSnapshot;
 
 class StellarWalletService {
-  StellarWalletService(
-    this._storage, {
-    StellarSDK? sdk,
-  }) : _sdk = sdk ?? StellarSDK.TESTNET;
+  StellarWalletService(this._storage, this._gateway);
 
   static const _secretKey = 'stellar.testnet.secret-seed';
   final SecureStorage _storage;
-  final StellarSDK _sdk;
+  final StellarWalletGateway _gateway;
 
   Future<Result<StellarWalletSnapshot?>> load() async {
     final stored = await _storage.read(_secretKey);
@@ -31,7 +17,7 @@ class StellarWalletService {
     final secret = stored.valueOrNull;
     if (secret == null || secret.isEmpty) return const Success(null);
     try {
-      return Success(await _snapshot(KeyPair.fromSecretSeed(secret)));
+      return Success(await _gateway.snapshot(secret));
     } catch (error) {
       return Failure(
         VacaError(
@@ -48,12 +34,12 @@ class StellarWalletService {
     if (existing case Success(value: final snapshot?)) return Success(snapshot);
     if (existing case Failure(error: final error)) return Failure(error);
     try {
-      final keyPair = KeyPair.random();
-      final write = await _storage.write(_secretKey, keyPair.secretSeed);
+      final credentials = _gateway.createCredentials();
+      final write = await _storage.write(_secretKey, credentials.secretSeed);
       if (write case Failure(error: final error)) return Failure(error);
       return Success(
         StellarWalletSnapshot(
-          accountId: keyPair.accountId,
+          accountId: credentials.accountId,
           balance: '0.0000000',
           funded: false,
         ),
@@ -82,7 +68,7 @@ class StellarWalletService {
       );
     }
     try {
-      final funded = await FriendBot.fundTestAccount(snapshot.accountId);
+      final funded = await _gateway.fund(snapshot.accountId);
       if (!funded) {
         return const Failure(
           VacaError(
@@ -104,7 +90,7 @@ class StellarWalletService {
   }
 
   /// Balances reclamables (claimable balances) pendientes para esta wallet.
-  Future<Result<List<ClaimableBalanceResponse>>> pendingClaims() async {
+  Future<Result<List<StellarClaim>>> pendingClaims() async {
     final stored = await _storage.read(_secretKey);
     if (stored case Failure(error: final error)) return Failure(error);
     final secret = stored.valueOrNull;
@@ -117,11 +103,8 @@ class StellarWalletService {
       );
     }
     try {
-      final keyPair = KeyPair.fromSecretSeed(secret);
-      final page = await _sdk.claimableBalances
-          .forClaimant(keyPair.accountId)
-          .execute();
-      return Success(page.records);
+      final credentials = _gateway.credentialsFromSecret(secret);
+      return Success(await _gateway.pendingClaims(credentials.accountId));
     } catch (error) {
       return Failure(
         VacaError(
@@ -148,24 +131,26 @@ class StellarWalletService {
       );
     }
     try {
-      final keyPair = KeyPair.fromSecretSeed(secret);
-      if (!(await _snapshot(keyPair)).funded) {
-        await FriendBot.fundTestAccount(keyPair.accountId);
+      final credentials = _gateway.credentialsFromSecret(secret);
+      if (!(await _gateway.snapshot(secret)).funded) {
+        final funded = await _gateway.fund(credentials.accountId);
+        if (!funded) {
+          return const Failure(
+            VacaError(
+              code: 'stellar_friendbot_rejected',
+              message: 'Friendbot no financió la cuenta testnet.',
+            ),
+          );
+        }
         await Future<void>.delayed(const Duration(seconds: 2));
       }
-      final page = await _sdk.claimableBalances
-          .forClaimant(keyPair.accountId)
-          .execute();
-      for (final balance in page.records) {
-        final account = await _sdk.accounts.account(keyPair.accountId);
-        final tx = TransactionBuilder(account)
-            .addOperation(
-              ClaimClaimableBalanceOperation(balance.balanceId),
-            )
-            .build();
-        tx.sign(keyPair, Network.TESTNET);
-        final res = await _sdk.submitTransaction(tx);
-        if (!res.success) {
+      final claims = await _gateway.pendingClaims(credentials.accountId);
+      for (final claim in claims) {
+        final transactionHash = await _gateway.claim(
+          secret,
+          claim.balanceId,
+        );
+        if (transactionHash == null) {
           return const Failure(
             VacaError(
               code: 'stellar_claim_failed',
@@ -199,7 +184,7 @@ class StellarWalletService {
       );
     }
     try {
-      return Success(await _snapshot(KeyPair.fromSecretSeed(secret)));
+      return Success(await _gateway.snapshot(secret));
     } catch (error) {
       return Failure(
         VacaError(
@@ -207,27 +192,6 @@ class StellarWalletService {
           message: 'No se pudo consultar Stellar testnet.',
           cause: error,
         ),
-      );
-    }
-  }
-
-  Future<StellarWalletSnapshot> _snapshot(KeyPair keyPair) async {
-    try {
-      final account = await _sdk.accounts.account(keyPair.accountId);
-      final nativeBalance = account.balances
-          .where((balance) => balance.assetType == Asset.TYPE_NATIVE)
-          .map((balance) => balance.balance)
-          .firstOrNull;
-      return StellarWalletSnapshot(
-        accountId: keyPair.accountId,
-        balance: nativeBalance ?? '0.0000000',
-        funded: nativeBalance != null,
-      );
-    } catch (_) {
-      return StellarWalletSnapshot(
-        accountId: keyPair.accountId,
-        balance: '0.0000000',
-        funded: false,
       );
     }
   }
