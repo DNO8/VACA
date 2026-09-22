@@ -39,10 +39,12 @@ class IncidentListScreen extends ConsumerWidget {
               ),
             ),
           ),
-          Column(
-            children: [
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverList(
+                delegate: SliverChildListDelegate([
           SizedBox(
-            height: 200,
+            height: MediaQuery.textScalerOf(context).scale(200),
             width: double.infinity,
             child: Stack(
               fit: StackFit.expand,
@@ -207,11 +209,12 @@ class IncidentListScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.screenPadding,
             ),
-            child: Row(
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.sm,
               children: [
-                const Expanded(
-                  child: Text('Actividad reciente', style: AppTypography.h3),
-                ),
+                const Text('Actividad reciente', style: AppTypography.h3),
                 TextButton(
                   onPressed: () =>
                       ref.read(shellTabProvider.notifier).state = 1,
@@ -224,8 +227,10 @@ class IncidentListScreen extends ConsumerWidget {
               ],
             ),
           ),
-          Expanded(
-            child: StreamBuilder<List<UserIncident>>(
+                ]),
+              ),
+            ],
+            body: StreamBuilder<List<UserIncident>>(
               stream: service.watch(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -272,8 +277,6 @@ class IncidentListScreen extends ConsumerWidget {
                 );
               },
             ),
-          ),
-            ],
           ),
         ],
       ),
