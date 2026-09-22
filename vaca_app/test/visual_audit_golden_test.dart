@@ -36,6 +36,7 @@ import 'package:vaca_app/features/incident/presentation/incident_detail_screen.d
 import 'package:vaca_app/features/incident/presentation/local_confirmation_screen.dart';
 import 'package:vaca_app/features/onboarding/presentation/onboarding_flow.dart';
 import 'package:vaca_app/features/shell/presentation/app_shell.dart';
+import 'package:vaca_app/features/wallet/domain/stellar_wallet_gateway.dart';
 import 'package:vaca_app/features/wallet/domain/stellar_wallet_service.dart';
 import 'package:vaca_app/features/wallet/presentation/stellar_wallet_screen.dart';
 
@@ -115,8 +116,34 @@ class _FakeTransport implements transport.Transport {
   Stream<transport.TransportStatus> get status => Stream.value(_status);
 }
 
+class _FakeWalletGateway implements StellarWalletGateway {
+  @override
+  StellarWalletCredentials createCredentials() =>
+      throw UnsupportedError('unused');
+
+  @override
+  StellarWalletCredentials credentialsFromSecret(String secretSeed) =>
+      throw UnsupportedError('unused');
+
+  @override
+  Future<bool> fund(String accountId) => throw UnsupportedError('unused');
+
+  @override
+  Future<List<StellarClaim>> pendingClaims(String accountId) =>
+      throw UnsupportedError('unused');
+
+  @override
+  Future<String?> claim(String secretSeed, String balanceId) =>
+      throw UnsupportedError('unused');
+
+  @override
+  Future<StellarWalletSnapshot> snapshot(String secretSeed) =>
+      throw UnsupportedError('unused');
+}
+
 class _FakeWalletService extends StellarWalletService {
-  _FakeWalletService(super.storage);
+  _FakeWalletService(SecureStorage storage)
+      : super(storage, _FakeWalletGateway());
 
   static const _snapshot = StellarWalletSnapshot(
     accountId: 'GDYAWWQFFPSC5XUEEJE2OVHBXABA2LZBSRMUSV4PXWL443MXGDOBMRTP',

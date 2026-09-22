@@ -3,25 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vaca_app/app.dart';
 import 'package:vaca_app/core/theme/app_theme.dart';
-import 'package:vaca_app/core/widgets/vaca_brand_logo.dart';
 import 'package:vaca_app/features/onboarding/presentation/onboarding_flow.dart';
 
 void main() {
-  testWidgets('startup logo transitions to the compact home target',
+  testWidgets('startup gate reveals home without a second Flutter splash',
       (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: VacaApp(skipOnboarding: true)),
     );
 
-    expect(find.text('Preparando VACA'), findsOneWidget);
-    expect(tester.widget<VacaBrandLogo>(find.byType(VacaBrandLogo)).size, 156);
+    expect(find.text('Preparando VACA'), findsNothing);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 1100));
-    await tester.pump(const Duration(milliseconds: 1100));
+    await tester.pump();
 
     expect(find.text('Respondedor Local'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('Inicio'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
     expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
   });
 
   testWidgets('VacaApp arranca y muestra la lista de señales', (tester) async {
