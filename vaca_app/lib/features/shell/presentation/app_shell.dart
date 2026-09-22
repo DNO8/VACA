@@ -38,8 +38,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
     // Cubre instalaciones anteriores al auto-provision del onboarding:
     // si no hay wallet testnet se crea y se fondea en segundo plano.
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _provisionWallet());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _provisionWallet());
   }
 
   Future<void> _provisionWallet() async {
@@ -74,8 +73,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final index = ref.watch(shellTabProvider);
     final pending =
         ref.watch(syncSnapshotProvider).valueOrNull?.pendingCount ?? 0;
-    final vaquitaAlert =
-        ref.watch(vaquitaAlertProvider).valueOrNull ?? false;
+    final vaquitaAlert = ref.watch(vaquitaAlertProvider).valueOrNull ?? false;
     final pages = [
       const IncidentListScreen(),
       const DeliveryScreen(),
@@ -148,46 +146,46 @@ class _AppShellState extends ConsumerState<AppShell> {
           ),
           child: SafeArea(
             top: false,
-            child: SizedBox(
-              height: 64,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 64),
               child: Row(
-              children: [
-                _NavItem(
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
-                  label: 'Inicio',
-                  selected: index == 0,
-                  onTap: () => go(0),
-                ),
-                _NavItem(
-                  icon: Icons.outbox_outlined,
-                  selectedIcon: Icons.outbox,
-                  label: 'Entrega',
-                  selected: index == 1,
-                  badgeCount: pending,
-                  onTap: () => go(1),
-                ),
-                _NavItem(
-                  icon: Icons.person_outline,
-                  selectedIcon: Icons.person,
-                  label: 'Identidad',
-                  selected: index == 2,
-                  onTap: () => go(2),
-                ),
-                // La vaca asomada: slide-left la saca y arrastra la
-                // pantalla hacia Vaquita.
-                CowVaquitaButton(
-                  selected: index == _vaquitaTab,
-                  // Oscila cuando hay algo nuevo en Vaquita y el usuario
-                  // aún no está mirando esa pestaña.
-                  alert: vaquitaAlert && index != _vaquitaTab,
-                  onPull: () => go(_vaquitaTab),
-                  onPullStart: pullStart,
-                  onPullProgress: pullProgress,
-                  onPullEnd: pullEnd,
-                ),
-              ],
-            ),
+                children: [
+                  _NavItem(
+                    icon: Icons.home_outlined,
+                    selectedIcon: Icons.home,
+                    label: 'Inicio',
+                    selected: index == 0,
+                    onTap: () => go(0),
+                  ),
+                  _NavItem(
+                    icon: Icons.outbox_outlined,
+                    selectedIcon: Icons.outbox,
+                    label: 'Entrega',
+                    selected: index == 1,
+                    badgeCount: pending,
+                    onTap: () => go(1),
+                  ),
+                  _NavItem(
+                    icon: Icons.person_outline,
+                    selectedIcon: Icons.person,
+                    label: 'Identidad',
+                    selected: index == 2,
+                    onTap: () => go(2),
+                  ),
+                  // La vaca asomada: slide-left la saca y arrastra la
+                  // pantalla hacia Vaquita.
+                  CowVaquitaButton(
+                    selected: index == _vaquitaTab,
+                    // Oscila cuando hay algo nuevo en Vaquita y el usuario
+                    // aún no está mirando esa pestaña.
+                    alert: vaquitaAlert && index != _vaquitaTab,
+                    onPull: () => go(_vaquitaTab),
+                    onPullStart: pullStart,
+                    onPullProgress: pullProgress,
+                    onPullEnd: pullEnd,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -226,6 +224,7 @@ class _NavItem extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
@@ -234,9 +233,8 @@ class _NavItem extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: selected
-                    ? scheme.secondaryContainer
-                    : Colors.transparent,
+                color:
+                    selected ? scheme.secondaryContainer : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: iconWidget,
@@ -245,9 +243,8 @@ class _NavItem extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: selected
-                        ? scheme.onSurface
-                        : scheme.onSurfaceVariant,
+                    color:
+                        selected ? scheme.onSurface : scheme.onSurfaceVariant,
                   ),
             ),
           ],
