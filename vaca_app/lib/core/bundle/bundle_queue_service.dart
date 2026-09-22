@@ -436,10 +436,12 @@ class BundleQueueService {
   Future<void> retryNow(String bundleId) async {
     await (_database.update(_database.originBundles)
           ..where((row) => row.id.equals(bundleId))
-          ..where((row) => row.state.isIn([
-                DeliveryState.queued.index,
-                DeliveryState.failed.index,
-              ])))
+          ..where(
+            (row) => row.state.isIn([
+              DeliveryState.queued.index,
+              DeliveryState.failed.index,
+            ]),
+          ))
         .write(
       const OriginBundlesCompanion(
         state: Value(DeliveryState.queued),
@@ -456,10 +458,12 @@ class BundleQueueService {
   /// sentido: todos los bundles vuelven a ser elegibles de inmediato.
   Future<void> retryAllNow() async {
     await (_database.update(_database.originBundles)
-          ..where((row) => row.state.isIn([
-                DeliveryState.queued.index,
-                DeliveryState.sent.index,
-              ]))
+          ..where(
+            (row) => row.state.isIn([
+              DeliveryState.queued.index,
+              DeliveryState.sent.index,
+            ]),
+          )
           ..where(
             (row) => row.incidentId.isNotInQuery(_cancelledIncidentIds()),
           ))

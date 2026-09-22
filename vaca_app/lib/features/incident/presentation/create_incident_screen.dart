@@ -877,8 +877,11 @@ class _CategoryCard extends StatelessWidget {
                     color: selected ? meta.color : Colors.transparent,
                   ),
                   child: selected
-                      ? const Icon(Icons.check,
-                          size: 12, color: AppColors.white)
+                      ? const Icon(
+                          Icons.check,
+                          size: 12,
+                          color: AppColors.white,
+                        )
                       : null,
                 ),
               ],

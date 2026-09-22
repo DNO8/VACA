@@ -166,7 +166,7 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                         border: Border.all(color: AppColors.bronze),
                         borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
-                      child: Row(
+                      child: const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.science_outlined, color: AppColors.bronze),
