@@ -53,7 +53,8 @@
 - [x] Copia en Drive: `VACA/06 Programas y Convocatorias/Instawards/Entregables formales/Semana 4/VACA-semana4-dev-testnet-final-2026-09-21.apk`.
 - [x] Claim desde app conserva y enlaza hashes de transacción Stellar testnet.
 - [ ] Video 3–5 min: captura offline → sync → donación → Claimable Balance → claim.
-- [ ] Registrar hashes reales de emisión y claim tras la corrida E2E.
+- [x] Smoke Testnet real: donación `d7d6927f3bf4c7c099271e736bfb34390e13b037f340425266070e396ebf9f1d`, emisión `bb3fc7c63f5446103816feed212760db5d26ae37b1070979bd637c7fccda704e`, claim `71c104bc9c211790fc2cd6d62750e3780226cffa9d31993d6e8b41c85214d024`.
+- [ ] Repetir y vincular hashes dentro del walkthrough físico completo.
 - [ ] Confirmar pipeline B2G con ≥15 contactos y estado de outreach.
 
 ## Evidencia Shipaton
