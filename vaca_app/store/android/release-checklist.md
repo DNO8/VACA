@@ -11,7 +11,7 @@
 - [ ] RevenueCat Ads/Charts v3 habilitado y recibiendo eventos ILRD.
 - [ ] `PRIVACY_POLICY_URL` HTTPS pública.
 - [ ] `SUPPORT_URL` HTTPS pública.
-- [ ] Upload keystore y `android/key.properties` fuera de Git.
+- [x] Upload keystore y `android/key.properties` fuera de Git.
 - [ ] Legacy Supabase keys expuestas rotadas o deshabilitadas.
 
 ## Configuración Google Play
@@ -35,7 +35,8 @@
 - [ ] `flutter test`
 - [ ] Build dev con AdMob test ID.
 - [ ] Build `publicRelease` con todas las variables y signing.
-- [ ] `apksigner` confirma certificado de upload, no Android Debug.
+- [x] `apksigner` confirma certificado VACA Upload en `devRelease`, no Android Debug.
+- [ ] Repetir verificación de `apksigner` sobre el `publicRelease` definitivo.
 - [ ] Artefacto no contiene endpoints dev ni secretos privados.
 - [ ] Android físico: instalación, onboarding y captura offline.
 - [ ] Reinicio de proceso conserva outbox.
@@ -43,6 +44,16 @@
 - [ ] Banner sólo aparece en “Acerca de VACA”.
 - [ ] Consentimiento/privacidad de anuncios funciona.
 - [ ] RevenueCat registra loaded, displayed e ingreso por impresión.
+
+## Evidencia Instawards — Semana 4
+
+- [x] APK `devRelease` testnet construido el 21-09-2026: 116.357.913 bytes.
+- [x] SHA-256: `36214EB61D72739599E4C4C99E8E3F7E041F94CD86691468DD3737D8DCB5D25C`.
+- [x] Copia en Drive: `VACA/06 Programas y Convocatorias/Instawards/Entregables formales/Semana 4/VACA-semana4-dev-testnet-2026-09-21.apk`.
+- [x] Claim desde app conserva y enlaza hashes de transacción Stellar testnet.
+- [ ] Video 3–5 min: captura offline → sync → donación → Claimable Balance → claim.
+- [ ] Registrar hashes reales de emisión y claim tras la corrida E2E.
+- [ ] Confirmar pipeline B2G con ≥15 contactos y estado de outreach.
 
 ## Evidencia Shipaton
 
