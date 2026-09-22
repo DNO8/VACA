@@ -367,80 +367,80 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Coordenadas capturadas',
-                style: AppTypography.caption
-                    .copyWith(color: context.tokens.muted),
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                hasGps
-                    ? '${_latitude!.toStringAsFixed(5)}, ${_longitude!.toStringAsFixed(5)}'
-                    : 'Sin ubicación automática',
-                style: AppTypography.data,
-              ),
-              const SizedBox(height: AppSpacing.xs),
               Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.celadon50,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 ),
-                child: Text(
-                  'Las coordenadas exactas se entregan sólo al servidor autorizado.',
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.celadon900),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Coordenadas capturadas',
+                      style: AppTypography.caption
+                          .copyWith(color: context.tokens.muted),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      hasGps
+                          ? '${_latitude!.toStringAsFixed(5)}, ${_longitude!.toStringAsFixed(5)}'
+                          : 'Sin ubicación automática',
+                      style: AppTypography.data,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: AppColors.celadon50,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: Text(
+                        'Las coordenadas exactas se entregan sólo al servidor autorizado.',
+                        style: AppTypography.caption
+                            .copyWith(color: AppColors.celadon900),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        VacaTextField(
-          label: 'Latitud manual',
-          controller: _latitudeController,
-          mono: true,
-          keyboardType: const TextInputType.numberWithOptions(
-            signed: true,
-            decimal: true,
-          ),
-          onChanged: (value) => setState(() {
-            _latitude = double.tryParse(value.replaceAll(',', '.'));
-            if (_latitude != null && _longitude != null) {
-              _locationSource = LocationSource.manual;
-              _accuracy = null;
-            }
-          }),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        VacaTextField(
-          label: 'Longitud manual',
-          controller: _longitudeController,
-          mono: true,
-          keyboardType: const TextInputType.numberWithOptions(
-            signed: true,
-            decimal: true,
-          ),
-          onChanged: (value) => setState(() {
-            _longitude = double.tryParse(value.replaceAll(',', '.'));
-            if (_latitude != null && _longitude != null) {
-              _locationSource = LocationSource.manual;
-              _accuracy = null;
-            }
-          }),
-        ),
+              const SizedBox(height: AppSpacing.sm),
+              VacaTextField(
+                label: 'Latitud manual',
+                controller: _latitudeController,
+                mono: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  signed: true,
+                  decimal: true,
+                ),
+                onChanged: (value) => setState(() {
+                  _latitude = double.tryParse(value.replaceAll(',', '.'));
+                  if (_latitude != null && _longitude != null) {
+                    _locationSource = LocationSource.manual;
+                    _accuracy = null;
+                  }
+                }),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              VacaTextField(
+                label: 'Longitud manual',
+                controller: _longitudeController,
+                mono: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  signed: true,
+                  decimal: true,
+                ),
+                onChanged: (value) => setState(() {
+                  _longitude = double.tryParse(value.replaceAll(',', '.'));
+                  if (_latitude != null && _longitude != null) {
+                    _locationSource = LocationSource.manual;
+                    _accuracy = null;
+                  }
+                }),
+              ),
               const SizedBox(height: AppSpacing.sm),
               VacaButton(
                 label: _locating ? 'Sincronizando GPS…' : 'Actualizar GPS',
@@ -459,8 +459,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
   // ─── Paso 3: datos mínimos ────────────────────────────────────────────
 
   Widget _buildDetailsStep() {
-    final meta =
-        _category != null ? categoryMeta(_category!) : null;
+    final meta = _category != null ? categoryMeta(_category!) : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -482,11 +481,11 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
               borderRadius: BorderRadius.circular(AppRadius.full),
               border: Border.all(color: meta.color.withValues(alpha: 0.4)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.xs,
               children: [
                 Icon(meta.icon, size: 14, color: meta.color),
-                const SizedBox(width: AppSpacing.xs),
                 Text(
                   '${priorityShortLabel(meta.priority)} · ${meta.label}',
                   style: AppTypography.caption.copyWith(
@@ -518,10 +517,9 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
                     '$_peopleCount',
                     style: AppTypography.display.copyWith(
                       fontFamily: AppTypography.monoFont,
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.celadon300
-                              : AppColors.celadon700,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.celadon300
+                          : AppColors.celadon700,
                     ),
                   ),
                   Text(
@@ -587,13 +585,13 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
             children: [
               Text(
                 'ID de señal: ',
-                style: AppTypography.caption
-                    .copyWith(color: AppColors.celadon900),
+                style:
+                    AppTypography.caption.copyWith(color: AppColors.celadon900),
               ),
               Text(
                 'se generará al guardar',
-                style: AppTypography.dataSm
-                    .copyWith(color: AppColors.celadon900),
+                style:
+                    AppTypography.dataSm.copyWith(color: AppColors.celadon900),
               ),
             ],
           ),
@@ -879,7 +877,8 @@ class _CategoryCard extends StatelessWidget {
                     color: selected ? meta.color : Colors.transparent,
                   ),
                   child: selected
-                      ? const Icon(Icons.check, size: 12, color: AppColors.white)
+                      ? const Icon(Icons.check,
+                          size: 12, color: AppColors.white)
                       : null,
                 ),
               ],
@@ -1034,8 +1033,7 @@ class _CountChip extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 48),
           padding: EdgeInsets.zero,
-          backgroundColor:
-              selected ? AppColors.celadon100 : AppColors.ivory,
+          backgroundColor: selected ? AppColors.celadon100 : AppColors.ivory,
           foregroundColor:
               selected ? AppColors.celadon700 : AppColors.neutral500,
           side: BorderSide(
