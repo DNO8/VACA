@@ -32,6 +32,9 @@ class _WalletStorage implements SecureStorage {
 
 class _WalletGateway implements StellarWalletGateway {
   String? snapshotSecret;
+  List<StellarClaim> claims = const [];
+  final claimHashes = <String, String?>{};
+  final claimedBalanceIds = <String>[];
 
   @override
   StellarWalletCredentials createCredentials() =>
@@ -45,10 +48,13 @@ class _WalletGateway implements StellarWalletGateway {
   Future<bool> fund(String accountId) async => true;
 
   @override
-  Future<List<StellarClaim>> pendingClaims(String accountId) async => const [];
+  Future<List<StellarClaim>> pendingClaims(String accountId) async => claims;
 
   @override
-  Future<String?> claim(String secretSeed, String balanceId) async => 'tx-hash';
+  Future<String?> claim(String secretSeed, String balanceId) async {
+    claimedBalanceIds.add(balanceId);
+    return claimHashes[balanceId];
+  }
 
   @override
   Future<StellarWalletSnapshot> snapshot(String secretSeed) async {
@@ -88,5 +94,39 @@ void main() {
     expect(loaded.valueOrNull?.accountId, 'GACCOUNT');
     expect(loaded.valueOrNull?.balance, '12.0000000');
     expect(gateway.snapshotSecret, 'S');
+  });
+
+  test('claims every pending balance and returns verifiable hashes', () async {
+    final storage = _WalletStorage()
+      ..values['stellar.testnet.secret-seed'] = 'S';
+    final gateway = _WalletGateway()
+      ..claims = const [
+        StellarClaim(balanceId: 'CB-1', amount: '2.0'),
+        StellarClaim(balanceId: 'CB-2', amount: '3.0'),
+      ]
+      ..claimHashes.addAll({'CB-1': 'tx-1', 'CB-2': 'tx-2'});
+    final service = StellarWalletService(storage, gateway);
+
+    final result = await service.claimAll();
+
+    expect(result.isSuccess, isTrue);
+    expect(result.valueOrNull?.transactionHashes, ['tx-1', 'tx-2']);
+    expect(gateway.claimedBalanceIds, ['CB-1', 'CB-2']);
+  });
+
+  test('stops claiming when Horizon rejects a transaction', () async {
+    final storage = _WalletStorage()
+      ..values['stellar.testnet.secret-seed'] = 'S';
+    final gateway = _WalletGateway()
+      ..claims = const [
+        StellarClaim(balanceId: 'CB-1', amount: '2.0'),
+        StellarClaim(balanceId: 'CB-2', amount: '3.0'),
+      ];
+    final service = StellarWalletService(storage, gateway);
+
+    final result = await service.claimAll();
+
+    expect(result.errorOrNull?.code, 'stellar_claim_failed');
+    expect(gateway.claimedBalanceIds, ['CB-1']);
   });
 }

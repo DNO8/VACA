@@ -30,6 +30,16 @@ class StellarClaim {
   final String amount;
 }
 
+class StellarClaimResult {
+  const StellarClaimResult({
+    required this.wallet,
+    required this.transactionHashes,
+  });
+
+  final StellarWalletSnapshot wallet;
+  final List<String> transactionHashes;
+}
+
 abstract interface class StellarWalletGateway {
   StellarWalletCredentials createCredentials();
 

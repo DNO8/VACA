@@ -2,7 +2,8 @@ import '../../../core/result/result.dart';
 import '../../../core/security/secure_storage.dart';
 import 'stellar_wallet_gateway.dart';
 
-export 'stellar_wallet_gateway.dart' show StellarWalletSnapshot;
+export 'stellar_wallet_gateway.dart'
+    show StellarClaimResult, StellarWalletSnapshot;
 
 class StellarWalletService {
   StellarWalletService(this._storage, this._gateway);
@@ -118,7 +119,7 @@ class StellarWalletService {
 
   /// Reclama todos los balances pendientes hacia la wallet.
   /// Fondea con Friendbot si la cuenta aún no existe (paga fee + reservas).
-  Future<Result<StellarWalletSnapshot>> claimAll() async {
+  Future<Result<StellarClaimResult>> claimAll() async {
     final stored = await _storage.read(_secretKey);
     if (stored case Failure(error: final error)) return Failure(error);
     final secret = stored.valueOrNull;
@@ -145,6 +146,7 @@ class StellarWalletService {
         await Future<void>.delayed(const Duration(seconds: 2));
       }
       final claims = await _gateway.pendingClaims(credentials.accountId);
+      final transactionHashes = <String>[];
       for (final claim in claims) {
         final transactionHash = await _gateway.claim(
           secret,
@@ -158,8 +160,14 @@ class StellarWalletService {
             ),
           );
         }
+        transactionHashes.add(transactionHash);
       }
-      return refresh();
+      return Success(
+        StellarClaimResult(
+          wallet: await _gateway.snapshot(secret),
+          transactionHashes: List.unmodifiable(transactionHashes),
+        ),
+      );
     } catch (error) {
       return Failure(
         VacaError(

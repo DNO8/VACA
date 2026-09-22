@@ -74,24 +74,21 @@ class _IntroPagerState extends State<_IntroPager> {
     (
       icon: Icons.volunteer_activism_outlined,
       title: '¿Qué es una Vaquita?',
-      body:
-          'Cuando tu señal es verificada por la comunidad o por VACA, '
+      body: 'Cuando tu señal es verificada por la comunidad o por VACA, '
           'se promueve a Vaquita: un llamado de ayuda visible en el mapa '
           'público de la web.',
     ),
     (
       icon: Icons.payments_outlined,
       title: 'Cómo llegan los aportes',
-      body:
-          'Las donaciones se coordinan desde la web de VACA y llegan como '
+      body: 'Las donaciones se coordinan desde la web de VACA y llegan como '
           'saldo reclamable directo a tu wallet. Los ves aquí y los '
           'reclamas con un toque.',
     ),
     (
       icon: Icons.verified_outlined,
       title: 'Blockchain verificable',
-      body:
-          'Usamos Stellar (testnet): cada aporte queda registrado en la '
+      body: 'Usamos Stellar (testnet): cada aporte queda registrado en la '
           'cadena, de forma auditable y sin intermediarios. Sin fondos '
           'reales durante el piloto.',
     ),
@@ -195,6 +192,7 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
   bool _claiming = false;
   String? _error;
   String? _notice;
+  List<String> _claimTransactionHashes = const [];
 
   @override
   void initState() {
@@ -205,12 +203,9 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
   Future<void> _load() async {
     final db = ref.read(databaseProvider);
     final feed = await ref.read(vaquitaFeedServiceProvider).fetchFeed();
-    final claims = await ref
-        .read(stellarWalletServiceProvider)
-        .pendingClaims();
-    final localIds = (await db.select(db.incidents).get())
-        .map((i) => i.id)
-        .toSet();
+    final claims = await ref.read(stellarWalletServiceProvider).pendingClaims();
+    final localIds =
+        (await db.select(db.incidents).get()).map((i) => i.id).toSet();
     if (!mounted) return;
     var pending = 0.0;
     if (claims case Success(value: final balances)) {
@@ -237,6 +232,7 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
       _claiming = true;
       _notice = null;
       _error = null;
+      _claimTransactionHashes = const [];
     });
     final res = await ref.read(stellarWalletServiceProvider).claimAll();
     if (!mounted) return;
@@ -247,11 +243,24 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
       });
       return;
     }
+    final transactionHashes = res.valueOrNull?.transactionHashes ?? const [];
     setState(() {
       _claiming = false;
       _notice = 'Ayuda recibida en tu wallet.';
+      _claimTransactionHashes = transactionHashes;
     });
     await _load();
+  }
+
+  Future<void> _openClaimTransaction(String hash) async {
+    final opened = await ref.read(externalLinkServiceProvider).open(
+          Uri.parse('https://stellar.expert/explorer/testnet/tx/$hash'),
+        );
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir Stellar Expert.')),
+      );
+    }
   }
 
   @override
@@ -280,7 +289,9 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
             claiming: _claiming,
             error: _error,
             notice: _notice,
+            transactionHashes: _claimTransactionHashes,
             onClaim: _claim,
+            onOpenTransaction: _openClaimTransaction,
           );
         }
         return _VaquitaCard(item: _mine[index - 1]);
@@ -335,6 +346,8 @@ class _ClaimCard extends StatelessWidget {
     required this.pendingXlm,
     required this.claiming,
     required this.onClaim,
+    required this.onOpenTransaction,
+    required this.transactionHashes,
     this.error,
     this.notice,
   });
@@ -342,6 +355,8 @@ class _ClaimCard extends StatelessWidget {
   final double pendingXlm;
   final bool claiming;
   final VoidCallback onClaim;
+  final ValueChanged<String> onOpenTransaction;
+  final List<String> transactionHashes;
   final String? error;
   final String? notice;
 
@@ -385,8 +400,8 @@ class _ClaimCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: AppSpacing.xxs),
                 child: Text(
                   notice!,
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.success),
+                  style:
+                      AppTypography.caption.copyWith(color: AppColors.success),
                 ),
               ),
             if (error != null)
@@ -394,8 +409,22 @@ class _ClaimCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: AppSpacing.xxs),
                 child: Text(
                   error!,
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.danger),
+                  style:
+                      AppTypography.caption.copyWith(color: AppColors.danger),
+                ),
+              ),
+            for (final hash in transactionHashes)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message: hash,
+                  child: TextButton.icon(
+                    onPressed: () => onOpenTransaction(hash),
+                    icon: const Icon(Icons.open_in_new, size: 16),
+                    label: Text(
+                      'Ver transacción ${hash.length > 12 ? '${hash.substring(0, 12)}…' : hash}',
+                    ),
+                  ),
                 ),
               ),
             if (pendingXlm > 0) ...[
@@ -429,13 +458,9 @@ class _VaquitaCard extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  verified
-                      ? Icons.verified_outlined
-                      : Icons.groups_outlined,
+                  verified ? Icons.verified_outlined : Icons.groups_outlined,
                   size: 18,
-                  color: verified
-                      ? AppColors.success
-                      : context.tokens.muted,
+                  color: verified ? AppColors.success : context.tokens.muted,
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
