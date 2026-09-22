@@ -359,6 +359,7 @@ void main() {
     final context = tester.element(find.byType(MaterialApp));
     await tester.runAsync(() async {
       for (final asset in const [
+        'estetica.jpg',
         'estetica-4.jpg',
         'estetica-5.jpg',
         'gradiente-2.jpg',
@@ -505,10 +506,7 @@ void main() {
 
   testWidgets('11 bandeja', (tester) async {
     await pumpScreen(tester, const AppShell());
-    tester
-        .widget<NavigationBar>(find.byType(NavigationBar))
-        .onDestinationSelected
-        ?.call(1);
+    await tester.tap(find.text('Entrega'));
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
     await snap(tester, '11-bandeja');
@@ -534,10 +532,7 @@ void main() {
 
   testWidgets('14 identidad datos', (tester) async {
     await pumpScreen(tester, const AppShell());
-    tester
-        .widget<NavigationBar>(find.byType(NavigationBar))
-        .onDestinationSelected
-        ?.call(2);
+    await tester.tap(find.text('Identidad'));
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
     await snap(tester, '14-identidad-datos');
