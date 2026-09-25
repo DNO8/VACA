@@ -5,6 +5,11 @@ import '../domain/stellar_wallet_gateway.dart';
 class StellarSdkWalletGateway implements StellarWalletGateway {
   StellarSdkWalletGateway({StellarSDK? sdk}) : _sdk = sdk ?? StellarSDK.TESTNET;
 
+  static const testnetUsdcIssuer =
+      'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+  static final _testnetUsdc =
+      AssetTypeCreditAlphaNum4('USDC', testnetUsdcIssuer);
+
   final StellarSDK _sdk;
 
   @override
@@ -34,22 +39,61 @@ class StellarSdkWalletGateway implements StellarWalletGateway {
           .where((balance) => balance.assetType == Asset.TYPE_NATIVE)
           .map((balance) => balance.balance)
           .firstOrNull;
+      final usdcBalance = account.balances
+          .where(
+            (balance) =>
+                balance.assetCode == 'USDC' &&
+                balance.assetIssuer == testnetUsdcIssuer,
+          )
+          .map((balance) => balance.balance)
+          .firstOrNull;
       return StellarWalletSnapshot(
         accountId: credentials.accountId,
         balance: nativeBalance ?? '0.0000000',
         funded: nativeBalance != null,
+        usdcTrustlineReady: usdcBalance != null,
+        usdcBalance: usdcBalance ?? '0.0000000',
       );
     } catch (_) {
       return StellarWalletSnapshot(
         accountId: credentials.accountId,
         balance: '0.0000000',
         funded: false,
+        usdcTrustlineReady: false,
+        usdcBalance: '0.0000000',
       );
     }
   }
 
   @override
   Future<bool> fund(String accountId) => FriendBot.fundTestAccount(accountId);
+
+  @override
+  Future<String?> ensureUsdcTrustline(String secretSeed) async {
+    final keyPair = KeyPair.fromSecretSeed(secretSeed);
+    final account = await _sdk.accounts.account(keyPair.accountId);
+    final exists = account.balances.any(
+      (balance) =>
+          balance.assetCode == 'USDC' &&
+          balance.assetIssuer == testnetUsdcIssuer,
+    );
+    if (exists) return null;
+
+    final transaction = TransactionBuilder(account)
+        .addOperation(
+          ChangeTrustOperationBuilder(
+            _testnetUsdc,
+            ChangeTrustOperationBuilder.MAX_LIMIT,
+          ).build(),
+        )
+        .build();
+    transaction.sign(keyPair, Network.TESTNET);
+    final response = await _sdk.submitTransaction(transaction);
+    if (!response.success) {
+      throw StateError('USDC trustline transaction rejected by Horizon');
+    }
+    return response.hash;
+  }
 
   @override
   Future<List<StellarClaim>> pendingClaims(String accountId) async {

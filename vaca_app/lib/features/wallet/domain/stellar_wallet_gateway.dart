@@ -3,11 +3,15 @@ class StellarWalletSnapshot {
     required this.accountId,
     required this.balance,
     required this.funded,
+    required this.usdcTrustlineReady,
+    required this.usdcBalance,
   });
 
   final String accountId;
   final String balance;
   final bool funded;
+  final bool usdcTrustlineReady;
+  final String usdcBalance;
 }
 
 class StellarWalletCredentials {
@@ -48,6 +52,8 @@ abstract interface class StellarWalletGateway {
   Future<StellarWalletSnapshot> snapshot(String secretSeed);
 
   Future<bool> fund(String accountId);
+
+  Future<String?> ensureUsdcTrustline(String secretSeed);
 
   Future<List<StellarClaim>> pendingClaims(String accountId);
 

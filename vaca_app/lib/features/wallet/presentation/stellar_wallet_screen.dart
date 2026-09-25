@@ -198,7 +198,7 @@ class _StellarWalletScreenState extends ConsumerState<StellarWalletScreen> {
                       _WalletDetails(
                         wallet: wallet,
                         busy: _busy,
-                        onFund: () => _run(
+                        onPrepare: () => _run(
                           ref.read(stellarWalletServiceProvider).fund,
                         ),
                         onRefresh: () => _run(
@@ -247,13 +247,13 @@ class _EmptyWallet extends StatelessWidget {
             const Text('Crear wallet de prueba', style: AppTypography.h2),
             const SizedBox(height: AppSpacing.xs),
             const Text(
-              'Se generará un keypair Stellar aleatorio. La clave secreta se guardará en el almacenamiento seguro del dispositivo y nunca se mostrará en pantalla.',
+              'Se generará un keypair Stellar, se solicitará XLM a Friendbot y se habilitará la trustline USDC Testnet oficial. La clave secreta permanecerá en el almacenamiento seguro.',
               textAlign: TextAlign.center,
               style: AppTypography.body,
             ),
             const SizedBox(height: AppSpacing.xl),
             VacaButton(
-              label: 'Generar wallet testnet',
+              label: 'Crear y preparar wallet testnet',
               loading: busy,
               onPressed: busy ? null : onCreate,
             ),
@@ -268,17 +268,18 @@ class _WalletDetails extends StatelessWidget {
   const _WalletDetails({
     required this.wallet,
     required this.busy,
-    required this.onFund,
+    required this.onPrepare,
     required this.onRefresh,
   });
 
   final StellarWalletSnapshot wallet;
   final bool busy;
-  final VoidCallback onFund;
+  final VoidCallback onPrepare;
   final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
+    final readyForUsdc = wallet.funded && wallet.usdcTrustlineReady;
     return Column(
       children: [
         Container(
@@ -333,6 +334,63 @@ class _WalletDetails extends StatelessWidget {
                 '${wallet.balance} XLM',
                 style: AppTypography.display.copyWith(color: AppColors.white),
               ),
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.ink.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(
+                    color: wallet.usdcTrustlineReady
+                        ? AppColors.success.withValues(alpha: 0.55)
+                        : AppColors.warning.withValues(alpha: 0.55),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      wallet.usdcTrustlineReady
+                          ? Icons.check_circle_outline
+                          : Icons.pending_outlined,
+                      color: wallet.usdcTrustlineReady
+                          ? AppColors.success
+                          : AppColors.warning,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            wallet.usdcTrustlineReady
+                                ? 'USDC TESTNET HABILITADO'
+                                : 'TRUSTLINE USDC PENDIENTE',
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                          Text(
+                            wallet.usdcTrustlineReady
+                                ? 'Lista para recibir USDC del faucet de Circle.'
+                                : 'Habilítala antes de recibir o reclamar USDC.',
+                            style: AppTypography.body.copyWith(
+                              color: AppColors.celadon300,
+                            ),
+                          ),
+                          if (wallet.usdcTrustlineReady)
+                            Text(
+                              '${wallet.usdcBalance} USDC',
+                              style: AppTypography.dataSm.copyWith(
+                                color: AppColors.celadon300,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -377,16 +435,14 @@ class _WalletDetails extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         VacaButton(
-          label: wallet.funded
-              ? 'Actualizar balance testnet'
-              : 'Solicitar fondos a Friendbot',
-          icon: wallet.funded ? Icons.refresh : Icons.add_circle_outline,
-          loading: busy,
-          onPressed: busy
-              ? null
+          label: readyForUsdc
+              ? 'Actualizar balances testnet'
               : wallet.funded
-                  ? onRefresh
-                  : onFund,
+                  ? 'Habilitar USDC testnet'
+                  : 'Solicitar XLM y habilitar USDC',
+          icon: readyForUsdc ? Icons.refresh : Icons.add_circle_outline,
+          loading: busy,
+          onPressed: busy ? null : (readyForUsdc ? onRefresh : onPrepare),
         ),
         const SizedBox(height: AppSpacing.xs),
         Center(

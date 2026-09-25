@@ -129,6 +129,10 @@ class _FakeWalletGateway implements StellarWalletGateway {
   Future<bool> fund(String accountId) => throw UnsupportedError('unused');
 
   @override
+  Future<String?> ensureUsdcTrustline(String secretSeed) =>
+      throw UnsupportedError('unused');
+
+  @override
   Future<List<StellarClaim>> pendingClaims(String accountId) =>
       throw UnsupportedError('unused');
 
@@ -149,6 +153,8 @@ class _FakeWalletService extends StellarWalletService {
     accountId: 'GDYAWWQFFPSC5XUEEJE2OVHBXABA2LZBSRMUSV4PXWL443MXGDOBMRTP',
     balance: '10000.0000000',
     funded: true,
+    usdcTrustlineReady: true,
+    usdcBalance: '0.0000000',
   );
 
   @override
@@ -583,6 +589,11 @@ void main() {
     await pumpScreen(tester, const StellarWalletScreen());
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump();
+    expect(find.text('USDC TESTNET HABILITADO'), findsOneWidget);
+    expect(
+      find.text('Lista para recibir USDC del faucet de Circle.'),
+      findsOneWidget,
+    );
     await snap(tester, '15-wallet');
   });
 

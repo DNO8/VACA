@@ -35,6 +35,10 @@ class _WalletGateway implements StellarWalletGateway {
   List<StellarClaim> claims = const [];
   final claimHashes = <String, String?>{};
   final claimedBalanceIds = <String>[];
+  final fundedAccountIds = <String>[];
+  final trustlineSecrets = <String>[];
+  bool funded = true;
+  bool usdcTrustlineReady = true;
 
   @override
   StellarWalletCredentials createCredentials() =>
@@ -45,7 +49,19 @@ class _WalletGateway implements StellarWalletGateway {
       StellarWalletCredentials(accountId: 'GACCOUNT', secretSeed: secretSeed);
 
   @override
-  Future<bool> fund(String accountId) async => true;
+  Future<bool> fund(String accountId) async {
+    fundedAccountIds.add(accountId);
+    funded = true;
+    return true;
+  }
+
+  @override
+  Future<String?> ensureUsdcTrustline(String secretSeed) async {
+    trustlineSecrets.add(secretSeed);
+    if (usdcTrustlineReady) return null;
+    usdcTrustlineReady = true;
+    return 'trustline-tx';
+  }
 
   @override
   Future<List<StellarClaim>> pendingClaims(String accountId) async => claims;
@@ -59,28 +75,40 @@ class _WalletGateway implements StellarWalletGateway {
   @override
   Future<StellarWalletSnapshot> snapshot(String secretSeed) async {
     snapshotSecret = secretSeed;
-    return const StellarWalletSnapshot(
+    return StellarWalletSnapshot(
       accountId: 'GACCOUNT',
-      balance: '12.0000000',
-      funded: true,
+      balance: funded ? '12.0000000' : '0.0000000',
+      funded: funded,
+      usdcTrustlineReady: usdcTrustlineReady,
+      usdcBalance: '0.0000000',
     );
   }
 }
 
 void main() {
-  test('creates a real Stellar keypair and stores only its secret securely',
-      () async {
+  test('gateway creates a real Stellar keypair', () {
+    final created = StellarSdkWalletGateway().createCredentials();
+
+    expect(created.accountId, startsWith('G'));
+    expect(created.secretSeed, startsWith('S'));
+    expect(created.secretSeed, isNot(created.accountId));
+  });
+
+  test('create funds the wallet and establishes the USDC trustline', () async {
     final storage = _WalletStorage();
-    final service = StellarWalletService(storage, StellarSdkWalletGateway());
+    final gateway = _WalletGateway()
+      ..funded = false
+      ..usdcTrustlineReady = false;
+    final service = StellarWalletService(storage, gateway);
 
     final created = await service.create();
 
     expect(created.isSuccess, isTrue);
-    expect(created.valueOrNull!.accountId, startsWith('G'));
-    expect(created.valueOrNull!.balance, '0.0000000');
-    expect(storage.values, hasLength(1));
-    expect(storage.values.values.single, startsWith('S'));
-    expect(storage.values.values.single, isNot(created.valueOrNull!.accountId));
+    expect(created.valueOrNull?.funded, isTrue);
+    expect(created.valueOrNull?.usdcTrustlineReady, isTrue);
+    expect(storage.values.values.single, 'S');
+    expect(gateway.fundedAccountIds, ['GACCOUNT']);
+    expect(gateway.trustlineSecrets, ['S']);
   });
 
   test('loads a stored wallet through a substitutable gateway', () async {
@@ -96,10 +124,24 @@ void main() {
     expect(gateway.snapshotSecret, 'S');
   });
 
+  test('fund repairs a funded wallet without a USDC trustline', () async {
+    final storage = _WalletStorage()
+      ..values['stellar.testnet.secret-seed'] = 'S';
+    final gateway = _WalletGateway()..usdcTrustlineReady = false;
+    final service = StellarWalletService(storage, gateway);
+
+    final result = await service.fund();
+
+    expect(result.valueOrNull?.usdcTrustlineReady, isTrue);
+    expect(gateway.fundedAccountIds, isEmpty);
+    expect(gateway.trustlineSecrets, ['S']);
+  });
+
   test('claims every pending balance and returns verifiable hashes', () async {
     final storage = _WalletStorage()
       ..values['stellar.testnet.secret-seed'] = 'S';
     final gateway = _WalletGateway()
+      ..usdcTrustlineReady = false
       ..claims = const [
         StellarClaim(balanceId: 'CB-1', amount: '2.0'),
         StellarClaim(balanceId: 'CB-2', amount: '3.0'),
@@ -111,6 +153,7 @@ void main() {
 
     expect(result.isSuccess, isTrue);
     expect(result.valueOrNull?.transactionHashes, ['tx-1', 'tx-2']);
+    expect(gateway.trustlineSecrets, ['S']);
     expect(gateway.claimedBalanceIds, ['CB-1', 'CB-2']);
   });
 

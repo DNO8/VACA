@@ -31,36 +31,33 @@ class StellarWalletService {
   }
 
   Future<Result<StellarWalletSnapshot>> create() async {
-    final existing = await load();
-    if (existing case Success(value: final snapshot?)) return Success(snapshot);
-    if (existing case Failure(error: final error)) return Failure(error);
-    try {
-      final credentials = _gateway.createCredentials();
-      final write = await _storage.write(_secretKey, credentials.secretSeed);
-      if (write case Failure(error: final error)) return Failure(error);
-      return Success(
-        StellarWalletSnapshot(
-          accountId: credentials.accountId,
-          balance: '0.0000000',
-          funded: false,
-        ),
-      );
-    } catch (error) {
-      return Failure(
-        VacaError(
-          code: 'stellar_wallet_create',
-          message: 'No se pudo crear la wallet testnet.',
-          cause: error,
-        ),
-      );
+    final stored = await _storage.read(_secretKey);
+    if (stored case Failure(error: final error)) return Failure(error);
+    var secret = stored.valueOrNull;
+    if (secret == null || secret.isEmpty) {
+      try {
+        final credentials = _gateway.createCredentials();
+        final write = await _storage.write(_secretKey, credentials.secretSeed);
+        if (write case Failure(error: final error)) return Failure(error);
+        secret = credentials.secretSeed;
+      } catch (error) {
+        return Failure(
+          VacaError(
+            code: 'stellar_wallet_create',
+            message: 'No se pudo crear la wallet testnet.',
+            cause: error,
+          ),
+        );
+      }
     }
+    return _prepareForUsdc(secret);
   }
 
   Future<Result<StellarWalletSnapshot>> fund() async {
-    final current = await load();
-    if (current case Failure(error: final error)) return Failure(error);
-    final snapshot = current.valueOrNull;
-    if (snapshot == null) {
+    final stored = await _storage.read(_secretKey);
+    if (stored case Failure(error: final error)) return Failure(error);
+    final secret = stored.valueOrNull;
+    if (secret == null || secret.isEmpty) {
       return const Failure(
         VacaError(
           code: 'stellar_wallet_missing',
@@ -68,22 +65,31 @@ class StellarWalletService {
         ),
       );
     }
+    return _prepareForUsdc(secret);
+  }
+
+  Future<Result<StellarWalletSnapshot>> _prepareForUsdc(String secret) async {
     try {
-      final funded = await _gateway.fund(snapshot.accountId);
-      if (!funded) {
-        return const Failure(
-          VacaError(
-            code: 'stellar_friendbot_rejected',
-            message: 'Friendbot no financió la cuenta testnet.',
-          ),
-        );
+      final credentials = _gateway.credentialsFromSecret(secret);
+      final snapshot = await _gateway.snapshot(secret);
+      if (!snapshot.funded) {
+        final funded = await _gateway.fund(credentials.accountId);
+        if (!funded) {
+          return const Failure(
+            VacaError(
+              code: 'stellar_friendbot_rejected',
+              message: 'Friendbot no financió la cuenta testnet.',
+            ),
+          );
+        }
       }
-      return refresh();
+      await _gateway.ensureUsdcTrustline(secret);
+      return Success(await _gateway.snapshot(secret));
     } catch (error) {
       return Failure(
         VacaError(
-          code: 'stellar_friendbot_error',
-          message: 'No se pudo contactar a Friendbot.',
+          code: 'stellar_usdc_setup',
+          message: 'No se pudo preparar la wallet para USDC testnet.',
           cause: error,
         ),
       );
@@ -132,19 +138,9 @@ class StellarWalletService {
       );
     }
     try {
+      final prepared = await _prepareForUsdc(secret);
+      if (prepared case Failure(error: final error)) return Failure(error);
       final credentials = _gateway.credentialsFromSecret(secret);
-      if (!(await _gateway.snapshot(secret)).funded) {
-        final funded = await _gateway.fund(credentials.accountId);
-        if (!funded) {
-          return const Failure(
-            VacaError(
-              code: 'stellar_friendbot_rejected',
-              message: 'Friendbot no financió la cuenta testnet.',
-            ),
-          );
-        }
-        await Future<void>.delayed(const Duration(seconds: 2));
-      }
       final claims = await _gateway.pendingClaims(credentials.accountId);
       final transactionHashes = <String>[];
       for (final claim in claims) {
