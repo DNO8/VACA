@@ -44,11 +44,17 @@ municipalPilot  despliegue Android administrado con BLE
 
 Todo release debe recibir `FLAVOR` mediante `dart-define` y fallar cerrado si falta configuración obligatoria.
 
-Ejemplo local:
+Ejecución local conectada al backend autorizado:
 
 ```powershell
-flutter run --flavor dev --dart-define=FLAVOR=dev
+.\run-dev.ps1
 ```
+
+El launcher lee `..\supabase\.env` y exige `SUPABASE_URL`,
+`SUPABASE_ANON_KEY`, `SERVER_BUNDLE_PUBLIC_KEY` y
+`SERVER_RECEIPT_PUBLIC_KEY`. Así evita compilar accidentalmente con trust roots
+vacíos u obsoletos. Si hay más de un Android conectado, usa
+`.\run-dev.ps1 -DeviceId <id>`.
 
 > [!CAUTION]
 > Nunca coloques en el cliente:
