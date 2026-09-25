@@ -54,8 +54,9 @@
 - [x] Claim desde app conserva y enlaza hashes de transacción Stellar testnet.
 - [ ] Video 3–5 min: captura offline → sync → donación → Claimable Balance → claim.
 - [x] Smoke Testnet real: donación `d7d6927f3bf4c7c099271e736bfb34390e13b037f340425266070e396ebf9f1d`, emisión `bb3fc7c63f5446103816feed212760db5d26ae37b1070979bd637c7fccda704e`, claim `71c104bc9c211790fc2cd6d62750e3780226cffa9d31993d6e8b41c85214d024`.
+- [x] Mock NFT Proof of Aid ejecutado en Soroban Testnet: contrato `CAE2RWTDM3Q5SJRSLIP247F2ERB4AXJTCVNYNCFHYBVKJL42HKARYDSP`, mint `a8c14a0dbf0b712622454861df07a9f8104bae80d0227fa22e1c04de2b0e3509`, imagen local sin IPFS.
 - [ ] Repetir y vincular hashes dentro del walkthrough físico completo.
-- [ ] Confirmar pipeline B2G con ≥15 contactos y estado de outreach.
+- [x] Pipeline B2G: 20 prospectos estructurados y outreach completado, cierre operativo confirmado por Marcos.
 
 ## Evidencia Shipaton
 
