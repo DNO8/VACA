@@ -155,6 +155,8 @@ abstract final class AppTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+    final alternativeActionColor =
+        isDark ? AppColors.celadon300 : AppColors.celadon700;
     final colorScheme = ColorScheme(
       brightness: brightness,
       primary: AppColors.celadon700,
@@ -228,12 +230,18 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.celadon700,
+          foregroundColor: alternativeActionColor,
           minimumSize: const Size.fromHeight(52),
-          side: const BorderSide(color: AppColors.celadon700),
+          side: BorderSide(color: alternativeActionColor),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: alternativeActionColor,
+          minimumSize: const Size(48, 48),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

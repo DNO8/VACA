@@ -506,7 +506,16 @@ void main() {
     await tester.tap(find.text('Continuar'));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump();
+    expect(find.byKey(const ValueKey('incident-photo-frame')), findsOneWidget);
+    expect(find.text('Tomar foto'), findsNothing);
+    expect(
+      find.widgetWithText(FilledButton, 'Guardar señal sin foto'),
+      findsOneWidget,
+    );
     await snap(tester, '09-foto');
+    await tester.tap(find.byKey(const ValueKey('incident-photo-frame')));
+    await tester.pumpAndSettle();
+    expect(find.text('Sin acceso a la cámara'), findsOneWidget);
   });
 
   testWidgets('10 guardado local', (tester) async {
@@ -544,6 +553,11 @@ void main() {
           ..where((r) => r.receiptId.equals('REC-A7F2-9C14')))
         .getSingle();
     await pumpScreen(tester, ReceiptScreen(receipt: receipt));
+    expect(find.text('Compartir comprobante'), findsNothing);
+    expect(
+      find.widgetWithText(FilledButton, 'Ver señal y actualizar'),
+      findsOneWidget,
+    );
     await snap(tester, '12-recibo');
   });
 

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/format/vaca_format.dart';
 import '../../../core/providers.dart';
-import '../../../core/share/share_payload.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/database.dart';
@@ -15,8 +13,9 @@ class ReceiptScreen extends ConsumerWidget {
 
   final ServerReceipt receipt;
 
-  String _hashPreview(String hash) =>
-      hash.length <= 12 ? hash : '${hash.substring(0, 6)}…${hash.substring(hash.length - 4)}';
+  String _hashPreview(String hash) => hash.length <= 12
+      ? hash
+      : '${hash.substring(0, 6)}…${hash.substring(hash.length - 4)}';
 
   Future<void> _openIncident(BuildContext context, WidgetRef ref) async {
     final database = ref.read(databaseProvider);
@@ -61,8 +60,7 @@ class ReceiptScreen extends ConsumerWidget {
                         height: 36,
                         decoration: BoxDecoration(
                           color: AppColors.success,
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.sm),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: const Icon(
                           Icons.check,
@@ -154,21 +152,12 @@ class ReceiptScreen extends ConsumerWidget {
                   'El servidor autorizado confirmó la recepción de la señal. '
                   'Este comprobante no garantiza atención ni reemplaza los '
                   'canales oficiales de emergencia.',
-                  style: AppTypography.body
-                      .copyWith(color: context.tokens.muted),
+                  style:
+                      AppTypography.body.copyWith(color: context.tokens.muted),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 VacaButton(
-                  label: 'Compartir comprobante',
-                  icon: Icons.share_outlined,
-                  onPressed: () => SharePlus.instance.share(
-                    ShareParams(text: receiptShareText(receipt)),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                VacaButton(
                   label: 'Ver señal y actualizar',
-                  variant: VacaButtonVariant.secondary,
                   onPressed: () => _openIncident(context, ref),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -220,8 +209,7 @@ class _ReceiptRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppTypography.body
-                .copyWith(color: context.tokens.muted),
+            style: AppTypography.body.copyWith(color: context.tokens.muted),
           ),
           const SizedBox(width: AppSpacing.sm),
           Flexible(
@@ -252,8 +240,7 @@ class _ReceiptField extends StatelessWidget {
       children: [
         Text(
           label.toUpperCase(),
-          style: AppTypography.caption
-              .copyWith(color: context.tokens.muted),
+          style: AppTypography.caption.copyWith(color: context.tokens.muted),
         ),
         const SizedBox(height: AppSpacing.xxs),
         SelectableText(value, style: AppTypography.dataSm),

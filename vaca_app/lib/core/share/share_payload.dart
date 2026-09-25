@@ -1,33 +1,6 @@
 import '../../data/local/database.dart';
 import '../format/vaca_format.dart';
 
-/// Texto auditable de un recibo firmado.
-///
-/// El recibo es una prueba verificable de recepción: compartirlo permite que
-/// un tercero (donante, aseguradora, respondedor) valide la entrega sin
-/// necesitar la app. Incluye todos los campos que atan la firma al evento.
-String receiptShareText(ServerReceipt receipt) {
-  final buffer = StringBuffer()
-    ..writeln('VACA — Comprobante de recepción verificada')
-    ..writeln('ID de señal: ${receipt.messageId}')
-    ..writeln('ID de recibo: ${receipt.receiptId}')
-    ..writeln('Recibido en: ${vacaTimestamp(receipt.serverReceivedAt)}')
-    ..writeln('Clave del servidor: ${receipt.serverKeyId}')
-    ..writeln('Hash del payload: ${receipt.payloadHash}')
-    ..writeln('Firma: ${receipt.signature}');
-  if (receipt.verifiedAt != null) {
-    buffer.writeln('Verificada en: ${vacaTimestamp(receipt.verifiedAt!)}');
-  }
-  buffer
-    ..writeln()
-    ..writeln(
-      'Este comprobante confirma recepción técnica por el servidor '
-      'autorizado. No garantiza atención ni reemplaza los canales '
-      'oficiales de emergencia.',
-    );
-  return buffer.toString();
-}
-
 /// Resumen compartible de una señal con su estado de entrega.
 String signalShareText({
   required String incidentId,

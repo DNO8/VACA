@@ -27,6 +27,9 @@ class VacaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final secondaryColor = Theme.of(context).brightness == Brightness.dark
+        ? AppColors.celadon300
+        : AppColors.celadon700;
     final child = loading
         ? const SizedBox(
             height: 20,
@@ -45,8 +48,8 @@ class VacaButton extends StatelessWidget {
       VacaButtonVariant.secondary => OutlinedButton(
           onPressed: effectiveOnPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.celadon700,
-            side: const BorderSide(color: AppColors.celadon700, width: 1.5),
+            foregroundColor: secondaryColor,
+            side: BorderSide(color: secondaryColor, width: 1.5),
             minimumSize: const Size.fromHeight(52),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -69,7 +72,7 @@ class VacaButton extends StatelessWidget {
       VacaButtonVariant.text => TextButton(
           onPressed: effectiveOnPressed,
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.celadon700,
+            foregroundColor: secondaryColor,
             minimumSize: const Size.fromHeight(48),
           ),
           child: child,

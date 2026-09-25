@@ -650,61 +650,90 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-          child: Container(
-            height: 320,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.ink.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: AppColors.celadon300.withValues(alpha: 0.15),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: photo != null
-                ? Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.file(File(photo.localPath), fit: BoxFit.cover),
-                      Positioned(
-                        left: AppSpacing.sm,
-                        bottom: AppSpacing.sm,
-                        child: _MapChip(
-                          dot: AppColors.success,
-                          text: 'hash ${photo.sha256.substring(0, 12)}…',
-                        ),
-                      ),
-                    ],
-                  )
-                : const Stack(
-                    children: [
-                      _ViewfinderCorner(Alignment.topLeft),
-                      _ViewfinderCorner(Alignment.topRight),
-                      _ViewfinderCorner(Alignment.bottomLeft),
-                      _ViewfinderCorner(Alignment.bottomRight),
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+          child: Semantics(
+            button: true,
+            label: photo == null ? 'Tomar foto' : 'Reemplazar foto',
+            child: SizedBox(
+              height: 320,
+              width: double.infinity,
+              child: Material(
+                color: AppColors.ink.withValues(alpha: 0.7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  side: BorderSide(
+                    color: AppColors.celadon300.withValues(alpha: 0.35),
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  key: const ValueKey('incident-photo-frame'),
+                  onTap: _capturePhoto,
+                  child: photo != null
+                      ? Stack(
+                          fit: StackFit.expand,
                           children: [
-                            Icon(
-                              Icons.photo_camera_outlined,
-                              size: 48,
-                              color: Color(0x66B8D9C6),
+                            Image.file(
+                              File(photo.localPath),
+                              fit: BoxFit.cover,
                             ),
-                            SizedBox(height: AppSpacing.sm),
-                            Text(
-                              'Encuadre el área del incidente',
-                              style: TextStyle(
-                                fontFamily: AppTypography.brandFont,
-                                fontSize: 13,
-                                color: Color(0x80B8D9C6),
+                            Positioned(
+                              top: AppSpacing.sm,
+                              right: AppSpacing.sm,
+                              child: Container(
+                                padding: const EdgeInsets.all(AppSpacing.xs),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xB3000000),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.photo_camera_outlined,
+                                  color: AppColors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: AppSpacing.sm,
+                              bottom: AppSpacing.sm,
+                              child: _MapChip(
+                                dot: AppColors.success,
+                                text: 'hash ${photo.sha256.substring(0, 12)}…',
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Stack(
+                          children: [
+                            _ViewfinderCorner(Alignment.topLeft),
+                            _ViewfinderCorner(Alignment.topRight),
+                            _ViewfinderCorner(Alignment.bottomLeft),
+                            _ViewfinderCorner(Alignment.bottomRight),
+                            Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.photo_camera_outlined,
+                                    size: 48,
+                                    color: Color(0x99B8D9C6),
+                                  ),
+                                  SizedBox(height: AppSpacing.sm),
+                                  Text(
+                                    'Toque para fotografiar el incidente',
+                                    style: TextStyle(
+                                      fontFamily: AppTypography.brandFont,
+                                      fontSize: 13,
+                                      color: Color(0xCCB8D9C6),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
+                ),
+              ),
+            ),
           ),
         ),
         Padding(
@@ -739,13 +768,7 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
           ),
           child: Column(
             children: [
-              VacaButton(
-                label: photo == null ? 'Tomar foto' : 'Reemplazar foto',
-                icon: Icons.photo_camera_outlined,
-                onPressed: _capturePhoto,
-              ),
               if (photo != null) ...[
-                const SizedBox(height: AppSpacing.sm),
                 TextButton(
                   onPressed: () => setState(() => _photo = null),
                   style: TextButton.styleFrom(
@@ -753,15 +776,14 @@ class _CreateIncidentScreenState extends ConsumerState<CreateIncidentScreen> {
                   ),
                   child: const Text('Quitar foto'),
                 ),
+                const SizedBox(height: AppSpacing.xs),
               ],
-              const SizedBox(height: AppSpacing.xs),
               VacaButton(
                 label: _saving
                     ? 'Guardando…'
                     : photo == null
-                        ? 'Omitir · Guardar sin foto'
+                        ? 'Guardar señal sin foto'
                         : 'Guardar señal',
-                variant: VacaButtonVariant.secondary,
                 loading: _saving,
                 onPressed: _saving ? null : _save,
               ),
