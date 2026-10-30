@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "source": {
+    "root": "/mnt/c/Users/Danilo/Desktop/workspace/VACA",
+    "head": "1c60386e4c51a8933303a19424911580cd65d5dd",
+    "branch": "feat/october-d1-custody"
+  },
+  "destination": {
+    "root": "/home/danilo/worktrees/vaca-d1-wsl-baseline",
+    "head": "1c60386e4c51a8933303a19424911580cd65d5dd",
+    "branch": "feat/october-d1-wsl-baseline"
+  },
+  "copy_policy": "Exact allowlist; regular files only; byte-preserving; no historical portability reconstruction.",
+  "copied_file_count": 17,
+  "files": [
+    {
+      "path": "supabase/.gitignore",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/.gitignore",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.gitignore",
+      "bytes": 425,
+      "lines": 22,
+      "source_sha256_before": "d3c1c3816630d148441511aa02ba91bcb281b482070451bf71292fb71a562753",
+      "source_sha256_after": "d3c1c3816630d148441511aa02ba91bcb281b482070451bf71292fb71a562753",
+      "destination_sha256": "d3c1c3816630d148441511aa02ba91bcb281b482070451bf71292fb71a562753"
+    },
+    {
+      "path": "supabase/README.md",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/README.md",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/README.md",
+      "bytes": 12094,
+      "lines": 116,
+      "source_sha256_before": "47904c0e934eaef6a61c37a7f03b92657f1da0040fda7308e5f91199c5647a23",
+      "source_sha256_after": "47904c0e934eaef6a61c37a7f03b92657f1da0040fda7308e5f91199c5647a23",
+      "destination_sha256": "47904c0e934eaef6a61c37a7f03b92657f1da0040fda7308e5f91199c5647a23"
+    },
+    {
+      "path": "supabase/deno.json",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/deno.json",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/deno.json",
+      "bytes": 491,
+      "lines": 19,
+      "source_sha256_before": "fd471ccde66bdd3ed89a7005e8c815392717451ed94b180d4417ff64352d29ad",
+      "source_sha256_after": "fd471ccde66bdd3ed89a7005e8c815392717451ed94b180d4417ff64352d29ad",
+      "destination_sha256": "fd471ccde66bdd3ed89a7005e8c815392717451ed94b180d4417ff64352d29ad"
+    },
+    {
+      "path": "supabase/deno.lock",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/deno.lock",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/deno.lock",
+      "bytes": 15554,
+      "lines": 432,
+      "source_sha256_before": "b051af7a9ef83288c9376188c055146712a8d8284c73715ff8c53ed8acd4452c",
+      "source_sha256_after": "b051af7a9ef83288c9376188c055146712a8d8284c73715ff8c53ed8acd4452c",
+      "destination_sha256": "b051af7a9ef83288c9376188c055146712a8d8284c73715ff8c53ed8acd4452c"
+    },
+    {
+      "path": "supabase/functions/d1-custody/adapters.ts",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/functions/d1-custody/adapters.ts",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/functions/d1-custody/adapters.ts",
+      "bytes": 4519,
+      "lines": 113,
+      "source_sha256_before": "08485b5ca39bf1461c6669bca792caf4a1a995719d6e50196ab83b3962b9e483",
+      "source_sha256_after": "08485b5ca39bf1461c6669bca792caf4a1a995719d6e50196ab83b3962b9e483",
+      "destination_sha256": "08485b5ca39bf1461c6669bca792caf4a1a995719d6e50196ab83b3962b9e483"
+    },
+    {
+      "path": "supabase/functions/d1-custody/handler.ts",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/functions/d1-custody/handler.ts",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/functions/d1-custody/handler.ts",
+      "bytes": 7966,
+      "lines": 227,
+      "source_sha256_before": "fa7f877feda37196a7868454a6bebf4d846b13c30e47e4fbe3e584cb8397679c",
+      "source_sha256_after": "fa7f877feda37196a7868454a6bebf4d846b13c30e47e4fbe3e584cb8397679c",
+      "destination_sha256": "fa7f877feda37196a7868454a6bebf4d846b13c30e47e4fbe3e584cb8397679c"
+    },
+    {
+      "path": "supabase/functions/d1-custody/index.ts",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/functions/d1-custody/index.ts",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/functions/d1-custody/index.ts",
+      "bytes": 1033,
+      "lines": 23,
+      "source_sha256_before": "82ca1196b18e9485ada99bcb376898c7abd193cac1e38e44705de420203502b6",
+      "source_sha256_after": "82ca1196b18e9485ada99bcb376898c7abd193cac1e38e44705de420203502b6",
+      "destination_sha256": "82ca1196b18e9485ada99bcb376898c7abd193cac1e38e44705de420203502b6"
+    },
+    {
+      "path": "supabase/migrations/015_d1_testnet_custody.sql",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/migrations/015_d1_testnet_custody.sql",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/migrations/015_d1_testnet_custody.sql",
+      "bytes": 7312,
+      "lines": 138,
+      "source_sha256_before": "c1e2e39455eb21dbd3cc2c2da7398e75205e5c2fb0df209c9b125910dfad05b7",
+      "source_sha256_after": "c1e2e39455eb21dbd3cc2c2da7398e75205e5c2fb0df209c9b125910dfad05b7",
+      "destination_sha256": "c1e2e39455eb21dbd3cc2c2da7398e75205e5c2fb0df209c9b125910dfad05b7"
+    },
+    {
+      "path": "supabase/tests/unit/handler.test.ts",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/tests/unit/handler.test.ts",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/tests/unit/handler.test.ts",
+      "bytes": 1364,
+      "lines": 33,
+      "source_sha256_before": "052991d04501e34e7c73262ee239f86c2746231266d46dcaf8378a1d3cc2c681",
+      "source_sha256_after": "052991d04501e34e7c73262ee239f86c2746231266d46dcaf8378a1d3cc2c681",
+      "destination_sha256": "052991d04501e34e7c73262ee239f86c2746231266d46dcaf8378a1d3cc2c681"
+    },
+    {
+      "path": "supabase/tests/unit/prepare.test.ts",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/tests/unit/prepare.test.ts",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/tests/unit/prepare.test.ts",
+      "bytes": 14589,
+      "lines": 459,
+      "source_sha256_before": "76780137c5b3a1c7524ada0081d3ff8776bc0abbbdabab189ef1c70e40f70b13",
+      "source_sha256_after": "76780137c5b3a1c7524ada0081d3ff8776bc0abbbdabab189ef1c70e40f70b13",
+      "destination_sha256": "76780137c5b3a1c7524ada0081d3ff8776bc0abbbdabab189ef1c70e40f70b13"
+    },
+    {
+      "path": "supabase/tests/integration/preparation.test.cjs",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/tests/integration/preparation.test.cjs",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/tests/integration/preparation.test.cjs",
+      "bytes": 11152,
+      "lines": 307,
+      "source_sha256_before": "8a19110be29f71b97eb13aad0a782e6e91f8d38dba64be0243dcb66d19fda86a",
+      "source_sha256_after": "8a19110be29f71b97eb13aad0a782e6e91f8d38dba64be0243dcb66d19fda86a",
+      "destination_sha256": "8a19110be29f71b97eb13aad0a782e6e91f8d38dba64be0243dcb66d19fda86a"
+    },
+    {
+      "path": "supabase/tests/integration/fixture-runtime.cjs",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/tests/integration/fixture-runtime.cjs",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/tests/integration/fixture-runtime.cjs",
+      "bytes": 1056,
+      "lines": 27,
+      "source_sha256_before": "0841cfc55029b182b7efd5ac1f09ad952f43068ef083f957caa37aa3e4a05b2b",
+      "source_sha256_after": "0841cfc55029b182b7efd5ac1f09ad952f43068ef083f957caa37aa3e4a05b2b",
+      "destination_sha256": "0841cfc55029b182b7efd5ac1f09ad952f43068ef083f957caa37aa3e4a05b2b"
+    },
+    {
+      "path": "supabase/tests/integration/fixture-runtime.test.cjs",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/tests/integration/fixture-runtime.test.cjs",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/tests/integration/fixture-runtime.test.cjs",
+      "bytes": 2402,
+      "lines": 47,
+      "source_sha256_before": "5a031017ff23b91b2239b8458afd9963c7ff03248f9765d11a1f87e22fd2fc27",
+      "source_sha256_after": "5a031017ff23b91b2239b8458afd9963c7ff03248f9765d11a1f87e22fd2fc27",
+      "destination_sha256": "5a031017ff23b91b2239b8458afd9963c7ff03248f9765d11a1f87e22fd2fc27"
+    },
+    {
+      "path": "recovery/supabase/2026-10-27/README.md",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/recovery/supabase/2026-10-27/README.md",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/recovery/supabase/2026-10-27/README.md",
+      "bytes": 5391,
+      "lines": 73,
+      "source_sha256_before": "932e6344f0adfa84d8a4a997412e78eedc698454c186ad74e45e7aad890673c8",
+      "source_sha256_after": "932e6344f0adfa84d8a4a997412e78eedc698454c186ad74e45e7aad890673c8",
+      "destination_sha256": "932e6344f0adfa84d8a4a997412e78eedc698454c186ad74e45e7aad890673c8"
+    },
+    {
+      "path": "recovery/supabase/2026-10-27/manifest.json",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/recovery/supabase/2026-10-27/manifest.json",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/recovery/supabase/2026-10-27/manifest.json",
+      "bytes": 3461,
+      "lines": 99,
+      "source_sha256_before": "b15da415e9fe7ce3559290ecc25e01c2250fe71199ccf2e285d6d252f590d895",
+      "source_sha256_after": "b15da415e9fe7ce3559290ecc25e01c2250fe71199ccf2e285d6d252f590d895",
+      "destination_sha256": "b15da415e9fe7ce3559290ecc25e01c2250fe71199ccf2e285d6d252f590d895"
+    },
+    {
+      "path": "recovery/supabase/2026-10-27/retained-migrations.json",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/recovery/supabase/2026-10-27/retained-migrations.json",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/recovery/supabase/2026-10-27/retained-migrations.json",
+      "bytes": 26437,
+      "lines": 33,
+      "source_sha256_before": "950902fa5b7d9c67128c0e618012025d142ba702c8df6bec833cf9cdcb04307d",
+      "source_sha256_after": "950902fa5b7d9c67128c0e618012025d142ba702c8df6bec833cf9cdcb04307d",
+      "destination_sha256": "950902fa5b7d9c67128c0e618012025d142ba702c8df6bec833cf9cdcb04307d"
+    },
+    {
+      "path": "odd/tasks/october-d1-custodied-aid.md",
+      "source_path": "/mnt/c/Users/Danilo/Desktop/workspace/VACA/odd/tasks/october-d1-custodied-aid.md",
+      "destination_path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/odd/tasks/october-d1-custodied-aid.md",
+      "bytes": 44512,
+      "lines": 262,
+      "source_sha256_before": "cc3d4cf9d02dcfa949c0f007d388419026be313f23a0047348561025ce7cb5d0",
+      "source_sha256_after": "cc3d4cf9d02dcfa949c0f007d388419026be313f23a0047348561025ce7cb5d0",
+      "destination_sha256": "cc3d4cf9d02dcfa949c0f007d388419026be313f23a0047348561025ce7cb5d0"
+    }
+  ],
+  "root_gitignore": {
+    "origin": "Clean destination baseline, not the dirty source checkout",
+    "baseline_sha256": "61ee21cc6f419e38cebb486c72c9a4eee7925d92913529f7cc303d11722f9a28",
+    "destination_sha256": "4687b8055218fd67202a88c6f3736666da2f65289ecacdd01c57dee63ec1be90",
+    "removed_rule": "/supabase/",
+    "replacement_comment": "# D1 backend source is allowlisted by supabase/.gitignore."
+  },
+  "verification": {
+    "all_source_before_after_destination_equal": true
+  }
+}
