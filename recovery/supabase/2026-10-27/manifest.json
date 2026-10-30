@@ -1,0 +1,99 @@
+{
+  "schema": "vaca.supabase-recovery-manifest/v1",
+  "captured_on": "2026-10-27",
+  "project_ref": "tgqxxnldwiqisopiclmk",
+  "snapshot": "retained-migrations.json",
+  "statement_hash_encoding": "SHA256 of UTF-8 JSON.stringify(statements), without whitespace or newline normalization inside strings",
+  "body_hash_encoding": "SHA256 of original UTF-8 prosrc, without trimming or newline normalization",
+  "retained_history": [
+    {
+      "version": "013",
+      "name": "claimable_balances",
+      "statement_count": 5,
+      "statement_bytes": 6356,
+      "json_bytes": 6664,
+      "statements_sha256": "54bdfc2ec2c87864de322766d39b17b27a9434e8556690e8e375727a04b522cd"
+    },
+    {
+      "version": "014",
+      "name": "release_requests",
+      "statement_count": 1,
+      "statement_bytes": 9124,
+      "json_bytes": 9334,
+      "statements_sha256": "c8c4b09ab8c37c596ae3214f2c12a514cc6bb2d88f5cf72af8a0a479bf41ce40"
+    },
+    {
+      "version": "20261011060218",
+      "name": "donation_allocations",
+      "statement_count": 1,
+      "statement_bytes": 9668,
+      "json_bytes": 9860,
+      "statements_sha256": "2c116d59dd5832b40a1475549a25dc8a7e91e171bc37f92bf97756cd4569e878"
+    }
+  ],
+  "current_routines": [
+    {
+      "name": "allocate_donation_to_release_request",
+      "signature": "allocate_donation_to_release_request(uuid,text,jsonb,text)",
+      "body_bytes": 4993,
+      "body_sha256": "87f69721b3786a4aead35b18592bf16d4b75168cd636e3dd36da254cab029034",
+      "security_definer": true,
+      "volatility": "v",
+      "service_role_execute": true
+    },
+    {
+      "name": "donation_payment_content",
+      "signature": "donation_payment_content(jsonb)",
+      "body_bytes": 1903,
+      "body_sha256": "d9842b398d91aac02f1cf47952b0139d46dc81a00e34feddb70cb613ab00744e",
+      "security_definer": false,
+      "volatility": "i",
+      "service_role_execute": false
+    },
+    {
+      "name": "release_request_content",
+      "signature": "release_request_content(jsonb)",
+      "body_bytes": 3517,
+      "body_sha256": "1e352400d9eb4009cd9c79a4c3b9f2c7b22e509837bf947704042cffe1e595f3",
+      "security_definer": false,
+      "volatility": "i",
+      "service_role_execute": false
+    },
+    {
+      "name": "release_request_valid_key",
+      "signature": "release_request_valid_key(text)",
+      "body_bytes": 1164,
+      "body_sha256": "11de9919c41db8594b0a49a0b693bd65b31c6cf2db06809316b11bb8f1c28304",
+      "security_definer": false,
+      "volatility": "i",
+      "service_role_execute": false
+    },
+    {
+      "name": "reserve_release_request",
+      "signature": "reserve_release_request(uuid,text,jsonb)",
+      "body_bytes": 2389,
+      "body_sha256": "a17698a4bcc1ea8632e071ce65074d3ea684a2502c2cabc6e856dbd0da7ffc4a",
+      "security_definer": true,
+      "volatility": "v",
+      "service_role_execute": true
+    }
+  ],
+  "current_routine_common_flags": {
+    "owner": "postgres",
+    "search_path": "",
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "retained_body_comparison": "exact_match_for_all_five"
+  },
+  "boundaries": {
+    "history_read_on": "2026-10-27",
+    "routine_body_read_on": "2026-10-27",
+    "other_accounting_metadata_read_on": "2026-10-25",
+    "complete_bootstrap": false,
+    "original_git_history_recovered": false,
+    "original_local_migration_files_recovered": false,
+    "sql_executed_locally": false,
+    "remote_mutations_performed": false,
+    "d1_complete": false
+  }
+}
