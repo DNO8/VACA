@@ -1,6 +1,6 @@
 # D1 local preparation foundation — incomplete lifecycle
 
-This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation and an unwired unsigned issuance planner only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
+This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation, private request-intent registration and an unwired unsigned issuance planner only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
 
 ## What works locally
 
@@ -92,6 +92,46 @@ handler. Pool recovery is **not a refund to the donor**: the original donor mapp
 remains in preparation for a future controlled refund path. Historical funds remain
 out of scope; do not fund this incomplete foundation.
 
+## Private issuance-request intent (not signing authority)
+
+`016_d1_issuance_intents.sql` adds
+`d1_register_issuance_intent(p_request_id UUID, p_authorized_by TEXT)`.
+Only `service_role` can execute this trusted backend RPC. It does **not** verify
+wallet signatures: a supplied admin public key is not public-wallet authentication.
+There is no HTTP route or adapter for this RPC yet.
+
+The request UUID must already identify a persisted D1 preparation. Unknown,
+historical and non-D1 reservations all fail with `d1_preparation_not_found`;
+none can be adopted. Null IDs or invalid admin keys fail with `invalid_issuance_intent`.
+Current admin membership is checked under a share lock on every invocation,
+including replay; removal produces `unauthorized_admin_wallet`. Locks follow
+015's admin → pool → preparation/intent order, deriving the namespace/pool from
+stored preparation, not caller assertions.
+
+The immutable receipt has `kind: "d1_issuance_request_intent"`, `revision: 1`,
+`request_id`, `namespace`, `network: "TESTNET"`, `pool`, `preparation_input`
+(the persisted verified input) and `preparation` (the saved allocation receipt).
+Testnet is the existing 015 invariant, not a network argument. Destination,
+issuer/asset, amount, donor, payment confirmation, ledger, memo binding and deadline
+come exclusively from persisted preparation. No arbitrary payload, second UUID,
+fee, sequence or XDR argument exists. No new reservation, allocation, capacity
+counter or fund movement occurs. The private RLS table has no direct API-role
+access, including service-role reads or mutations; only this empty-search-path
+SECURITY DEFINER registration RPC exposes its receipt.
+
+First registration requires database time strictly before the immutable deadline;
+otherwise it fails with `deadline_expired`. Concurrent calls create exactly one
+row and return identical receipts. Exact existing replay remains readable after
+expiry, but is evidence only, **never authority to sign**. There is no mutable
+state machine, source-sequence ownership, envelope storage or ledger-idempotency
+claim. Request-intent registration is a prerequisite for future planning/signing
+integration, but is **not yet connected** to the planner or handler.
+
+The team must cover Testnet fees and claimable-balance reserves from a separately
+funded operational balance, without reducing donations/refunds or consuming
+excluded historical funds. This slice configures no account, key, funding or
+ledger checks; it does not prove that the operational balance exists.
+
 ## Database boundary
 
 `015_d1_testnet_custody.sql` adds private activation/preparation overlay tables and service-role-only SECURITY DEFINER RPCs with empty search paths. It does not change the recovered functions/tables, backfill historical rows, release capacity on expiry, or invent new accounting counters.
@@ -118,14 +158,14 @@ For the separately prepared WSL/Linux toolchain (Deno 2.6.8/PostgreSQL 17.7), ru
 
 ```bash
 node --test supabase/tests/integration/fixture-runtime.test.cjs
-node /home/danilo/.local/share/vaca-d1-toolchain/verify.cjs app-check
-node /home/danilo/.local/share/vaca-d1-toolchain/run-isolated.cjs deno test --config /mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/deno.json --allow-env /mnt/c/Users/Danilo/Desktop/workspace/VACA/supabase/tests/unit
+node /home/danilo/.local/share/vaca-d1-toolchain/run-isolated.cjs deno check --config "$PWD/supabase/deno.json" "$PWD"/supabase/functions/d1-custody/*.ts "$PWD"/supabase/tests/unit/*.ts
+node /home/danilo/.local/share/vaca-d1-toolchain/run-isolated.cjs deno test --config "$PWD/supabase/deno.json" --allow-env "$PWD/supabase/tests/unit"
 D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node --test supabase/tests/integration/preparation.test.cjs
 ```
 
 Linux requires an explicit absolute `D1_TOOL_ROOT`; missing/relative values fail before any fixture is created with `Linux fixtures require an absolute D1_TOOL_ROOT.` Temporary fixtures use `TMPDIR` when set, otherwise `os.tmpdir()`; keep that directory outside the worktree. No ambient environment is forwarded to the Linux launcher. It supplies isolated credential/config paths, PostgreSQL shared libraries, and fixed `PGHOST=127.0.0.1`/`PGDATABASE=postgres`, so Linux psql calls omit the host/database overrides rejected by that launcher. Ports remain unique and explicit. The harness stops and verifies its cluster before removing its Linux fixture; the Linux launcher removes its own per-command scratch. This is environment isolation and loopback-only testing, not an OS network sandbox. No automatic retries, provisioning or live testnet checks are part of these commands. Windows defaults are covered structurally by resolver tests; that is not evidence of an actual Windows integration run.
 
-The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015 locally, and probes the public RPCs. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
+The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent call; it grants no production table access. Intent tests assert exact terse psql stderr, stdout and exit status, deadline/replay behavior, concurrent single creation and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
 
 On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\Local\Temp\opencode`, never the worktree. Every harness run prints exact `FIXTURE`/`LAUNCHER_SCRATCH` paths for parent cleanup, stops its owned PostgreSQL in `finally`, and verifies stopped status `3`. The Windows harness does not delete scratch. PostgreSQL's Windows EDB archive still lacks an independently verified publisher checksum; the local hash is not publisher attestation. Engram mirroring remains pending.
 

@@ -39,6 +39,7 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
   const fixture = fs.mkdtempSync(path.join(temp, "vaca-d1-pg-"));
   console.log("FIXTURE=" + fixture);
   const data = path.join(fixture, "data");
+  let serverPid;
   const port = await freePort();
   const args = [
     "-X",
@@ -118,6 +119,7 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
       "30",
       "start",
     ]);
+    serverPid = Number(fs.readFileSync(path.join(data, "postmaster.pid"), "utf8").split(/\r?\n/)[0]);
     apply(
       "fixture.sql",
       `create role anon; create role authenticated; create role service_role;
@@ -281,6 +283,112 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
       "set role service_role; select * from public.d1_preparations;",
     ], 1);
     assert.equal(deniedTable, "SET");
+    // 016 is optional here so test-first runs reach the public RPC, not a missing-file check.
+    const intentsMigration = path.join(repo, "supabase/migrations/016_d1_issuance_intents.sql");
+    if (fs.existsSync(intentsMigration)) apply("016.sql", fs.readFileSync(intentsMigration, "utf8"));
+    // Test-only public observation RPC: no production table grants are weakened.
+    apply("observe.sql", `
+      create function public.fixture_snapshot() returns jsonb language plpgsql
+      security definer set search_path = '' as $$
+      declare result jsonb; intents jsonb := '[]'::jsonb;
+      begin
+        if pg_catalog.to_regclass('public.d1_issuance_intents') is not null then
+          execute 'select coalesce(jsonb_agg(to_jsonb(t) order by request_id), ''[]''::jsonb)
+                   from public.d1_issuance_intents t' into intents;
+        end if;
+        select pg_catalog.jsonb_build_object(
+          'reservations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.release_requests t),
+          'payments', (select jsonb_agg(to_jsonb(t) order by transaction_hash, operation_id) from public.donation_payments t),
+          'allocations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.donation_allocations t),
+          'preparations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.d1_preparations t),
+          'pools', (select jsonb_agg(to_jsonb(t) order by namespace) from public.d1_pools t),
+          'admins', (select jsonb_agg(to_jsonb(t) order by public_key) from public.admin_wallets t),
+          'intents', intents) into result;
+        return result;
+      end; $$;
+      revoke all on function public.fixture_snapshot() from public;
+      grant execute on function public.fixture_snapshot() to service_role;`);
+    const snapshot = () => JSON.parse(sql("select public.fixture_snapshot();"));
+    const register = (n, admin = key) =>
+      `select public.d1_register_issuance_intent('${id(n)}','${admin}');`;
+    function intentRejected(source, message, role = "service_role") {
+      const before = digest(snapshot());
+      const r = spawnSync(process.execPath, [launcher, "psql", ...args,
+        "--set", "VERBOSITY=terse", "-c", `set role ${role}; ` + source],
+      { env, encoding: "utf8", timeout: 150000 });
+      record(r.stderr || "");
+      assert.equal(r.status, 1);
+      assert.equal(r.stdout, "SET\n");
+      assert.equal(r.stderr, `ERROR:  ${message}\n`);
+      assert.equal(digest(snapshot()), before, "Rejected RPC preserves every row and capacity counter");
+    }
+    // Behavioral RED without 016: this call must return a receipt, not undefined_function.
+    const economicBefore = snapshot();
+    const intent = JSON.parse(sql(register(1)));
+    assert.deepEqual(intent, {
+      kind: "d1_issuance_request_intent", revision: 1, request_id: id(1),
+      namespace: id(100), network: "TESTNET", pool: key,
+      preparation_input: input, preparation: receipt,
+    });
+    const economicAfter = snapshot();
+    assert.equal(economicAfter.intents.length, 1);
+    assert.deepEqual(economicAfter.intents[0], { request_id: id(1), receipt: intent });
+    delete economicBefore.intents;
+    delete economicAfter.intents;
+    assert.deepEqual(economicAfter, economicBefore, "Registration never allocates or changes capacity");
+    assert.deepEqual(JSON.parse(sql(register(1))), intent);
+    intentRejected(register(500), "d1_preparation_not_found");
+    intentRejected(register(99), "d1_preparation_not_found");
+    // A non-D1 reservation in the new pool is not adoptable either.
+    sql(`select public.reserve_release_request('${id(98)}','${key}',${lit(request)});`);
+    intentRejected(register(98), "d1_preparation_not_found");
+    intentRejected(register(1, oldPool), "unauthorized_admin_wallet");
+    intentRejected("select public.d1_register_issuance_intent(null,null);", "invalid_issuance_intent");
+    sql(`delete from public.admin_wallets where public_key = '${key}';`, false);
+    intentRejected(register(1), "unauthorized_admin_wallet");
+    sql(`insert into public.admin_wallets values ('${key}');`, false);
+    // Two requests share a short immutable cutoff; only one registers before it.
+    const shortConfirmed = Number(sql("select floor(extract(epoch from clock_timestamp()))::bigint - 295;"));
+    const shortDeadline = new Date((shortConfirmed + 300) * 1000).toISOString().replace(".000Z", "Z");
+    for (const n of [20, 21]) {
+      prepare({ ...input, request_id: id(n), confirmed_at: shortConfirmed,
+        payment: { ...payment, operation_id: String(200 + n) },
+        request: { ...request, deadline: shortDeadline } });
+    }
+    const shortIntent = JSON.parse(sql(register(20)));
+    sql(`select pg_sleep(greatest(0, extract(epoch from '${shortDeadline}'::timestamptz - clock_timestamp())));`);
+    intentRejected(register(21), "deadline_expired");
+    const expiredBefore = digest(snapshot());
+    assert.deepEqual(JSON.parse(sql(register(20))), shortIntent, "Expired replay is immutable evidence only");
+    assert.equal(digest(snapshot()), expiredBefore);
+    const concurrentBefore = snapshot();
+    const intentRace = await Promise.all([1, 2].map(() => concurrent(register(12))));
+    assert.deepEqual(intentRace.map((r) => r.code), [0, 0]);
+    assert.deepEqual(intentRace.map((r) => r.stderr), ["", ""]);
+    assert.equal(intentRace[0].stdout, intentRace[1].stdout, "Concurrent receipts are byte-identical");
+    const concurrentAfter = snapshot();
+    assert.equal(concurrentAfter.intents.length, concurrentBefore.intents.length + 1);
+    assert.equal(concurrentAfter.intents.filter((r) => r.request_id === id(12)).length, 1);
+    delete concurrentBefore.intents;
+    delete concurrentAfter.intents;
+    assert.deepEqual(concurrentAfter, concurrentBefore);
+    // No API role can read or mutate intents directly, even service_role.
+    for (const role of ["anon", "authenticated", "service_role"]) {
+      if (role !== "service_role") intentRejected(register(1), "permission denied for function d1_register_issuance_intent", role);
+      for (const statement of [
+        "select * from public.d1_issuance_intents;",
+        `insert into public.d1_issuance_intents values ('${id(501)}','{}');`,
+        "update public.d1_issuance_intents set receipt = '{}';",
+        "delete from public.d1_issuance_intents;",
+        "truncate public.d1_issuance_intents;",
+      ]) intentRejected(statement, "permission denied for table d1_issuance_intents", role);
+    }
+    // Catalog observations supplement the public behavior checks above.
+    assert.equal(sql(`select relrowsecurity from pg_class where oid = 'public.d1_issuance_intents'::regclass;`), "t");
+    assert.equal(sql(`select prosecdef and proconfig = array['search_path=""']
+      from pg_proc where oid = 'public.d1_register_issuance_intent(uuid,text)'::regprocedure;`), "t");
+    assert.deepEqual(JSON.parse(prepare(input)), receipt, "Preparation remains unchanged after intent registration");
+    console.log("INTENT_CASES=missing,history,admin-replay,expiry,replay,immutable,concurrency,capacity,grants");
     assert.equal(
       sql(
         `select public.allocate_donation_to_release_request('${id(99)}','${key}',${
@@ -300,6 +408,10 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
     console.log("LAUNCHER_SCRATCH=" + JSON.stringify([...scratch]));
     if (process.platform === "linux") {
       assert.ok(!fs.existsSync(path.join(data, "postmaster.pid")), "Owned server must be stopped");
+      if (serverPid) {
+        assert.throws(() => process.kill(serverPid, 0), { code: "ESRCH" }, "Owned server PID must be gone");
+        console.log("PG_PID_GONE=true; PID=" + serverPid);
+      }
       fs.rmSync(fixture, { recursive: true });
       console.log("FIXTURE_REMOVED=true; FIXTURE=" + fixture);
     }
