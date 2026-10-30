@@ -12,7 +12,7 @@
 /font/
 /Markdowns/
 /shipaton/
-/supabase/
+# D1 backend source is allowlisted by supabase/.gitignore.
 /VACA - documentación/
 
 # Tooling local de agentes

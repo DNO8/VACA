@@ -1,0 +1,22 @@
+# Keep backend files local unless they belong to the approved D1 source surface.
+*
+!/.gitignore
+!/README.md
+!/deno.json
+!/deno.lock
+!/functions/
+!/functions/d1-custody/
+!/functions/d1-custody/*.ts
+!/migrations/
+!/migrations/*_d1_*.sql
+!/tests/
+!/tests/unit/
+!/tests/unit/*.ts
+!/tests/integration/
+!/tests/integration/*.cjs
+
+# These stay private even inside otherwise allowlisted directories.
+.env
+.env.*
+node_modules/
+.temp/

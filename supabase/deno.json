@@ -1,0 +1,19 @@
+{
+  "imports": {
+    "@stellar/stellar-sdk": "npm:@stellar/stellar-sdk@13.3.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.115.0"
+  },
+  "nodeModulesDir": "none",
+  "lock": {
+    "path": "./deno.lock",
+    "frozen": true
+  },
+  "tasks": {
+    "test:unit": "deno test --cached-only --allow-env --deny-net tests/unit",
+    "check": "deno check --no-remote --deny-import functions/d1-custody/*.ts tests/unit/*.ts"
+  },
+  "fmt": {
+    "lineWidth": 100,
+    "indentWidth": 2
+  }
+}
