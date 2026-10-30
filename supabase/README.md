@@ -1,6 +1,6 @@
 # D1 local preparation foundation — incomplete lifecycle
 
-This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
+This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation and an unwired unsigned issuance planner only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
 
 ## What works locally
 
@@ -66,6 +66,32 @@ Errors are JSON `{ "error": "<code>" }`, with no raw exception diagnostics:
 
 SQL `40001` is propagated as `503 serialization_failure`, never retried internally. Horizon 404, timeout and unavailable outcomes are not evidence that money can be paid again. Errors and receipts do not prove ledger issuance.
 
+## Pure unsigned issuance planner (not an endpoint)
+
+`functions/d1-custody/issuance-plan.ts` exports `planIssuance(prepared, context)`.
+The caller must supply the existing immutable `Preparation` loaded after successful
+persistence, not untrusted HTTP input; the planner does not authenticate or load a receipt.
+`context` contains the exact SDK Testnet `networkPassphrase`, configured public `pool`,
+current decimal-string `sequence`, decimal-string stroop `fee` (100–4294967295), and
+explicit whole Unix-second `now`. There are no secret keys, environment reads, clock
+reads, network calls, signing, broadcasting, or new HTTP commands.
+
+It returns only `{ unsignedXdr }`: one `createClaimableBalance` operation for the
+prepared allocation, with the beneficiary eligible strictly before the immutable
+payment-confirmation-plus-300-second deadline, and the pool eligible not-before that
+same deadline. Native and already-supported issued assets retain their verified identity;
+amounts are checked using integer stroops, never rounded. Transaction time bounds are
+`[now, deadline - 1]` in seconds, so creation at the claim cutoff is forbidden. At or
+after the deadline it throws `issuance_window_exhausted`; unsupported shapes/bindings
+throw `invalid_issuance_plan`. Inputs are not mutated; no fee, reserve, trustline or
+ledger-success claim is made by producing XDR.
+
+This is **not a durable issuance intent or idempotent submission**. It neither reserves
+a source sequence nor reconciles outcomes, and is deliberately not wired into the
+handler. Pool recovery is **not a refund to the donor**: the original donor mapping
+remains in preparation for a future controlled refund path. Historical funds remain
+out of scope; do not fund this incomplete foundation.
+
 ## Database boundary
 
 `015_d1_testnet_custody.sql` adds private activation/preparation overlay tables and service-role-only SECURITY DEFINER RPCs with empty search paths. It does not change the recovered functions/tables, backfill historical rows, release capacity on expiry, or invent new accounting counters.
@@ -108,7 +134,7 @@ On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\
 The following are **not implemented or proven** here:
 
 - Bounded paginated discovery and durable cursors for every new-pool donation, including donations with missing/wrong incident memos and donations never browser-notified.
-- Claimable-balance issuance with complementary beneficiary-before/pool-not-before predicates at the payment-based deadline and transaction bounds strictly before expiry.
+- Integrating the pure unsigned planner into authorized issuance, with persisted preparation loading, ledger fee/reserve/trustline checks and verified ledger outcomes. The planner alone does not issue a claimable balance.
 - Durable exact signed-envelope/hash intents before broadcast, cross-request source-sequence serialization and definitive outcome reconciliation after timeout or persistence failure.
 - Authenticated admin sweep, atomic claim+original-donor payment for eligible issued balances, unissued remainder refunds and durable issued/unissued accounting. There is no refund fallback or generic signing endpoint.
 - Integration guards preventing legacy service-role accounting callers from registering/allocating new D1 pool payments outside this overlay. Existing contracts are deliberately unchanged, so their direct use cannot be treated as D1 proof.
