@@ -31,6 +31,13 @@ Applicable checks: observed RED → GREEN → REFACTOR through the relevant publ
 User request: "debo grabar hoy mismo".
 The recording must distinguish implemented code, locally observed checks, deployed behavior and public creation/refund transactions. Do not claim completion from unexecuted tests or documentation assertions. Obtain explicit destination, operation and credential/session authorization before deployment or remote ledger mutations; never place secrets in chat or tracked files.
 
+### S4 — Testnet operating fees and reserves
+
+User, verbatim:
+> si, confirmo esa politica para testnet
+
+Accepted policy: the team funds Stellar transaction fees and claimable-balance reserves from a separate operational balance, without reducing donations, beneficiary allocations or original-donor refunds and without consuming excluded historical funds. Testnet only. No concrete account, key, transfer, deployment or production default is authorized by this policy.
+
 ## Tasks
 
 - [x] T1 — S1 — Route: inline Git preparation, then delegated read-only mapping because integration understanding exceeded the inline evidence budget. Current baselines and clean feature trees observed; commit: none, repository preparation only.
@@ -278,3 +285,9 @@ Native assessment remains unassessable because it requests an untracked declarat
 Work-unit commit8eecba7b3f92ea2713a8770dd2dc515b3a1a3ba5 (304 changed lines) adds an unwired unsigned Testnet claimable-balance planner using existing Preparation/VerifiedPayment types. It enforces exact allocated asset/amount, immutable confirmed-at+300 deadline, complementary beneficiary-before/pool-not-before predicates and maxTime deadline-1. No HTTP/signing/broadcast or storage added; pool recovery is not an original-donor refund.
 Writer observed behavioral RED6fail then focused6/full15/typecheckpass. Independent verifier mvvcxaj5-a-xzgo accepted exact73ab8f3..8eecba7 range: focused6/full15/base9/typecheck and2 adversarial probes passed; no blockers/advisories. Parent focused6 passed. No SQL/shared implementation changed; PostgreSQL not rerun for this unit. Runtime native assessment now succeeds with no untracked source: native medium, item2 escalation high requiring independent verifier, reviewDuefalse under_budget. No review START or receipt needed/claimed.
 Slices: initial oversized import accepted separately;8eecba7 is the next bounded304-line security unit. Full S2 remains partial. Before connecting durable signing/submission, clarify operational fees/reserves funding so donation/beneficiary/refund amounts and historical-fund exclusions are not silently changed. Recommend a separately funded operational balance; no account, credential, transfer or production policy inferred.
+
+### L36 — Testnet policy confirmed and request intents verified, 2026-10-30
+
+User confirmed the policy recorded in S4. Request-intent work-unit7089bc785b1156d388bf788e8b0d9cec93aed1b7 adds private016 RPC/table,221changedlines with tests/docs. It derives bindings only from savedD1preparation/allocation, checks currentadmin evenreplay, firstcreationDBdeadline and immutableexpiredreceipt replay. No fee deduction, sequence, envelope, signer, broadcast or refund implemented.
+Writer observed realRPCmissingfunction RED thenGREEN; verifier mvvmcoqw-d-3srg accepted immutable22bcbf5..7089bc7 with combinedrealPGfixture,15offlineunit,typecheck and independentauthorization/concurrency/lockwait/searchpath/stateinvariance probes. Parentjob-3 repeated realPGfixture:exit0 in14s,serverstoppedPIDgonefixturegone. Native assessment medium,securityescalationhigh requiring verifier(done),reviewDuefalse. Initial parentbaseid error corrected using actualGitHEAD^; not an applicationfailure. No nativeSTART/authority/receipt.
+Next bounded unit is durable exclusive pool sequence ownership, preserving currentadmin and immutableintent bindings and refusing automaticrelease/reuse onunknownoutcomes. This is not yet signing, submission or funding-proof readiness. FullS2 and publicledgerproof remain incomplete.
