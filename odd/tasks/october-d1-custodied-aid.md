@@ -45,6 +45,13 @@ User, verbatim:
 
 Continue bounded local backend integration under S2/S4. No secret loading, deployment, live ledger operations or publishing inferred; unsigned dependency-injected orchestration does not prove account state, operational funding or durable ledger execution.
 
+### S6 — Durable unsigned transaction block
+
+User, verbatim:
+> vamos con el siguiente bloque
+
+Continue the stated next step of persisting exact transaction bytes before signing/sending. Scope remains local Testnet unsigned storage, SDK validation and explicit recovery; no signing, deployment or ledger authorization inferred.
+
 ## Tasks
 
 - [x] T1 — S1 — Route: inline Git preparation, then delegated read-only mapping because integration understanding exceeded the inline evidence budget. Current baselines and clean feature trees observed; commit: none, repository preparation only.
@@ -310,3 +317,9 @@ Current bounded local units are verified; completeS2 still lacks durablesigneden
 User resumed integration as S5. Work-unit afe1a91a3750320ed9bf9a323d1c7ba871fbbc47 (410changedlines) connects persisted016intent, trusted account-observation dependency,017sequence reservation and unsignedplanner viaexistingCustodyDatabase. It validates request/Testnet/pool/namespace/nestedreceipt/nextsequence bindings, usespersistedallocation andobservedsequence withoutdoubleincrement, sanitizesfailures and neverreleases/retriesownership. HTTP/index/signing/network remain disconnected.
 Writer observed initialbehaviorRED thenfocused9/full24/typecheckGREEN. Independentverifier mvvocpll-i-bx35 foundonecandidate-causedmalformedRPCmessageblocker: objectmessageescapedrawTypeError,arraymessagecoercedknownerror410. Correction4534560de3fdf21fe17eefd413e388686eee10a7 (64lines) guardsnewissuanceerrornormalization and adds16adapterregressions pluscommittedreservationfailuretest. ActualcorrectionRED21pass5fail→GREEN16adapter+10coordinator/full41/typecheck. Targetedrecheckmvvospnu-k-2j3b passedunchangedoriginalprobe+16+10 andclosedtheblocker, no new sweep. Parent full41+allTS typecheckexit0. Legacy prepare/helpers byte-identical; preexistinglegacycoercionadvisorynotfixedoutsideT9. SQLunchanged, realPGnotrerun for thisunit.
 Nativeassessforinitial410lineunitand64linecorrection returnedmedium,item2escalationhigh requiringverifier(done),reviewDuefalse under_budget. No reviewSTART/authority/receipt. FullS2 remainsincomplete: authenticatedruntime/accountfreshness/consensus andseparateoperationalfundingproof, durableunsigned/signedenvelopes, submission/reconciliation, discovery andoriginal-donorrefunds remain missing. Replanning may changebytes; request/sequence persistence is notanexacttransactionjournal.
+
+### L39 — Private unsigned journal verified, 2026-10-31
+
+S6 firstslice330b2c590ee5c5d9eb5a11b01eac249f2d5508bc(331lines) adds018opaqueimmutableunsignedjournal withcurrentadminlookup/save, storedreservationbindings, afterlockdeadline,exactpostexpiryreplay/conflicts/concurrency/privategrants. Base64/hashshapeonly, NOTStellarsemantic/hashcorrespondenceproof. WriteractualpublicmissingRPCRED→GREEN,combinedPG/41unit/typecheckpassed.
+IndependentverifieroriginalrunfailedsolelyitsSET/RESETstdouthelper; oneauthorizedscratch-onlycorrection reransamePGonce exit0/42.77s includingorderedlocks/statechecks, no productblocker. Parentjob-5originalunmodifiedPGfixtureexit0/32s,JOURNAL_CASES passed,serverstoppedPID81830gonefixturegone. Native medium,concurrencyescalationhigh verifierdone,reviewDuefalse. No realremoteoperations.
+Nextseparateunits: pureSDKunsignedvalidator bound to savedPreparation/reservation/configuration withoutfreshclock, thenload/saveintegrationwithexactreplayandunknownsavefailclosed. No signed-envelope,accountconsensus/operationalfundingproof,submission/reconciliation/refund orcompleteD1 claim.
