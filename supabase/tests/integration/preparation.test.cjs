@@ -289,11 +289,13 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
     if (fs.existsSync(intentsMigration)) apply("016.sql", fs.readFileSync(intentsMigration, "utf8"));
     const sequencesMigration = path.join(repo, "supabase/migrations/017_d1_issuance_sequences.sql");
     if (fs.existsSync(sequencesMigration)) apply("017.sql", fs.readFileSync(sequencesMigration, "utf8"));
+    const journalMigration = path.join(repo, "supabase/migrations/018_d1_unsigned_transactions.sql");
+    if (fs.existsSync(journalMigration)) apply("018.sql", fs.readFileSync(journalMigration, "utf8"));
     // Test-only public observation RPC: no production table grants are weakened.
     apply("observe.sql", `
       create function public.fixture_snapshot() returns jsonb language plpgsql
       security definer set search_path = '' as $$
-      declare result jsonb; intents jsonb := '[]'::jsonb; sequences jsonb := '[]'::jsonb;
+      declare result jsonb; intents jsonb := '[]'::jsonb; sequences jsonb := '[]'::jsonb; journal jsonb := '[]'::jsonb;
       begin
         if pg_catalog.to_regclass('public.d1_issuance_intents') is not null then
           execute 'select coalesce(jsonb_agg(to_jsonb(t) order by request_id), ''[]''::jsonb)
@@ -303,8 +305,12 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
           execute 'select coalesce(jsonb_agg(to_jsonb(t) order by request_id), ''[]''::jsonb)
                    from public.d1_issuance_sequences t' into sequences;
         end if;
+        if pg_catalog.to_regclass('public.d1_unsigned_transactions') is not null then
+          execute 'select coalesce(jsonb_agg(to_jsonb(t) order by request_id), ''[]''::jsonb)
+                   from public.d1_unsigned_transactions t' into journal;
+        end if;
         select pg_catalog.jsonb_build_object(
-          'sequences', sequences,
+          'journal', journal, 'sequences', sequences,
           'reservations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.release_requests t),
           'payments', (select jsonb_agg(to_jsonb(t) order by transaction_hash, operation_id) from public.donation_payments t),
           'allocations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.donation_allocations t),
@@ -506,6 +512,167 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
       from pg_proc where oid = 'public.d1_register_issuance_intent(uuid,text)'::regprocedure;`), "t");
     assert.deepEqual(JSON.parse(prepare(input)), receipt, "Preparation remains unchanged after intent registration");
     console.log("INTENT_CASES=missing,history,admin-replay,expiry,replay,immutable,concurrency,capacity,grants");
+    const load = (n, admin = key) => `select public.d1_load_unsigned_transaction('${id(n)}','${admin}');`;
+    // Fictional opaque bytes, deliberately NOT Stellar XDR or a matching transaction hash.
+    const save = (n, bytes = "YWJj", hash = "b".repeat(64), admin = key) =>
+      `select public.d1_save_unsigned_transaction('${id(n)}','${admin}',${bytes === null ? "null" : "'" + bytes + "'"},${hash === null ? "null" : "'" + hash + "'"});`;
+    const journalBefore = digest(snapshot());
+    // Actual public RPC RED when 018 is absent, not a fixture/file error.
+    assert.deepEqual(JSON.parse(sql(load(2))), {
+      kind: "d1_unsigned_transaction_lookup", revision: 1, request_id: id(2),
+      namespace: id(100), network: "TESTNET", pool: key, reservation: null, transaction: null,
+    });
+    assert.equal(digest(snapshot()), journalBefore, "Lookup cannot create intent or reservation");
+    const owned = JSON.parse(sql(load(20)));
+    assert.deepEqual(owned.reservation, sequenceReceipt);
+    assert.equal(owned.transaction, null);
+    for (const n of [500, 99, 98]) {
+      intentRejected(load(n), "d1_preparation_not_found");
+      intentRejected(save(n), "d1_preparation_not_found");
+    }
+    intentRejected(save(2), "d1_issuance_sequence_not_found");
+    intentRejected(save(20), "deadline_expired");
+    intentRejected(load(20, oldPool), "unauthorized_admin_wallet");
+    intentRejected("select public.d1_load_unsigned_transaction(null,null);", "invalid_unsigned_transaction");
+    intentRejected("select public.d1_save_unsigned_transaction(null,null,null,null);", "invalid_unsigned_transaction");
+    // Each new source has its own permanent 017 owner; never recycle older pools.
+    async function journalRequest(n, seconds = 298) {
+      // Public StrKey fixture encoding only (no keypair/secret or signing).
+      const raw = Buffer.alloc(35);
+      raw[0] = 48;
+      raw[32] = n;
+      let crc = 0;
+      for (const byte of raw.subarray(0, 33)) {
+        crc ^= byte << 8;
+        for (let bit = 0; bit < 8; bit++) crc = ((crc << 1) ^ ((crc & 32768) ? 0x1021 : 0)) & 65535;
+      }
+      raw.writeUInt16LE(crc, 33);
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+      let pool = "", buffer = 0, bits = 0;
+      for (const byte of raw) {
+        buffer = (buffer << 8) | byte;
+        bits += 8;
+        while (bits >= 5) { bits -= 5; pool += alphabet[(buffer >>> bits) & 31]; }
+        buffer &= (1 << bits) - 1;
+      }
+      sql(`select public.d1_activate_pool('${id(n + 1000)}','${pool}',900);`);
+      const now = Number(sql("select floor(extract(epoch from clock_timestamp()))::bigint;"));
+      const confirmed_at = now - (300 - seconds);
+      const deadline = new Date((confirmed_at + 300) * 1000).toISOString().replace(".000Z", "Z");
+      prepare({ ...input, request_id: id(n), confirmed_at,
+        payment: { ...payment, pool, operation_id: String(n) },
+        request: { ...request, deadline } });
+      sql(register(n));
+      const reservation = JSON.parse(sql(reserve(n, "42")));
+      return { pool, deadline, reservation };
+    }
+    const stored = await journalRequest(222);
+    const economicJournalBefore = snapshot();
+    const identical = await Promise.all([1, 2].map(() => concurrent(save(222))));
+    assert.deepEqual(identical.map((r) => r.code), [0, 0], JSON.stringify(identical));
+    assert.deepEqual(identical.map((r) => r.stderr), ["", ""]);
+    assert.equal(identical[0].stdout, identical[1].stdout);
+    for (const result of identical) assert.equal(result.rawStdout, "SET\n" + result.stdout + "\n");
+    const saved = JSON.parse(identical[0].stdout);
+    assert.deepEqual(saved, {
+      kind: "d1_unsigned_transaction_journal", revision: 1, request_id: id(222),
+      namespace: id(1222), network: "TESTNET", pool: stored.pool, deadline: stored.deadline,
+      transaction_sequence: "43", reservation: stored.reservation,
+      unsigned_xdr: "YWJj", transaction_hash: "b".repeat(64),
+    });
+    const economicJournalAfter = snapshot();
+    assert.deepEqual(economicJournalAfter.journal, [{ request_id: id(222), receipt: saved }]);
+    delete economicJournalBefore.journal;
+    delete economicJournalAfter.journal;
+    assert.deepEqual(economicJournalAfter, economicJournalBefore, "Save never allocates or releases");
+    assert.deepEqual(JSON.parse(sql(load(222))).transaction, saved);
+    assert.deepEqual(JSON.parse(sql(load(222))).reservation, stored.reservation);
+    assert.deepEqual(JSON.parse(sql(save(222))), saved);
+    intentRejected(save(222, "YWJk"), "unsigned_transaction_conflict");
+    intentRejected(save(222, "YWJj", "c".repeat(64)), "unsigned_transaction_conflict");
+    for (const bytes of [null, "", "A", "YQ", "YQ=", "YR==", "YWJ=", "YQ===", "YW-J", "YWJj\n", "A".repeat(65540)]) {
+      intentRejected(save(222, bytes), "invalid_unsigned_transaction");
+    }
+    for (const hash of [null, "", "B".repeat(64), "b".repeat(63), "g".repeat(64), "b".repeat(65)]) {
+      intentRejected(save(222, "YWJj", hash), "invalid_unsigned_transaction");
+    }
+    // Current membership, not the original preparing admin, controls both RPCs.
+    sql(`insert into public.admin_wallets values ('${oldPool}');`, false);
+    assert.deepEqual(JSON.parse(sql(save(222, "YWJj", "b".repeat(64), oldPool))), saved);
+    assert.deepEqual(JSON.parse(sql(load(222, oldPool))).transaction, saved);
+    sql(`delete from public.admin_wallets where public_key = '${key}';`, false);
+    for (const n of [222, 20, 500]) intentRejected(load(n), "unauthorized_admin_wallet");
+    intentRejected(save(222), "unauthorized_admin_wallet");
+    sql(`insert into public.admin_wallets values ('${key}');`, false);
+    const boundary = await journalRequest(223);
+    const boundReceipt = JSON.parse(sql(save(223, "A".repeat(65536))));
+    assert.equal(boundReceipt.unsigned_xdr, "A".repeat(65536), "Canonical encoder wrapping is not stored");
+    assert.deepEqual(boundReceipt.reservation, boundary.reservation);
+    await journalRequest(224);
+    const raceBefore = snapshot();
+    const conflict = await Promise.all(["YQ==", "Yg=="].map((bytes) => concurrent(save(224, bytes))));
+    assert.deepEqual(conflict.map((r) => r.code).sort(), [0, 1]);
+    const conflictLoser = conflict.find((r) => r.code === 1);
+    assert.equal(conflictLoser.rawStdout, "SET\n");
+    assert.equal(conflictLoser.stderr, "ERROR:  unsigned_transaction_conflict\n");
+    const conflictWinner = JSON.parse(conflict.find((r) => r.code === 0).stdout);
+    assert.deepEqual(JSON.parse(sql(load(224))).transaction, conflictWinner);
+    const raceAfter = snapshot();
+    assert.equal(raceAfter.journal.length, raceBefore.journal.length + 1);
+    assert.equal(raceAfter.journal.filter((r) => r.request_id === id(224)).length, 1);
+    delete raceBefore.journal;
+    delete raceAfter.journal;
+    assert.deepEqual(raceAfter, raceBefore);
+    const cutoff = await journalRequest(225, 4);
+    const cutoffSaved = JSON.parse(sql(save(225)));
+    const wait = await journalRequest(226, 4);
+    const journalBlocker = concurrent(`reset role; begin; set local application_name = 'd1_journal_blocker';
+      select namespace from public.d1_pools where namespace = '${id(1226)}' for update;
+      select pg_sleep(5); commit;`);
+    let journalLocked = false;
+    for (let attempt = 0; attempt < 40; attempt++) {
+      journalLocked = sql(`select exists(select 1 from pg_stat_activity where application_name = 'd1_journal_blocker'
+        and wait_event = 'PgSleep');`, false) === "t";
+      if (journalLocked) break;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    assert.equal(journalLocked, true);
+    assert.equal(sql(`select clock_timestamp() < '${wait.deadline}'::timestamptz;`), "t");
+    intentRejected(save(226), "deadline_expired");
+    const journalBlocked = await journalBlocker;
+    assert.equal(journalBlocked.code, 0, journalBlocked.stderr);
+    assert.equal(journalBlocked.stderr, "");
+    assert.equal(sql(`select clock_timestamp() >= '${cutoff.deadline}'::timestamptz;`), "t");
+    const replayBefore = digest(snapshot());
+    assert.deepEqual(JSON.parse(sql(save(225))), cutoffSaved, "Expired replay returns exact evidence");
+    assert.deepEqual(JSON.parse(sql(load(225))).transaction, cutoffSaved);
+    assert.deepEqual(JSON.parse(sql(load(226))).reservation, wait.reservation);
+    assert.equal(JSON.parse(sql(load(226))).transaction, null);
+    assert.equal(digest(snapshot()), replayBefore);
+    intentRejected(save(225, "YQ=="), "unsigned_transaction_conflict");
+    intentRejected(save(225, "YWJj", "c".repeat(64)), "unsigned_transaction_conflict");
+    sql(`delete from public.admin_wallets where public_key = '${key}';`, false);
+    intentRejected(load(225), "unauthorized_admin_wallet");
+    intentRejected(save(225), "unauthorized_admin_wallet");
+    sql(`insert into public.admin_wallets values ('${key}');`, false);
+    for (const role of ["anon", "authenticated", "service_role"]) {
+      if (role !== "service_role") {
+        intentRejected(load(222), "permission denied for function d1_load_unsigned_transaction", role);
+        intentRejected(save(222), "permission denied for function d1_save_unsigned_transaction", role);
+      }
+      for (const statement of ["select * from public.d1_unsigned_transactions;",
+        `insert into public.d1_unsigned_transactions values ('${id(501)}','{}');`,
+        "update public.d1_unsigned_transactions set receipt = '{}';",
+        "delete from public.d1_unsigned_transactions;", "truncate public.d1_unsigned_transactions;"]) {
+        intentRejected(statement, "permission denied for table d1_unsigned_transactions", role);
+      }
+    }
+    assert.equal(sql(`select relrowsecurity from pg_class where oid = 'public.d1_unsigned_transactions'::regclass;`), "t");
+    for (const signature of ["d1_load_unsigned_transaction(uuid,text)", "d1_save_unsigned_transaction(uuid,text,text,text)"]) {
+      assert.equal(sql(`select prosecdef and proconfig = array['search_path=""'] from pg_proc
+        where oid = 'public.${signature}'::regprocedure;`), "t");
+    }
+    console.log("JOURNAL_CASES=lookup,opaque,canonical,bounds,admin,reservation,expiry,lock-wait,replay,conflict,concurrency,grants,capacity");
     assert.equal(
       sql(
         `select public.allocate_donation_to_release_request('${id(99)}','${key}',${

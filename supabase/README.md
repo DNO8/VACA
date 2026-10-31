@@ -172,6 +172,48 @@ there are no Horizon reads, signed envelopes, signing, broadcasts or refunds in
 this slice. Separate operational funding remains a policy, not an account or
 funding proof.
 
+## Private unsigned-byte journal (not Stellar validation)
+
+`018_d1_unsigned_transactions.sql` adds two trusted backend, service-role-only RPCs:
+`d1_load_unsigned_transaction(p_request_id UUID, p_authorized_by TEXT)` and
+`d1_save_unsigned_transaction(p_request_id UUID, p_authorized_by TEXT,
+p_unsigned_xdr TEXT, p_transaction_hash TEXT)`. No HTTP route or coordinator
+integration exists yet. A supplied admin key is not wallet authentication.
+Both check current admin membership even on expired replay. Locks follow
+admin → stored pool → preparation/intent → sequence → journal. The private RLS
+table denies direct reads/DML to every API role, including service_role.
+
+Lookup returns `{kind: "d1_unsigned_transaction_lookup", revision: 1, request_id,
+namespace, network: "TESTNET", pool, reservation, transaction}`. Missing owned
+reservation or journal is explicit JSON null; lookup never registers an intent or
+allocates a sequence. Unknown/historical/non-D1 IDs cannot be adopted. Saved
+reservation is the exact 017 receipt, so a future deliberate retry can recover
+without a fresh account observation. Nothing retries or advances automatically.
+
+Save requires that request's stored exclusive reservation. Its immutable receipt
+has `kind: "d1_unsigned_transaction_journal"`, `revision: 1`, `request_id`,
+`namespace`, `network: "TESTNET"`, `pool`, persisted preparation `deadline`, stored
+`transaction_sequence`, exact `reservation`, `unsigned_xdr`, `transaction_hash`.
+First save checks database time strictly before the deadline **after all lock
+waits**. Exact bytes + hash replay returns the original receipt even after expiry,
+as evidence only. Different bytes or hash conflicts; concurrent identical saves
+return one receipt/row, competing bytes have one winner. No overwrite, deletion,
+TTL, release, additional allocation or fee/donation counter exists.
+
+SQL stores **opaque strings**, not verified Stellar transactions. Base64 must be
+canonical, nonempty, whitespace-free and at most 65,536 ASCII characters (49,152
+decoded bytes); encoder-inserted PostgreSQL line breaks are removed only during
+canonicality checking, never from input. Hash must be exactly 64 lowercase hex
+characters. SQL does not decode XDR semantics, verify signatures, or prove that
+hash matches bytes. Tests intentionally use fictional non-Stellar bytes. A separate
+SDK validator and coordinator integration remain required before trusting them.
+SQL errors: `invalid_unsigned_transaction`, `d1_preparation_not_found`,
+`d1_issuance_sequence_not_found`, `deadline_expired` use 22023;
+`unauthorized_admin_wallet` uses 42501; `unsigned_transaction_conflict` uses 23505
+(future adapter mapping to 409, not an implemented HTTP response). This is not
+account consensus, operational funding proof, signing readiness or full D1.
+The separate team-funded Testnet fee/reserve policy remains unchanged.
+
 ## Trusted local coordinator (not an endpoint)
 
 `createIssuanceCoordinator(configuration)` in `issuance-coordinator.ts` returns
@@ -197,7 +239,7 @@ nested preparation reaches the existing planner. The SDK receives the reserved
 again. Clock/fee are read near planning, after reservation. Planner amount/asset and
 payment-based deadline guards remain active; even an expired stored replay cannot
 produce unsigned bytes. The result is evidence and an unsigned plan, not ready,
-funded, signed, issued or submitted status. Unsigned bytes are **not durable**.
+funded, signed, issued or submitted status. This coordinator's unsigned bytes are **not durable**: it does not yet invoke the separate 018 journal.
 
 Local failures throw existing `CustodyError` with exact code/status:
 `invalid_issuance_intent`/422 for invalid arguments; `unauthorized_admin_wallet`/403;
@@ -252,7 +294,7 @@ D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node --test supabase/te
 
 Linux requires an explicit absolute `D1_TOOL_ROOT`; missing/relative values fail before any fixture is created with `Linux fixtures require an absolute D1_TOOL_ROOT.` Temporary fixtures use `TMPDIR` when set, otherwise `os.tmpdir()`; keep that directory outside the worktree. No ambient environment is forwarded to the Linux launcher. It supplies isolated credential/config paths, PostgreSQL shared libraries, and fixed `PGHOST=127.0.0.1`/`PGDATABASE=postgres`, so Linux psql calls omit the host/database overrides rejected by that launcher. Ports remain unique and explicit. The harness stops and verifies its cluster before removing its Linux fixture; the Linux launcher removes its own per-command scratch. This is environment isolation and loopback-only testing, not an OS network sandbox. No automatic retries, provisioning or live testnet checks are part of these commands. Windows defaults are covered structurally by resolver tests; that is not evidence of an actual Windows integration run.
 
-The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016/017 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent/sequence call; it grants no production table access. Intent/sequence tests assert exact terse psql stderr, stdout and exit status, deadline/replay and post-lock deadline behavior, concurrent single creation, exclusive per-pool ownership, independent stored pools, integer bounds and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
+The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016/017/018 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent/sequence/journal call (including the new journal state); it grants no production table access. Intent/sequence tests assert exact terse psql stderr, stdout and exit status, deadline/replay and post-lock deadline behavior, concurrent single creation, exclusive per-pool ownership, independent stored pools, integer bounds and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
 
 On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\Local\Temp\opencode`, never the worktree. Every harness run prints exact `FIXTURE`/`LAUNCHER_SCRATCH` paths for parent cleanup, stops its owned PostgreSQL in `finally`, and verifies stopped status `3`. The Windows harness does not delete scratch. PostgreSQL's Windows EDB archive still lacks an independently verified publisher checksum; the local hash is not publisher attestation. Engram mirroring remains pending.
 
