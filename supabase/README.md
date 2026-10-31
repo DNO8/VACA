@@ -206,13 +206,47 @@ decoded bytes); encoder-inserted PostgreSQL line breaks are removed only during
 canonicality checking, never from input. Hash must be exactly 64 lowercase hex
 characters. SQL does not decode XDR semantics, verify signatures, or prove that
 hash matches bytes. Tests intentionally use fictional non-Stellar bytes. A separate
-SDK validator and coordinator integration remain required before trusting them.
+SDK validator below checks these semantics locally; coordinator integration remains
+required before trusting journal receipts in orchestration.
 SQL errors: `invalid_unsigned_transaction`, `d1_preparation_not_found`,
 `d1_issuance_sequence_not_found`, `deadline_expired` use 22023;
 `unauthorized_admin_wallet` uses 42501; `unsigned_transaction_conflict` uses 23505
 (future adapter mapping to 409, not an implemented HTTP response). This is not
 account consensus, operational funding proof, signing readiness or full D1.
 The separate team-funded Testnet fee/reserve policy remains unchanged.
+
+## Saved unsigned transaction validator (historical evidence only)
+
+`functions/d1-custody/unsigned-transaction.ts` exports
+`validateUnsignedTransaction(input)`. Its readonly `UnsignedTransactionInput` contains
+`prepared` (trusted persisted `Preparation`), configured `networkPassphrase` (SDK
+Testnet only) and `pool`, reserved `observedSequence` and `transactionSequence`,
+original saved `unsignedXdr`, and mandatory `expectedTransactionHash`.
+It returns readonly `{ unsignedXdr, transactionHash }`, preserving the **original
+exact string**, not replacing or normalizing saved bytes. All invalid runtime
+inputs throw `Error("invalid_unsigned_transaction")`, without SDK diagnostics.
+
+The helper bounds canonical Base64 to 65,536 characters before decoding, requires
+64 lowercase hex hash characters, and accepts only an ordinary v1 unsigned Stellar
+transaction with zero signatures and exact source/reserved-next sequence. Sequence
+comparison uses exact integers, including values above JavaScript's safe range.
+It reconstructs the known planner form using the **decoded historical minTime and
+fee**, never a fresh clock: minTime must be a safe whole second from confirmation
+through deadline−1, maxTime exactly deadline−1, with the original confirmation+300
+deadline. Reusing `planIssuance` preserves its monetary/asset and complementary
+beneficiary/pool predicates. Exact XDR equality rejects extra operations, operation
+sources, memos, advanced preconditions/signer requirements, legacy/fee-bump envelopes
+and canonical differences. The SDK Testnet transaction hash must match the supplied
+hash; there is no optional-hash bypass. Future first-save code may compute the SDK
+hash and then invoke this helper; saved artifacts must supply their stored hash.
+
+This is **historical reconstruction, not a new plan or signing authority**. Valid
+saved evidence can be checked after expiry without resetting TTL or reading current
+time. The helper has no database, network, environment, key loading, signing or
+submission effects and does not label anything ready or funded. SQL remains opaque
+storage; connecting journal load/save and validation to the coordinator is a separate
+next step. Separate operational fee/reserve funding and donor-refund obligations
+remain unchanged and unproven.
 
 ## Trusted local coordinator (not an endpoint)
 
