@@ -1,6 +1,6 @@
 # October D1: demonstrable custodied aid
-Objective: finish the October D1 testnet custody, expiry and refund evidence for the requested recording. Branch: `feat/october-d1-custody` in both repositories.
-Delivery: `ask-on-risk`; selected chain: `feature-branch-chain`; no push, PR, merge or deployment authorized. Runners: web pnpm 9.15.0 / Playwright; backend isolated Deno 2.6.8 / PostgreSQL 17.11, with command evidence recorded below.
+Objective: finish the October D1 testnet custody, expiry and refund evidence for the requested recording. Active isolated backend branch: `feat/october-d1-wsl-baseline`; historical checkout/branch records remain in the Log.
+Delivery: `ask-on-risk`; selected chain: `feature-branch-chain`; no push, PR, merge or deployment authorized. Active isolated Linux backend runners: Deno 2.6.8 / PostgreSQL 17.7. Historical web runner declarations and unavailable Windows checks are not newly verified.
 
 ## Specs
 
@@ -52,11 +52,19 @@ User, verbatim:
 
 Continue the stated next step of persisting exact transaction bytes before signing/sending. Scope remains local Testnet unsigned storage, SDK validation and explicit recovery; no signing, deployment or ledger authorization inferred.
 
+### S7 — Resolve concrete risks and audit D1 completion
+
+User, verbatim:
+> resolvamos los risk y verifiquemos que el D1 esté completo
+
+Compare the adopted Revised D1 acceptance criteria with implementation and observed evidence. Distinguish verified risk controls from open defects. Correct the reproduced local preparation-error boundary without changing legitimate contracts. Do not infer signing, deployment, ledger or broad multi-area implementation permission from the audit, and do not declare D1 complete from unsigned tests.
+
 ## Tasks
 
 - [x] T1 — S1 — Route: inline Git preparation, then delegated read-only mapping because integration understanding exceeded the inline evidence budget. Current baselines and clean feature trees observed; commit: none, repository preparation only.
-- [ ] T2 — S2 — Route: initial recovery/configuration slice inline; bounded backend writer under the long-session context backstop, not size/file count/parallelism. PARTIAL: local preparation tests pass, but signing/issuance/discovery/refunds remain missing. IN CHECKING: narrow source allowlist approved and checked; native assessment and independent verification of preparation are pending. B remains read-only until the full tested-foundation checkpoint. Parent owns integration/log/Git; Engram mirror pending. Commit: pending; `feature-branch-chain` selected, no publishing authorized.
-- [ ] T3 — S2, S3 — Route: inline own checks plus one independent verifier for named high-risk security/concurrency behavior; long checks may use per-action workers. BLOCKED: implementation, applicable runners and explicit deployment/testnet authorization; capture real D1 proof and recording checklist. Commit: pending.
+- [ ] T2 — S2 — Route: bounded work units, tracked in the isolated Linux feature document. PARTIAL: preparation and unsigned intent/sequence/journal/SDK/coordinator components independently verified through `84e1bd2`; concrete legacy error correction verified at `a5c7ceb`. Runtime issuance, trusted account/funding checks, signed execution/reconciliation, issued/unissued donor refunds and client migration remain incomplete. Completing these multiple areas needs an explicit bounded scope/review plan; no implementation or evidence claim beyond the completed components.
+- [ ] T3 — S2, S3 — Route: applicable checks and independently verified high-risk units. BLOCKED on missing lifecycle implementation, targeted client source/build review, and explicit deployment/Testnet-operation authorization. Actual creation/claim/recovery/refund explorer evidence and deployed version are absent; prior local test passes do not satisfy this task.
+- [x] T4 — S7 — Route: read-only explorer map, inline reproduced normalization fix, independent error-boundary verifier. Commit `a5c7ceb3215fd18c92e74db6c090819208ec5140`; RED 11 passed/2 failed, GREEN focused13/full63/typecheck, independent same checks plus3 probes accepted. Audit verdict: full D1 incomplete; matrix and decision below.
 
 ## Log
 
@@ -336,3 +344,26 @@ S6 final slice `1843056ac544bba20d92e3aa0d4ff3c8fce837ed` contains 430 changed l
 Observed writer RED: coordinator 1 passed/15 failed, then new journal-error null-message regression 32 passed/2 failed. Final focused36/full58/typecheck GREEN. Independent verifier accepted the exact slice with focused36/full58/typecheck and five adversarial probes; no blockers, advisories or corrections. Parent then observed full58/typecheck/diffcheck exit0 and clean source status. Existing prepare/issuanceRpc helper, planner, validator, handler/index and018 SQL are byte-unchanged; no shared-helper differential or PostgreSQL rerun was applicable to this final slice. Prior T10 real-PostgreSQL journal evidence remains valid for unchanged SQL. Native assessment medium, concurrency escalation high with independent verification completed, reviewDue false; no native START/receipt claimed.
 
 The three S6 units are complete and locally verified: journal `330b2c5`, validator `73f9bda`, integration `1843056`. Documentation checkpoints keep their evidence separate. No push, deployment, real credentials, signing, broadcast or ledger operation occurred. Full D1 remains incomplete: trusted account freshness/consensus, separate operational-funding proof, signed-envelope durability, submission/reconciliation, recovery and original-donor refunds are future work. Expired saved bytes are evidence, never renewed signing authority.
+
+### L42 — D1 acceptance audit and concrete preparation fix, 2026-10-31
+
+User: "resolvamos los risk y verifiquemos que el D1 esté completo".
+
+Read the adopted Revised directly from Drive (`17vxYtjIHmxs13IGUvDgfX8RCHr5J3qz5`, D1 and evidence sections). Its acceptance requires backend-controlled authorized release, a beneficiary claim before the deadline, a separate authorized expired recovery/original-donor refund, and targeted client source/build review with no embedded pool signing secret. Required explorer records are actual transactions, not unsigned hashes. Result: **D1 is not complete**.
+
+| D1 obligation | Current state and evidence boundary |
+| --- | --- |
+| Authorized Edge pool signing, off clients | Preparation HTTP authorization exists; `d1-custody/index.ts:13–23` wires only preparation and uses a public pool key. Unsigned coordinator is not a runtime signer/issuer. |
+| Expiry predicates and safe issuance | Pure planner, stored intent/sequence/journal and SDK validation are implemented and previously verified. No signed-envelope durability, submission or confirmed balance ID/reconciliation yet. |
+| Beneficiary claim before deadline | Mobile user-wallet claim capability exists (`stellar_sdk_wallet_gateway.dart:99–120`); no demonstrated D1-issued balance or actual successful pre-deadline claim. |
+| Authorized expired recovery and original-donor refund | Not implemented, including unissued remainders. Pool eligibility after expiry is not automatic refund. |
+| Separate operating funding and account freshness | Policy approved, but no independent account freshness/consensus, reserve/funding or new-pool-history proof is implemented. Legacy service-call integration guards remain outstanding. |
+| Donation → confirmed balance → original-donor refund mapping | Preparation/allocation and unsigned artifact mapping only; no confirmed balance/refund records. |
+| No embedded client pool secret | Narrow inspected mobile gateway signs user wallets, not proof of complete client hygiene. Full source/build inspection not performed; web target was not inspected in this audit. No secret values were read or reproduced. |
+| Deployment and public acceptance evidence | No deployed version, actual creation/predicate/claim and separate recovery/refund transaction links. Existing restrictions prohibit creating this proof in this task. |
+
+Explorer `mvvwl36c-t-7pte` reported one concrete pre-existing local advisory: `prepare` could coerce `message:["deadline_expired"]` into a 410 with a non-string code, or throw a raw TypeError on `{toString:null}`. Parent reproduced both through the public adapter: RED13 tests,11 passed/2 failed. Earlier fixture type errors were not behavioral RED. Fix `a5c7ceb` changes only the preparation error lookup to require a string; legitimate mappings, success, SQL40001 precedence and one RPC per explicit invocation remain unchanged. Five committed regressions check direct adapter and signed HTTP responses, exact arguments and unchanged input; existing HTTP cases now preserve every known string mapping. No persistent-store nonmutation claim is made from the mocked RPC.
+
+Parent observed focused13/full63/typecheck GREEN. An EOF-only diff-check failure was corrected and diff check subsequently passed. Independent verifier `mvvwxigp-u-fssn` accepted the immutable 67-line/three-path unit with focused13/full63/typecheck plus3 independent probes and baseline preservation; no blockers or advisories. No shared helper, SQL, handler or other production code changed, so shared-helper differential and PostgreSQL rerun were inapplicable. Native medium, security/error-boundary escalation high, independent verification completed, reviewDue false; no native START/receipt claimed. Risk item4 is a category with verified unsigned controls, not an open failing test; remaining lifecycle security/concurrency risks cannot be declared eliminated.
+
+Completion requires a scoped multi-area implementation plan (trusted account/funding guards; authorized runtime with durable signed envelope and reconciliation; issued/unissued recovery/refunds and mapping; client migration/source-build review), followed by separately authorized deployed/Testnet evidence. This audit/fix does not authorize those remote operations or represent D1 acceptance.
