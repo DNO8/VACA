@@ -211,6 +211,35 @@ export class HorizonDiscoverySource {
     }
   }
 
+  /** One pinned operation, with current controlled-account validation before lookup. */
+  async readOperationAtCheckpoint(context: PoolObservationContext, operationId: string): Promise<DiscoveryRecord> {
+    try {
+      // Do not retain caller-owned context across account/transport awaits.
+      const pool = context.pool, firstLedger = context.firstLedger;
+      // Preserve descriptors/prototype so the accepted account validator still
+      // rejects accessors, hidden/extra fields and non-plain checkpoint DTOs.
+      const saved: DiscoveryCheckpoint = Object.create(Object.getPrototypeOf(context.checkpoint),
+        Object.getOwnPropertyDescriptors(context.checkpoint));
+      const id = token(operationId);
+      valid(id > 0n);
+      await this.readAccountAtCheckpoint({ pool, firstLedger, checkpoint: saved });
+      const operation = object(await this.read("/operations/" + operationId));
+      const txHash = hash(operation.transaction_hash);
+      const transaction = await this.read("/transactions/" + txHash);
+      const record = parseDiscoveredOperation({ operation, transaction, pool,
+        anchor: { sequence: saved.through_ledger, closedAt: saved.closed_at } });
+      valid(record.operation_id === operationId && record.ledger >= firstLedger && record.ledger <= saved.through_ledger);
+      // An account-time head check is insufficient: recheck AFTER both lookups.
+      const latest = list(await this.read("/ledgers?limit=1&order=desc"), 1);
+      valid(latest.length === 1);
+      const current = header(latest[0]);
+      valid(current.sequence === saved.through_ledger && current.hash === saved.ledger_hash && current.closedAt === saved.closed_at);
+      return record;
+    } catch {
+      throw new CustodyError("dependency_unavailable", 503);
+    }
+  }
+
   async readPage(context: Context): Promise<{ page: DiscoveryPage; complete: boolean }> {
     try {
       Keypair.fromPublicKey(context.pool);
