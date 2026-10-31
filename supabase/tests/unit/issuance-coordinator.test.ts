@@ -35,12 +35,15 @@ function fixture() {
     intent: intent as unknown, reservation: reservation as unknown,
     observation: { network: "TESTNET", pool, sequence }, now: confirmed + 10,
     fee: "100", fail: "", error: { code: "", message: "" }, transport: false,
-    commitThenLoseResponse: false,
+    commitThenLoseResponse: false, committedError: undefined as unknown,
   };
   const database = new CustodyDatabase({ rpc(name, args) {
     calls.push([name, args]);
     if (name === "d1_reserve_issuance_sequence" && options.commitThenLoseResponse) {
       state.reserved = true;
+      if (options.committedError !== undefined) {
+        return Promise.resolve({ data: null, error: options.committedError }) as never;
+      }
       throw new Error("SECRET unknown committed outcome");
     }
     if (options.fail === name) {
@@ -188,6 +191,22 @@ Deno.test("unknown committed outcome and late provider failures never release or
   for (const stage of ["clock", "fee"]) {
     const f = fixture(); f.options.fail = stage;
     await rejects(f, "dependency_unavailable", 503, stage === "clock" ? 4 : 5, true);
+  }
+});
+
+Deno.test("malformed reservation errors retain committed ownership without retry or release", async () => {
+  for (const message of [{ toString: null }, ["deadline_expired"], null, undefined,
+    "toString", "constructor", "__proto__"]) {
+    const f = fixture();
+    f.options.commitThenLoseResponse = true;
+    f.options.committedError = { code: "XX000", message };
+    await rejects(f, "dependency_unavailable", 503, 3, true);
+    equal(f.calls, [
+      ["d1_register_issuance_intent", { p_request_id: requestId, p_authorized_by: admin }],
+      ["observe", pool],
+      ["d1_reserve_issuance_sequence", { p_request_id: requestId, p_authorized_by: admin,
+        p_observed_account_sequence: sequence }],
+    ]);
   }
 });
 

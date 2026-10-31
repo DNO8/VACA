@@ -114,7 +114,8 @@ export class CustodyDatabase {
       invalid_issuance_intent: 422, invalid_issuance_sequence: 422,
       d1_preparation_not_found: 422, d1_issuance_intent_not_found: 422,
     };
-    const status = error && Object.hasOwn(errors, error.message) ? errors[error.message] : undefined;
+    const status = error && typeof error.message === "string" && Object.hasOwn(errors, error.message)
+      ? errors[error.message] : undefined;
     throw new CustodyError(status ? error.message : "dependency_unavailable", status ?? 503);
   }
 
