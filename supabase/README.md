@@ -64,7 +64,7 @@ Errors are JSON `{ "error": "<code>" }`, with no raw exception diagnostics:
 | 422 | `unsupported_payment`, `payment_mismatch`, `payment_binding_mismatch`, `payment_before_activation`, `pool_not_activated`, `donation_capacity_exceeded`, `donation_request_mismatch`, `beneficiary_mismatch`, `incident_not_promoted`, `invalid_preparation`, `invalid_release_request`, `invalid_donation_payment` |
 | 503 | `not_ready`, `ledger_unavailable`, `serialization_failure`, `dependency_unavailable` |
 
-SQL `40001` is propagated as `503 serialization_failure`, never retried internally. Horizon 404, timeout and unavailable outcomes are not evidence that money can be paid again. Errors and receipts do not prove ledger issuance.
+SQL `40001` is propagated as `503 serialization_failure`, never retried internally. Preparation recognizes named SQL errors only when their message is a string: malformed arrays/objects cannot select a known status and otherwise become `503 dependency_unavailable` without raw diagnostics. Existing `40001` precedence and valid string error mappings are unchanged. Each explicit preparation invocation makes one RPC call; no automatic retry or compensation is performed. Horizon 404, timeout and unavailable outcomes are not evidence that money can be paid again. Errors and receipts do not prove ledger issuance.
 
 ## Pure unsigned issuance planner (not an endpoint)
 

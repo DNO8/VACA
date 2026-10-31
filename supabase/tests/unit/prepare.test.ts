@@ -1,6 +1,6 @@
 import { hash, Keypair } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
-import { createCustodyHandler } from "../../functions/d1-custody/handler.ts";
+import { createCustodyHandler, CustodyError, type Preparation } from "../../functions/d1-custody/handler.ts";
 import { CustodyDatabase, TestnetPayments } from "../../functions/d1-custody/adapters.ts";
 
 function assert(ok: boolean, message: string): asserts ok {
@@ -418,7 +418,17 @@ Deno.test("membership and replay SQL failures expose exact HTTP errors without a
     const [message, status, code] of [
       ["unauthorized_admin_wallet", 403, "unauthorized_admin_wallet"],
       ["idempotency_conflict", 409, "idempotency_conflict"],
+      ["donation_binding_conflict", 409, "donation_binding_conflict"],
+      ["donation_payment_conflict", 409, "donation_payment_conflict"],
+      ["historical_request", 409, "historical_request"],
+      ["historical_payment", 409, "historical_payment"],
       ["deadline_expired", 410, "deadline_expired"],
+      ...[
+        "payment_binding_mismatch", "payment_before_activation", "pool_not_activated",
+        "donation_capacity_exceeded", "donation_request_mismatch", "beneficiary_mismatch",
+        "incident_not_promoted", "invalid_preparation", "invalid_release_request",
+        "invalid_donation_payment",
+      ].map((message) => [message, 422, message] as const),
       ["constructor", 503, "dependency_unavailable"],
     ] as const
   ) {
@@ -457,3 +467,53 @@ Deno.test("membership and replay SQL failures expose exact HTTP errors without a
     assert(writes === 1, "SQL failure must never retry");
   }
 });
+
+for (const [label, message] of [
+  ["array resembling a known code", ["deadline_expired"]],
+  ["noncoercible JSON object", { toString: null }],
+  ["ordinary JSON object", {}],
+  ["null", null],
+  ["missing message", undefined],
+] as const) {
+  Deno.test(`prepare sanitizes ${label} at adapter and HTTP boundaries without retry`, async () => {
+    const payment = {
+      transaction_hash: payload.transaction_hash, operation_id: payload.operation_id,
+      donor: donor.publicKey(), pool: pool.publicKey(), asset: { type: "native" } as const,
+      amount: "2.0000000", confirmed_at: now - 10, ledger: 900,
+      memo_hash: hash(Buffer.from("vaca.d1.donation.v1\n" + payload.incident_id)).toString("hex"),
+    };
+    const { confirmed_at, ledger, memo_hash, ...verified } = payment;
+    const input: Preparation = {
+      request_id: "00000000-0000-4000-8000-000000000001", authorized_by: admin.publicKey(),
+      payment: verified, confirmed_at, ledger, memo_hash,
+      request: {
+        version: 1, incident_id: payload.incident_id, donor: donor.publicKey(),
+        beneficiary: beneficiary.publicKey(), asset: verified.asset, amount: payload.amount,
+        deadline: "2026-10-27T12:04:50Z",
+      },
+    };
+    const unchanged = JSON.stringify(input);
+    let calls = 0;
+    const database = new CustodyDatabase({
+      rpc: async (name, args) => {
+        calls++;
+        assert(name === "d1_prepare", "No alternate or compensating RPC");
+        assert(JSON.stringify(args) === JSON.stringify({ p_input: input }), "Exact RPC input");
+        // Deliberately model a malformed runtime RPC response outside its declared type.
+        return { data: null, error: { code: "XX000", message: message as unknown as string } };
+      },
+    });
+    let failure: unknown;
+    try { await database.prepare(input); } catch (error) { failure = error; }
+    assert(failure instanceof CustodyError, "Malformed dependency errors must not escape raw");
+    assert(failure.code === "dependency_unavailable", "Error code must be an exact safe string");
+    assert(failure.message === "dependency_unavailable" && failure.status === 503, "Exact safe error");
+    assert(calls === 1 && JSON.stringify(input) === unchanged, "One call, input unchanged");
+    const response = await createCustodyHandler({
+      poolSigner: pool, now: () => now, ledger: { payment: async () => payment }, database,
+    })(signed());
+    assert(response.status === 503, "Exact HTTP rejection status");
+    assert(await response.text() === '{"error":"dependency_unavailable"}', "No raw diagnostics or arrays");
+    assert(Number(calls) === 2 && JSON.stringify(input) === unchanged, "One RPC per explicit invocation");
+  });
+}

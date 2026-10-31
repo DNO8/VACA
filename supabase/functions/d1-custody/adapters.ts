@@ -183,7 +183,8 @@ export class CustodyDatabase {
       invalid_release_request: 422,
       invalid_donation_payment: 422,
     };
-    const status = Object.hasOwn(errors, error.message) ? errors[error.message] : undefined;
+    const status = typeof error.message === "string" && Object.hasOwn(errors, error.message)
+      ? errors[error.message] : undefined;
     throw new CustodyError(status ? error.message : "dependency_unavailable", status ?? 503);
   }
 }
