@@ -93,13 +93,24 @@ test("admin discovery query paginates immutable opaque records in numeric order"
     for (const version of ["014", "20261011060218"]) {
       apply(version + ".sql", retained.migrations.find((m) => m.version === version).statements.join(";\n"));
     }
-    for (const name of ["015_d1_testnet_custody.sql", "019_d1_discovery.sql", "020_d1_discovery_queries.sql"]) {
+    for (const name of ["015_d1_testnet_custody.sql", "019_d1_discovery.sql", "020_d1_discovery_queries.sql",
+      "021_d1_discovery_state.sql"]) {
       const file = path.join(repo, "supabase/migrations", name);
       // Absence is deliberately exposed by the public RPC below in the RED run.
       if (fs.existsSync(file)) apply(name, fs.readFileSync(file, "utf8"));
     }
     sql(`select public.d1_activate_pool('${ns}','${key}',900);
       select public.d1_activate_pool('${ns2}','${otherPool}',901);`);
+    const stateRpc = (namespace = ns, admin = key) =>
+      `select public.d1_load_discovery_state('${namespace}','${admin}');`;
+    const state = (namespace = ns) => JSON.parse(sql(stateRpc(namespace)));
+    const expectedState = (namespace, pool, first, cp, covered) => ({
+      kind: "d1_discovery_state", revision: 1, namespace, network: "TESTNET",
+      pool, first_ledger: first, checkpoint: cp, coverage_complete: covered,
+    });
+    const initialState = expectedState(ns, key, 900, null, false);
+    assert.deepEqual(state(), initialState, "No checkpoint means no coverage");
+    assert.deepEqual(state(ns2), expectedState(ns2, otherPool, 901, null, false));
     const receipt = recordPage();
     const checkpoint = lookup();
     const read = (cursor, limit, namespace) => JSON.parse(sql(rpc(cursor, limit, namespace)));
@@ -123,6 +134,37 @@ test("admin discovery query paginates immutable opaque records in numeric order"
         ...checkpoint.checkpoint, cursor: "2",
       }));
 
+    const partialState = expectedState(ns, key, 900, checkpoint.checkpoint, false);
+    assert.deepEqual(state(), partialState, "Nonempty page does not establish coverage");
+    const cp2 = { ...checkpoint.checkpoint, cursor: "2" };
+    assert.deepEqual(state(ns2), expectedState(ns2, otherPool, 901, cp2, false));
+    const emptyPage = { ...secondPage, from_cursor: "2", records: [] };
+    const emptyReceipt = recordPage(emptyPage, ns2);
+    assert.equal(emptyReceipt.page_count, 2);
+    assert.deepEqual(state(ns2), expectedState(ns2, otherPool, 901, cp2, true));
+    const laterRecord = { ...records[1], ledger: 901 };
+    const laterPage = { ...page, from_cursor: "2", to_cursor: "10", through_ledger: 901,
+      ledger_hash: "b".repeat(64), closed_at: 1001, records: [laterRecord] };
+    const laterReceipt = recordPage(laterPage, ns2);
+    assert.equal(laterReceipt.page_count, 3);
+    const laterCp = { cursor: "10", through_ledger: 901, ledger_hash: "b".repeat(64), closed_at: 1001 };
+    const laterState = expectedState(ns2, otherPool, 901, laterCp, false);
+    assert.deepEqual(state(ns2), laterState, "Old empty marker cannot cover a new checkpoint");
+    assert.deepEqual(recordPage(emptyPage, ns2), emptyReceipt, "Historical empty replay is exact");
+    assert.deepEqual(recordPage(secondPage, ns2), secondReceipt, "Original nonempty replay is exact");
+    assert.deepEqual(state(ns2), laterState, "Replays neither rewind nor claim coverage");
+    const laterEmpty = { ...laterPage, from_cursor: "10", records: [] };
+    const laterEmptyReceipt = recordPage(laterEmpty, ns2);
+    assert.equal(laterEmptyReceipt.page_count, 4, "Reads and replays did not increment counter");
+    const coveredState = expectedState(ns2, otherPool, 901, laterCp, true);
+    assert.deepEqual(state(ns2), coveredState);
+    assert.deepEqual(recordPage(laterPage, ns2), laterReceipt);
+    assert.deepEqual(recordPage(emptyPage, ns2), emptyReceipt);
+    assert.deepEqual(state(ns2), coveredState, "Historical receipts cannot rewind covered state");
+    assert.deepEqual(read("'0'", "200", ns2),
+      expected([...secondPage.records, laterRecord], "10", false, ns2, otherPool, 901, laterCp));
+    assert.deepEqual(state(), partialState, "Namespace coverage is isolated");
+
     // Every rejection is followed by public reads/replays: no record, checkpoint,
     // page receipt, or page counter may be changed by query validation/denial.
     function unchanged() {
@@ -130,6 +172,13 @@ test("admin discovery query paginates immutable opaque records in numeric order"
       assert.deepEqual(lookup(), checkpoint);
       assert.deepEqual(recordPage(), receipt);
       assert.deepEqual(recordPage(secondPage, ns2), secondReceipt);
+      assert.deepEqual(state(), partialState);
+      assert.deepEqual(state(ns2), coveredState);
+      assert.deepEqual(read("'0'", "200", ns2),
+        expected([...secondPage.records, laterRecord], "10", false, ns2, otherPool, 901, laterCp));
+      assert.deepEqual(recordPage(emptyPage, ns2), emptyReceipt);
+      assert.deepEqual(recordPage(laterPage, ns2), laterReceipt);
+      assert.deepEqual(recordPage(laterEmpty, ns2), laterEmptyReceipt);
     }
     for (const cursor of ["null", "''", "'00'", "'01'", "'-1'", "'+1'", "'1.0'", "' 1'", "'1e1'",
       "'18446744073709551616'", "'999999999999999999999'"]) {
@@ -148,8 +197,21 @@ test("admin discovery query paginates immutable opaque records in numeric order"
       rejected(rpc(), "permission denied for function d1_list_discovery_operations", role);
       unchanged();
     }
+    rejected(stateRpc(absent), "pool_not_activated");
+    unchanged();
+    rejected(stateRpc(ns, otherPool), "unauthorized_admin_wallet");
+    unchanged();
+    rejected(`select public.d1_load_discovery_state(null,'${key}');`, "invalid_discovery_page");
+    unchanged();
+    rejected(`select public.d1_load_discovery_state('${ns}',null);`, "invalid_discovery_page");
+    unchanged();
+    for (const role of ["anon", "authenticated"]) {
+      rejected(stateRpc(), "permission denied for function d1_load_discovery_state", role);
+      unchanged();
+    }
     sql(`delete from public.admin_wallets where public_key = '${key}';`, null);
     rejected(rpc(), "unauthorized_admin_wallet");
+    rejected(stateRpc(), "unauthorized_admin_wallet");
     sql(`insert into public.admin_wallets values ('${key}');`, null);
     unchanged();
     console.log("PAGINATION_AUTHORIZATION_IMMUTABILITY_OK");
