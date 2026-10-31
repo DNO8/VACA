@@ -371,13 +371,45 @@ SQL errors: `invalid_discovery_page` and absent-pool `pool_not_activated` use 22
 No automatic retry, release or compensation on unknown outcomes.
 
 **Opaque observations are not donor/funding truth.** Outgoing and unsupported raw
-operations are retained too. The later T1b parser must verify server chain facts,
-network/account/history coverage, donor/asset/amount/time/memo provenance and
-quarantine classification. Neither activation `first_ledger`, an empty journal,
+operations are retained too. The pure T1b parser below checks decoded-operation
+consistency; the ingestion runtime must still fetch trusted server facts and
+establish network/account/history coverage before treating observations as verified
+liabilities or funding. Neither activation `first_ledger`, an empty journal,
 nor a direct page call proves complete history or readiness. No allocation,
 legacy counter, sequence ownership, reserve/release, fee budget, signer, deployment
 or refund is changed. T1 and full D1 remain incomplete (S1–S6); separate team-funded
 fees/reserves and original-donor refund policy remain obligations, not evidence.
+
+## Pure discovery parser — T1b, not chain execution proof
+
+`functions/d1-custody/discovery.ts` exports `parseDiscoveredOperation(input)`.
+Input contains the configured G-address `pool`, a trusted closed-ledger `anchor`
+(`sequence`, `closedAt` in whole Unix seconds), and the raw Horizon `operation`
+and `transaction` objects. Both Horizon paging tokens are required strings. The
+operation TOID must match the transaction TOID plus its one-based operation index,
+with matching positive ledger and transaction positions; uint64 parsing is exact.
+
+The parser decodes a canonical ordinary v1 envelope using the pinned Testnet SDK,
+checks its hash, operation count/index, sources, timestamps and successful DTO
+flags, and cross-checks payment or account-creation details against decoded XDR.
+It returns the five-field `DiscoveryRecord` consumed by 019. Its `operation`
+contains a classification, SDK type/source/confirmation time, decoded memo, and
+original raw operation/transaction objects. Incoming payments retain the full
+exact amount, asset and original source donor even for multi-operation transactions,
+missing/wrong incident memos and payments with no preparation. Outgoing/self
+payments and account creation are distinct; other operations are quarantined,
+not silently dropped or counted as operational credit.
+
+Malformed/inconsistent input, unsafe muxed identities, fee-bump/legacy envelopes,
+and oversized/non-JSON observations fail with plain
+`Error("invalid_discovered_operation")`. No cursor advances on parser failure.
+The conservative 16 KiB traversal/UTF-8 budget can reject observations below the
+SQL limit; SQL's final JSONB byte guard remains authoritative. Inputs are not
+mutated; raw references are retained, so callers must not mutate fetched DTOs.
+This helper performs no HTTP, ambient-clock read, database write, signing or
+funding decision. A hash plus successful DTO flags is **not independent ledger
+execution evidence**: pinned trusted fetching, complete scan coverage, paginated
+retrieval and runtime integration remain unimplemented. T1 and D1 are not complete.
 
 ## Database boundary
 
@@ -420,7 +452,7 @@ On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\
 
 The following are **not implemented or proven** here:
 
-- Trusted Horizon discovery/parser and complete history coverage for every new-pool donation, including missing/wrong incident memos and donations never browser-notified. The 019 opaque durable page/cursor journal alone does not provide that verification.
+- Trusted Horizon fetching, anchored scan coverage and paginated record retrieval for every new-pool donation, including missing/wrong incident memos and donations never browser-notified. The pure T1b parser checks input/XDR consistency; neither it nor the 019 journal proves complete chain history or execution.
 - Connecting the trusted local coordinator to independently authenticated authorized issuance, with ledger fee/reserve/trustline checks and verified ledger outcomes. Local unsigned planning alone does not issue a claimable balance.
 - Durable exact signed-envelope/hash intents before broadcast, integration of the exclusive source ownership with definitive outcome reconciliation after timeout or persistence failure.
 - Authenticated admin sweep, atomic claim+original-donor payment for eligible issued balances, unissued remainder refunds and durable issued/unissued accounting. There is no refund fallback or generic signing endpoint.
