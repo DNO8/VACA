@@ -99,6 +99,47 @@ export class CustodyDatabase {
     });
   }
 
+  loadUnsignedTransaction(requestId: string, authenticatedAdmin: string): Promise<unknown> {
+    return this.journalRpc("d1_load_unsigned_transaction", {
+      p_request_id: requestId, p_authorized_by: authenticatedAdmin,
+    });
+  }
+
+  saveUnsignedTransaction(
+    requestId: string, authenticatedAdmin: string, unsignedXdr: string, transactionHash: string,
+  ): Promise<unknown> {
+    return this.journalRpc("d1_save_unsigned_transaction", {
+      p_request_id: requestId, p_authorized_by: authenticatedAdmin,
+      p_unsigned_xdr: unsignedXdr, p_transaction_hash: transactionHash,
+    });
+  }
+
+  // Journal-only normalization: never broaden the legacy registration/reservation errors.
+  private async journalRpc(name: string, args: Record<string, unknown>): Promise<unknown> {
+    let result;
+    try { result = await this.client.rpc(name, args); }
+    catch { throw new CustodyError("dependency_unavailable", 503); }
+    if (!result || typeof result !== "object" || Array.isArray(result)) {
+      throw new CustodyError("dependency_unavailable", 503);
+    }
+    const { data, error } = result;
+    if (error === null) return data;
+    if (!error || typeof error !== "object" || Array.isArray(error) || typeof error.message !== "string") {
+      throw new CustodyError("dependency_unavailable", 503);
+    }
+    if (error.code === "40001") throw new CustodyError("serialization_failure", 503);
+    const errors: Record<string, number> = {
+      unauthorized_admin_wallet: 403, invalid_unsigned_transaction: 400,
+      d1_preparation_not_found: 400, deadline_expired: 410,
+      ...(name === "d1_save_unsigned_transaction" ? {
+        d1_issuance_sequence_not_found: 400, unsigned_transaction_conflict: 409,
+      } : {}),
+    };
+    const status = typeof error.message === "string" && Object.hasOwn(errors, error.message)
+      ? errors[error.message] : undefined;
+    throw new CustodyError(status ? error.message : "dependency_unavailable", status ?? 503);
+  }
+
   private async issuanceRpc(name: string, args: Record<string, unknown>): Promise<unknown> {
     let result;
     try { result = await this.client.rpc(name, args); }

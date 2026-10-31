@@ -177,8 +177,8 @@ funding proof.
 `018_d1_unsigned_transactions.sql` adds two trusted backend, service-role-only RPCs:
 `d1_load_unsigned_transaction(p_request_id UUID, p_authorized_by TEXT)` and
 `d1_save_unsigned_transaction(p_request_id UUID, p_authorized_by TEXT,
-p_unsigned_xdr TEXT, p_transaction_hash TEXT)`. No HTTP route or coordinator
-integration exists yet. A supplied admin key is not wallet authentication.
+p_unsigned_xdr TEXT, p_transaction_hash TEXT)`. The local coordinator uses both
+through `CustodyDatabase`; there is no HTTP route. A supplied admin key is not wallet authentication.
 Both check current admin membership even on expired replay. Locks follow
 admin → stored pool → preparation/intent → sequence → journal. The private RLS
 table denies direct reads/DML to every API role, including service_role.
@@ -206,12 +206,12 @@ decoded bytes); encoder-inserted PostgreSQL line breaks are removed only during
 canonicality checking, never from input. Hash must be exactly 64 lowercase hex
 characters. SQL does not decode XDR semantics, verify signatures, or prove that
 hash matches bytes. Tests intentionally use fictional non-Stellar bytes. A separate
-SDK validator below checks these semantics locally; coordinator integration remains
-required before trusting journal receipts in orchestration.
+SDK validator below checks these semantics locally; the coordinator requires it on
+both saved replay and first-save responses.
 SQL errors: `invalid_unsigned_transaction`, `d1_preparation_not_found`,
 `d1_issuance_sequence_not_found`, `deadline_expired` use 22023;
 `unauthorized_admin_wallet` uses 42501; `unsigned_transaction_conflict` uses 23505
-(future adapter mapping to 409, not an implemented HTTP response). This is not
+(adapter mapping to 409, not an implemented HTTP response). This is not
 account consensus, operational funding proof, signing readiness or full D1.
 The separate team-funded Testnet fee/reserve policy remains unchanged.
 
@@ -244,8 +244,8 @@ This is **historical reconstruction, not a new plan or signing authority**. Vali
 saved evidence can be checked after expiry without resetting TTL or reading current
 time. The helper has no database, network, environment, key loading, signing or
 submission effects and does not label anything ready or funded. SQL remains opaque
-storage; connecting journal load/save and validation to the coordinator is a separate
-next step. Separate operational fee/reserve funding and donor-refund obligations
+storage; the coordinator connects journal load/save and this validator without
+signing or submission. Separate operational fee/reserve funding and donor-refund obligations
 remain unchanged and unproven.
 
 ## Trusted local coordinator (not an endpoint)
@@ -254,7 +254,8 @@ remain unchanged and unproven.
 `(requestId, authenticatedAdmin) => Promise<{ unsignedXdr, reservation }>`. This is an
 **already-authenticated backend identity boundary**, not wallet authentication: never
 expose it by accepting an arbitrary admin public key from a client. SQL rechecks
-current membership on both RPCs. The two arguments contain no economic payload,
+current membership on every journal/intent/sequence RPC, including expired lookup.
+The two arguments contain no economic payload,
 preparation, network, sequence, fee, destination or XDR.
 
 Configuration supplies only the public pool, existing `CustodyDatabase`, trusted
@@ -263,21 +264,30 @@ Configuration supplies only the public pool, existing `CustodyDatabase`, trusted
 entrypoint wiring or second accounting/client implementation is added.
 Dependency injection is **not Horizon consensus, freshness or funding proof**.
 
-The coordinator registers the stored intent, validates its kind/revision/request,
-Testnet/configured-pool and preparation bindings, observes that same pool on Testnet,
-then reserves the exact observed decimal sequence. It validates reservation identity,
-namespace, observed/next integer sequences and structural equality of the nested
-intent (independent of JSON object key order). Only that reservation's persisted
-nested preparation reaches the existing planner. The SDK receives the reserved
-**observed** sequence and increments it once; the next sequence is never incremented
-again. Clock/fee are read near planning, after reservation. Planner amount/asset and
-payment-based deadline guards remain active; even an expired stored replay cannot
-produce unsigned bytes. The result is evidence and an unsigned plan, not ready,
-funded, signed, issued or submitted status. This coordinator's unsigned bytes are **not durable**: it does not yet invoke the separate 018 journal.
+**Every invocation loads the 018 journal first**, validating lookup identity,
+namespace, Testnet/configured pool, runtime shapes and nested reservation/intent
+bindings before any external observation. A prepared request with both reservation
+and transaction null is valid; a journal without its reservation is invalid.
+
+| Persisted state | Local flow |
+|---|---|
+| Saved journal | Validate the complete immutable journal, exact reservation/intent/deadline/next-sequence bindings, actual SDK XDR and mandatory stored Testnet hash. Return original saved bytes and reservation only. No registration, observation, reservation, fresh planning, clock, fee or save call. Expired evidence remains readable without TTL reset. |
+| Reservation only | Reuse its original observed/next sequence and nested persisted intent. Read clock, reject expiry before reading fee or saving; otherwise plan and save once. Never observe or reserve again. |
+| Neither | Register and validate stored intent; observe configured Testnet pool; reserve and validate exact observed/next sequence and structurally equal nested intent; read clock/fee, then plan and save once. |
+
+Only the reservation's persisted preparation reaches the planner. The SDK receives
+its **observed** sequence and increments once. Before first save, the coordinator
+computes the SDK Testnet hash and invokes the existing unsigned validator. Success
+requires an awaited durable save and full validation of its returned journal,
+including exact equality with proposed bytes/hash. No provisional plan escapes.
+Returned artifacts are historical unsigned evidence, **not authority to sign** or
+proof of account freshness, operational funding, issuance or ledger success.
 
 Local failures throw existing `CustodyError` with exact code/status:
 `invalid_issuance_intent`/422 for invalid arguments; `unauthorized_admin_wallet`/403;
-`issuance_sequence_conflict` or `issuance_source_busy`/409; `deadline_expired`/410;
+`issuance_sequence_conflict`, `issuance_source_busy` or `unsigned_transaction_conflict`/409;
+`deadline_expired`/410; journal-only `invalid_unsigned_transaction`,
+`d1_preparation_not_found` or `d1_issuance_sequence_not_found`/400;
 `invalid_issuance_sequence`, `d1_preparation_not_found` or
 `d1_issuance_intent_not_found`/422. SQL `40001` becomes
 `serialization_failure`/503. Malformed receipts/bindings, unknown SQL/transport and
@@ -286,14 +296,19 @@ Planner failures are `invalid_issuance_plan`/422 or
 `issuance_window_exhausted`/410. These are local errors, not a new HTTP contract.
 
 There are no automatic retries, releases, deletes or compensating calls on failure.
-An unknown reservation response may already have committed exclusive ownership;
-a later deliberate retry must reuse the **original observation**, not a fresh
-sequence. No automatic recovery path or durable observation/envelope storage is
-implemented. Expiry never frees ownership. Signing, exact durable envelopes,
-submission/reconciliation, operational fee/reserve funding checks, discovery and
-original-donor refunds remain future work. Earlier PostgreSQL evidence is not new
-proof of this coordinator; its tests use a fake RPC transport with the real adapter
-and offline SDK-decoded XDR, retaining the existing 15 unit tests.
+An unknown reservation or save response may already have committed. Unknown save
+returns 503 after exactly one attempt, without success, readback or automatic retry.
+A later explicit invocation loads committed exact bytes without fresh providers,
+or recovers the original owned reservation. Competing different plans have one
+winner; conflicting bytes/hash return 409 and never overwrite. Expiry never frees
+ownership. Legacy preparation and registration/reservation error mappings remain
+unchanged; journal errors are method-scoped.
+
+Signing, durable signed envelopes, submission/reconciliation, operational fee/reserve
+funding checks, discovery and original-donor refunds remain future work. Earlier
+PostgreSQL evidence is not new proof of this coordinator; its tests use a fake RPC
+transport with the real adapter and offline SDK-decoded XDR. No SQL changed in this
+integration unit; local model concurrency is not a new SQL concurrency proof.
 
 ## Database boundary
 

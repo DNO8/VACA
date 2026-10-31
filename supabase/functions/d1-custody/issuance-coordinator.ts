@@ -1,10 +1,13 @@
-import { Keypair, Networks } from "@stellar/stellar-sdk";
+import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
 import { CustodyError, type Preparation, type VerifiedPayment } from "./handler.ts";
 import { planIssuance } from "./issuance-plan.ts";
+import { validateUnsignedTransaction } from "./unsigned-transaction.ts";
 
 interface Configuration {
   pool: string;
   database: {
+    loadUnsignedTransaction(requestId: string, authenticatedAdmin: string): Promise<unknown>;
+    saveUnsignedTransaction(requestId: string, authenticatedAdmin: string, unsignedXdr: string, transactionHash: string): Promise<unknown>;
     registerIssuanceIntent(requestId: string, authenticatedAdmin: string): Promise<unknown>;
     reserveIssuanceSequence(requestId: string, authenticatedAdmin: string, sequence: string): Promise<unknown>;
   };
@@ -58,38 +61,82 @@ export function createIssuanceCoordinator(configuration: Configuration) {
     if (!uuid(requestId)) throw new CustodyError("invalid_issuance_intent", 422);
     try { Keypair.fromPublicKey(authenticatedAdmin); }
     catch { throw new CustodyError("invalid_issuance_intent", 422); }
-    const intent = await configuration.database.registerIssuanceIntent(requestId, authenticatedAdmin);
-    requireReceipt(object(intent) && intent.kind === "d1_issuance_request_intent" &&
-      intent.revision === 1 && intent.request_id === requestId && uuid(intent.namespace) &&
-      intent.network === "TESTNET" && intent.pool === configuration.pool &&
-      preparation(intent.preparation_input) && intent.preparation_input.request_id === requestId &&
-      intent.preparation_input.payment.pool === configuration.pool && object(intent.preparation) &&
-      intent.preparation.revision === 1 && intent.preparation.state === "allocated" &&
-      intent.preparation.request_id === requestId && object(intent.preparation.allocation));
-    const observed = await provider(() => configuration.observeAccount(configuration.pool));
-    requireReceipt(object(observed) && observed.network === "TESTNET" &&
-      observed.pool === configuration.pool && sequence(observed.sequence));
-    const reservation = await configuration.database.reserveIssuanceSequence(
-      requestId, authenticatedAdmin, observed.sequence,
-    );
-    requireReceipt(object(reservation) && reservation.kind === "d1_issuance_sequence_reservation" &&
-      reservation.revision === 1 && reservation.request_id === requestId &&
-      reservation.network === "TESTNET" && reservation.pool === configuration.pool &&
-      reservation.namespace === intent.namespace &&
-      reservation.observed_account_sequence === observed.sequence &&
-      reservation.transaction_sequence === (BigInt(observed.sequence) + 1n).toString() &&
-      same(reservation.intent, intent));
-    // Validate the unknown nested receipt itself; never cast RPC output to trusted types.
-    const nested = reservation.intent;
-    requireReceipt(object(nested) && preparation(nested.preparation_input));
+    function bound(v: unknown, kind: string): v is Record<string, unknown> {
+      return object(v) && v.kind === kind && v.revision === 1 && v.request_id === requestId &&
+        uuid(v.namespace) && v.network === "TESTNET" && v.pool === configuration.pool;
+    }
+    function validateIntent(intent: unknown): asserts intent is Record<string, unknown> & { preparation_input: Preparation } {
+      requireReceipt(bound(intent, "d1_issuance_request_intent") &&
+        preparation(intent.preparation_input) && intent.preparation_input.request_id === requestId &&
+        intent.preparation_input.payment.pool === configuration.pool && object(intent.preparation) &&
+        intent.preparation.revision === 1 && intent.preparation.state === "allocated" &&
+        intent.preparation.request_id === requestId && object(intent.preparation.allocation));
+    }
+    function validateReservation(v: unknown): asserts v is Record<string, unknown> & {
+      observed_account_sequence: string; transaction_sequence: string;
+      intent: Record<string, unknown> & { preparation_input: Preparation };
+    } {
+      requireReceipt(bound(v, "d1_issuance_sequence_reservation") &&
+        sequence(v.observed_account_sequence) &&
+        v.transaction_sequence === (BigInt(v.observed_account_sequence) + 1n).toString());
+      validateIntent(v.intent);
+      requireReceipt(v.namespace === v.intent.namespace);
+    }
+    // Lookup authenticates current membership even when evidence has expired.
+    const lookup = await configuration.database.loadUnsignedTransaction(requestId, authenticatedAdmin);
+    requireReceipt(bound(lookup, "d1_unsigned_transaction_lookup") &&
+      (lookup.reservation === null || object(lookup.reservation)) &&
+      (lookup.transaction === null || object(lookup.transaction)) &&
+      (lookup.reservation !== null || lookup.transaction === null));
+    const namespace = lookup.namespace;
+    let reservation: unknown = lookup.reservation;
+    if (reservation !== null) {
+      validateReservation(reservation);
+      requireReceipt(reservation.namespace === lookup.namespace);
+    } else {
+      const intent = await configuration.database.registerIssuanceIntent(requestId, authenticatedAdmin);
+      validateIntent(intent);
+      requireReceipt(intent.namespace === lookup.namespace);
+      const observed = await provider(() => configuration.observeAccount(configuration.pool));
+      requireReceipt(object(observed) && observed.network === "TESTNET" &&
+        observed.pool === configuration.pool && sequence(observed.sequence));
+      reservation = await configuration.database.reserveIssuanceSequence(requestId, authenticatedAdmin, observed.sequence);
+      validateReservation(reservation);
+      requireReceipt(reservation.namespace === lookup.namespace &&
+        reservation.observed_account_sequence === observed.sequence && same(reservation.intent, intent));
+    }
+    // Both paths have validated the same persisted nested preparation and ownership.
+    validateReservation(reservation);
+    const owned = reservation;
+    function validateJournal(journal: unknown) {
+      requireReceipt(bound(journal, "d1_unsigned_transaction_journal") &&
+        journal.namespace === namespace && same(journal.reservation, owned) &&
+        journal.deadline === owned.intent.preparation_input.request.deadline &&
+        journal.transaction_sequence === owned.transaction_sequence &&
+        typeof journal.unsigned_xdr === "string" && typeof journal.transaction_hash === "string");
+      try {
+        return validateUnsignedTransaction({ prepared: owned.intent.preparation_input,
+          networkPassphrase: Networks.TESTNET, pool: configuration.pool,
+          observedSequence: owned.observed_account_sequence, transactionSequence: owned.transaction_sequence,
+          unsignedXdr: journal.unsigned_xdr, expectedTransactionHash: journal.transaction_hash });
+      } catch { throw new CustodyError("dependency_unavailable", 503); }
+    }
+    if (lookup.transaction !== null) {
+      return { unsignedXdr: validateJournal(lookup.transaction).unsignedXdr, reservation };
+    }
     const now = await provider(() => configuration.now());
+    // No fee read or first-save attempt after local expiry; never release ownership.
+    if (Number.isSafeInteger(now) && now >= Date.parse(owned.intent.preparation_input.request.deadline) / 1000) {
+      throw new CustodyError("issuance_window_exhausted", 410);
+    }
     const fee = await provider(() => configuration.fee());
+    let proposal;
     try {
-      return { ...planIssuance(nested.preparation_input, {
+      proposal = planIssuance(owned.intent.preparation_input, {
         networkPassphrase: Networks.TESTNET, pool: configuration.pool,
         // SDK increments this OBSERVED sequence exactly once, not transaction_sequence.
-        sequence: observed.sequence, now, fee,
-      }), reservation };
+        sequence: owned.observed_account_sequence, now, fee,
+      });
     } catch (error) {
       if (error instanceof Error && error.message === "issuance_window_exhausted") {
         throw new CustodyError("issuance_window_exhausted", 410);
@@ -99,6 +146,19 @@ export function createIssuanceCoordinator(configuration: Configuration) {
       }
       throw new CustodyError("dependency_unavailable", 503);
     }
-    // No retry, release or compensation: an unknown outcome may already own the source.
+    const transactionHash = await provider(() => {
+      const hash = TransactionBuilder.fromXDR(proposal.unsignedXdr, Networks.TESTNET).hash().toString("hex");
+      return validateUnsignedTransaction({ prepared: owned.intent.preparation_input,
+        networkPassphrase: Networks.TESTNET, pool: configuration.pool,
+        observedSequence: owned.observed_account_sequence, transactionSequence: owned.transaction_sequence,
+        unsignedXdr: proposal.unsignedXdr, expectedTransactionHash: hash }).transactionHash;
+    });
+    // Await durability once. Unknown outcomes never trigger readback, retry or compensation.
+    const saved = await configuration.database.saveUnsignedTransaction(
+      requestId, authenticatedAdmin, proposal.unsignedXdr, transactionHash,
+    );
+    const persisted = validateJournal(saved);
+    requireReceipt(persisted.unsignedXdr === proposal.unsignedXdr && persisted.transactionHash === transactionHash);
+    return { unsignedXdr: persisted.unsignedXdr, reservation };
   };
 }
