@@ -22,6 +22,23 @@ interface Context {
   readonly firstLedger: number;
   readonly checkpoint: Readonly<DiscoveryCheckpoint> | null;
 }
+export interface PoolObservationContext {
+  readonly pool: string;
+  readonly firstLedger: number;
+  readonly checkpoint: Readonly<DiscoveryCheckpoint>;
+}
+export interface PoolAccountObservation {
+  pool: string;
+  networkPassphrase: typeof Networks.TESTNET;
+  anchor: { sequence: number; hash: string; closedAt: number };
+  baseFee: string;
+  baseReserve: string;
+  sequence: string;
+  lastModifiedLedger: number;
+  native: { balance: string; sellingLiabilities: string };
+  issuedBalances: { code: string; issuer: string; balance: string; sellingLiabilities: string }[];
+  account: { subentry_count: number; num_sponsoring: number; num_sponsored: number };
+}
 interface Header { sequence: number; hash: string; closedAt: number }
 const ORIGIN = "https://horizon-testnet.stellar.org";
 const MAX_BODY = 1048576;
@@ -62,6 +79,52 @@ function list(value: unknown, limit: number): unknown[] {
   const records = object(object(value)._embedded).records;
   valid(Array.isArray(records) && records.length <= limit);
   return records;
+}
+
+// Additional validators for current account observations only; discovery's
+// existing transport, header, cursor and readPage behavior remain unchanged.
+function accountCount(value: unknown, max = 4294967295): number {
+  valid(typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= max);
+  return value;
+}
+function accountSequence(value: unknown): string {
+  valid(typeof value === "string" && /^(0|[1-9][0-9]{0,18})$/.test(value));
+  valid(BigInt(value) <= 9223372036854775807n);
+  return value;
+}
+function horizonStroops(value: unknown): string {
+  valid(typeof value === "string" && /^(0|[1-9][0-9]{0,11})\.[0-9]{7}$/.test(value));
+  const amount = BigInt(value.replace(".", ""));
+  valid(amount <= 9223372036854775807n);
+  return String(amount);
+}
+function normalizeBalances(value: unknown): Pick<PoolAccountObservation, "native" | "issuedBalances"> {
+  valid(Array.isArray(value));
+  let native: PoolAccountObservation["native"] | undefined;
+  const issuedBalances: PoolAccountObservation["issuedBalances"] = [], seen = new Set<string>();
+  for (const raw of value) {
+    const dto = object(raw);
+    const normalized = { balance: horizonStroops(dto.balance), sellingLiabilities: horizonStroops(dto.selling_liabilities) };
+    horizonStroops(dto.buying_liabilities);
+    const assetKeys = Object.keys(dto).filter((key) => key.startsWith("asset_") || key === "liquidity_pool_id").sort().join(",");
+    if (dto.asset_type === "native") {
+      valid(!native && assetKeys === "asset_type");
+      native = normalized;
+    } else {
+      valid(dto.asset_type === "credit_alphanum4" || dto.asset_type === "credit_alphanum12");
+      valid(assetKeys === "asset_code,asset_issuer,asset_type");
+      const code = dto.asset_code, issuer = dto.asset_issuer;
+      valid(typeof code === "string" && /^[A-Za-z0-9]{1,12}$/.test(code));
+      valid(dto.asset_type === (code.length <= 4 ? "credit_alphanum4" : "credit_alphanum12"));
+      valid(typeof issuer === "string"); Keypair.fromPublicKey(issuer);
+      valid(dto.is_authorized === true);
+      const key = code + ":" + issuer;
+      valid(!seen.has(key)); seen.add(key);
+      issuedBalances.push({ code, issuer, ...normalized });
+    }
+  }
+  valid(native !== undefined);
+  return { native, issuedBalances };
 }
 
 /** Read-only indexer consistency evidence. Not independent chain proof or readiness. */
@@ -105,6 +168,46 @@ export class HorizonDiscoverySource {
       // Also cancel on deadline, even when read() itself is stalled. Do not
       // await cancellation: a broken stream must not delay the bounded result.
       void reader?.cancel().catch(() => {});
+    }
+  }
+
+  /** Current indexed configuration only: a changed head requires a new scan, never an automatic retry. */
+  async readAccountAtCheckpoint(context: PoolObservationContext): Promise<PoolAccountObservation> {
+    try {
+      // Snapshot backend registry/checkpoint scalars before the first await.
+      const pool = context.pool, firstLedger = sequence(context.firstLedger), saved = object(context.checkpoint);
+      valid(typeof pool === "string"); Keypair.fromPublicKey(pool);
+      const descriptors = Object.getOwnPropertyDescriptors(saved);
+      valid(Reflect.ownKeys(saved).length === 4 && Object.keys(descriptors).sort().join(",") === "closed_at,cursor,ledger_hash,through_ledger");
+      valid(Object.values(descriptors).every((d) => "value" in d && d.enumerable));
+      const ledger = sequence(saved.through_ledger), ledgerHash = hash(saved.ledger_hash), closedAt = seconds(saved.closed_at);
+      valid(firstLedger <= ledger && (token(saved.cursor) >> 32n) <= BigInt(ledger));
+      const root = object(await this.read("/"));
+      valid(root.network_passphrase === Networks.TESTNET && sequence(root.history_elder_ledger) <= firstLedger &&
+        sequence(root.history_latest_ledger) === ledger);
+      const dto = object(await this.read(`/accounts/${pool}`));
+      valid(dto.id === pool && dto.account_id === pool);
+      const accountSeq = accountSequence(dto.sequence), lastModifiedLedger = sequence(dto.last_modified_ledger);
+      valid(lastModifiedLedger <= ledger);
+      const account = { subentry_count: accountCount(dto.subentry_count), num_sponsoring: accountCount(dto.num_sponsoring),
+        num_sponsored: accountCount(dto.num_sponsored) };
+      const balances = normalizeBalances(dto.balances);
+      valid(Array.isArray(dto.signers) && dto.signers.length === 1);
+      const signer = object(dto.signers[0]), thresholds = object(dto.thresholds);
+      const weight = accountCount(signer.weight, 255);
+      valid(signer.type === "ed25519_public_key" && signer.key === pool && weight > 0);
+      for (const key of ["low_threshold", "med_threshold", "high_threshold"]) valid(accountCount(thresholds[key], 255) <= weight);
+      // Read the current header AFTER the account. Historical headers cannot
+      // establish that the observed account still belongs to this checkpoint.
+      const latest = list(await this.read("/ledgers?limit=1&order=desc"), 1);
+      valid(latest.length === 1);
+      const anchor = header(latest[0]), current = object(latest[0]);
+      valid(anchor.sequence === ledger && anchor.hash === ledgerHash && anchor.closedAt === closedAt);
+      const baseFee = String(sequence(current.base_fee_in_stroops)), baseReserve = String(sequence(current.base_reserve_in_stroops));
+      return { pool, networkPassphrase: Networks.TESTNET, anchor, baseFee, baseReserve, sequence: accountSeq,
+        lastModifiedLedger, ...balances, account };
+    } catch {
+      throw new CustodyError("dependency_unavailable", 503);
     }
   }
 
