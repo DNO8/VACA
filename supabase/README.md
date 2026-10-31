@@ -1,6 +1,6 @@
 # D1 local preparation foundation — incomplete lifecycle
 
-This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation, private request-intent/sequence ownership and an unwired unsigned issuance planner only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
+This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation, private request-intent/sequence ownership and a trusted local unsigned-planning coordinator only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
 
 ## What works locally
 
@@ -98,7 +98,7 @@ out of scope; do not fund this incomplete foundation.
 `d1_register_issuance_intent(p_request_id UUID, p_authorized_by TEXT)`.
 Only `service_role` can execute this trusted backend RPC. It does **not** verify
 wallet signatures: a supplied admin public key is not public-wallet authentication.
-There is no HTTP route or adapter for this RPC yet.
+`CustodyDatabase.registerIssuanceIntent` calls this RPC; there is no HTTP route.
 
 The request UUID must already identify a persisted D1 preparation. Unknown,
 historical and non-D1 reservations all fail with `d1_preparation_not_found`;
@@ -125,7 +125,7 @@ row and return identical receipts. Exact existing replay remains readable after
 expiry, but is evidence only, **never authority to sign**. Registration itself
 provides no mutable state machine, source-sequence ownership, envelope storage
 or ledger-idempotency claim. Request-intent registration is a prerequisite for future planning/signing
-integration, but is **not yet connected** to the planner or handler.
+integration. The local coordinator connects it to the planner, but not the handler.
 
 The team must cover Testnet fees and claimable-balance reserves from a separately
 funded operational balance, without reducing donations/refunds or consuming
@@ -167,10 +167,57 @@ There is **no TTL, release, deletion, reassignment or automatic sequence advance
 Unknown outcomes never free ownership. This deliberately blocks later requests
 for that pool until future verified reconciliation (not implemented here).
 No allocation, fee/reserve counter or original intent changes. This is not ledger
-idempotency or operational readiness: the planner/handler remain disconnected;
+idempotency or operational readiness: the local coordinator remains disconnected from the handler;
 there are no Horizon reads, signed envelopes, signing, broadcasts or refunds in
 this slice. Separate operational funding remains a policy, not an account or
 funding proof.
+
+## Trusted local coordinator (not an endpoint)
+
+`createIssuanceCoordinator(configuration)` in `issuance-coordinator.ts` returns
+`(requestId, authenticatedAdmin) => Promise<{ unsignedXdr, reservation }>`. This is an
+**already-authenticated backend identity boundary**, not wallet authentication: never
+expose it by accepting an arbitrary admin public key from a client. SQL rechecks
+current membership on both RPCs. The two arguments contain no economic payload,
+preparation, network, sequence, fee, destination or XDR.
+
+Configuration supplies only the public pool, existing `CustodyDatabase`, trusted
+`observeAccount(pool)` returning `{ network: "TESTNET", pool, sequence }`, and
+`now()`/`fee()` providers. No account adapter, Horizon call, environment read,
+entrypoint wiring or second accounting/client implementation is added.
+Dependency injection is **not Horizon consensus, freshness or funding proof**.
+
+The coordinator registers the stored intent, validates its kind/revision/request,
+Testnet/configured-pool and preparation bindings, observes that same pool on Testnet,
+then reserves the exact observed decimal sequence. It validates reservation identity,
+namespace, observed/next integer sequences and structural equality of the nested
+intent (independent of JSON object key order). Only that reservation's persisted
+nested preparation reaches the existing planner. The SDK receives the reserved
+**observed** sequence and increments it once; the next sequence is never incremented
+again. Clock/fee are read near planning, after reservation. Planner amount/asset and
+payment-based deadline guards remain active; even an expired stored replay cannot
+produce unsigned bytes. The result is evidence and an unsigned plan, not ready,
+funded, signed, issued or submitted status. Unsigned bytes are **not durable**.
+
+Local failures throw existing `CustodyError` with exact code/status:
+`invalid_issuance_intent`/422 for invalid arguments; `unauthorized_admin_wallet`/403;
+`issuance_sequence_conflict` or `issuance_source_busy`/409; `deadline_expired`/410;
+`invalid_issuance_sequence`, `d1_preparation_not_found` or
+`d1_issuance_intent_not_found`/422. SQL `40001` becomes
+`serialization_failure`/503. Malformed receipts/bindings, unknown SQL/transport and
+provider failures become `dependency_unavailable`/503 without diagnostics.
+Planner failures are `invalid_issuance_plan`/422 or
+`issuance_window_exhausted`/410. These are local errors, not a new HTTP contract.
+
+There are no automatic retries, releases, deletes or compensating calls on failure.
+An unknown reservation response may already have committed exclusive ownership;
+a later deliberate retry must reuse the **original observation**, not a fresh
+sequence. No automatic recovery path or durable observation/envelope storage is
+implemented. Expiry never frees ownership. Signing, exact durable envelopes,
+submission/reconciliation, operational fee/reserve funding checks, discovery and
+original-donor refunds remain future work. Earlier PostgreSQL evidence is not new
+proof of this coordinator; its tests use a fake RPC transport with the real adapter
+and offline SDK-decoded XDR, retaining the existing 15 unit tests.
 
 ## Database boundary
 
@@ -214,7 +261,7 @@ On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\
 The following are **not implemented or proven** here:
 
 - Bounded paginated discovery and durable cursors for every new-pool donation, including donations with missing/wrong incident memos and donations never browser-notified.
-- Integrating the pure unsigned planner into authorized issuance, with persisted preparation loading, ledger fee/reserve/trustline checks and verified ledger outcomes. The planner alone does not issue a claimable balance.
+- Connecting the trusted local coordinator to independently authenticated authorized issuance, with ledger fee/reserve/trustline checks and verified ledger outcomes. Local unsigned planning alone does not issue a claimable balance.
 - Durable exact signed-envelope/hash intents before broadcast, integration of the exclusive source ownership with definitive outcome reconciliation after timeout or persistence failure.
 - Authenticated admin sweep, atomic claim+original-donor payment for eligible issued balances, unissued remainder refunds and durable issued/unissued accounting. There is no refund fallback or generic signing endpoint.
 - Integration guards preventing legacy service-role accounting callers from registering/allocating new D1 pool payments outside this overlay. Existing contracts are deliberately unchanged, so their direct use cannot be treated as D1 proof.

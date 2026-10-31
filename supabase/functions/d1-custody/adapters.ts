@@ -84,6 +84,40 @@ export class CustodyDatabase {
     },
   ) {}
 
+  registerIssuanceIntent(requestId: string, authenticatedAdmin: string): Promise<unknown> {
+    return this.issuanceRpc("d1_register_issuance_intent", {
+      p_request_id: requestId, p_authorized_by: authenticatedAdmin,
+    });
+  }
+
+  reserveIssuanceSequence(
+    requestId: string, authenticatedAdmin: string, observedAccountSequence: string,
+  ): Promise<unknown> {
+    return this.issuanceRpc("d1_reserve_issuance_sequence", {
+      p_request_id: requestId, p_authorized_by: authenticatedAdmin,
+      p_observed_account_sequence: observedAccountSequence,
+    });
+  }
+
+  private async issuanceRpc(name: string, args: Record<string, unknown>): Promise<unknown> {
+    let result;
+    try { result = await this.client.rpc(name, args); }
+    catch { throw new CustodyError("dependency_unavailable", 503); }
+    if (!result || typeof result !== "object") throw new CustodyError("dependency_unavailable", 503);
+    const { data, error } = result;
+    if (error === null) return data;
+    if (error?.code === "40001") throw new CustodyError("serialization_failure", 503);
+    const errors: Record<string, number> = {
+      unauthorized_admin_wallet: 403,
+      issuance_sequence_conflict: 409, issuance_source_busy: 409,
+      deadline_expired: 410,
+      invalid_issuance_intent: 422, invalid_issuance_sequence: 422,
+      d1_preparation_not_found: 422, d1_issuance_intent_not_found: 422,
+    };
+    const status = error && Object.hasOwn(errors, error.message) ? errors[error.message] : undefined;
+    throw new CustodyError(status ? error.message : "dependency_unavailable", status ?? 503);
+  }
+
   async prepare(input: Preparation): Promise<unknown> {
     const { data, error } = await this.client.rpc("d1_prepare", { p_input: input });
     if (!error) return data;
