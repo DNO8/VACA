@@ -1,6 +1,6 @@
 # D1 local preparation foundation — incomplete lifecycle
 
-This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation, private request-intent registration and an unwired unsigned issuance planner only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
+This is a **new implementation based on recovered contracts**, not recovered original backend source. It implements verified-payment preparation, private request-intent/sequence ownership and an unwired unsigned issuance planner only. **Do not deploy it or direct donations to this pool.** S2 remains incomplete; there is no S3 deployment or public-ledger evidence.
 
 ## What works locally
 
@@ -122,15 +122,55 @@ SECURITY DEFINER registration RPC exposes its receipt.
 First registration requires database time strictly before the immutable deadline;
 otherwise it fails with `deadline_expired`. Concurrent calls create exactly one
 row and return identical receipts. Exact existing replay remains readable after
-expiry, but is evidence only, **never authority to sign**. There is no mutable
-state machine, source-sequence ownership, envelope storage or ledger-idempotency
-claim. Request-intent registration is a prerequisite for future planning/signing
+expiry, but is evidence only, **never authority to sign**. Registration itself
+provides no mutable state machine, source-sequence ownership, envelope storage
+or ledger-idempotency claim. Request-intent registration is a prerequisite for future planning/signing
 integration, but is **not yet connected** to the planner or handler.
 
 The team must cover Testnet fees and claimable-balance reserves from a separately
 funded operational balance, without reducing donations/refunds or consuming
 excluded historical funds. This slice configures no account, key, funding or
 ledger checks; it does not prove that the operational balance exists.
+
+## Private exclusive issuance sequence ownership
+
+`017_d1_issuance_sequences.sql` adds the service-role-only trusted backend RPC
+`d1_reserve_issuance_sequence(p_request_id UUID, p_authorized_by TEXT,
+p_observed_account_sequence TEXT)`. There is no HTTP route. The observation must
+come from a trusted backend, never public wallet input. SQL does **not** verify
+Horizon consensus or actual account state. No source, network, economic payload,
+fee, destination or signed bytes can be supplied. Current admin membership is
+share-locked even on replay; namespace, pool and immutable intent/preparation
+come from persisted records in admin → pool → preparation/intent → sequence order.
+
+Sequence text must be canonical nonnegative decimal (`0` or nonzero-leading
+digits), at most `9223372036854775806`, matching the planner's current-sequence
+bounds. Exact integer arithmetic leaves room for the next transaction sequence,
+up to `9223372036854775807`; whitespace, signs, leading zeros, fractions, exponents,
+null and overflow fail with `invalid_issuance_sequence`. Missing/non-D1 preparation
+fails with `d1_preparation_not_found`; missing intent with
+`d1_issuance_intent_not_found`; revoked admins with `unauthorized_admin_wallet`.
+
+The private RLS table denies all direct API-role reads/DML, including service_role.
+Its immutable receipt has `kind: "d1_issuance_sequence_reservation"`, `revision: 1`,
+`request_id`, `namespace`, `network: "TESTNET"`, stored `pool`, decimal-text
+`observed_account_sequence` and `transaction_sequence`, and the original `intent`.
+It permits one exclusive owner per stored pool and one reservation per request.
+Exact request + observed sequence replay returns the original receipt even after
+expiry, **as evidence only**; a different observation conflicts with
+`issuance_sequence_conflict`. First acquisition checks database time after lock
+waits and fails with `deadline_expired` at/after the immutable payment deadline.
+Another live request for an owned source fails with `issuance_source_busy`, even
+when the owner's deadline has passed. Different stored pools remain independent.
+
+There is **no TTL, release, deletion, reassignment or automatic sequence advancement**.
+Unknown outcomes never free ownership. This deliberately blocks later requests
+for that pool until future verified reconciliation (not implemented here).
+No allocation, fee/reserve counter or original intent changes. This is not ledger
+idempotency or operational readiness: the planner/handler remain disconnected;
+there are no Horizon reads, signed envelopes, signing, broadcasts or refunds in
+this slice. Separate operational funding remains a policy, not an account or
+funding proof.
 
 ## Database boundary
 
@@ -165,7 +205,7 @@ D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node --test supabase/te
 
 Linux requires an explicit absolute `D1_TOOL_ROOT`; missing/relative values fail before any fixture is created with `Linux fixtures require an absolute D1_TOOL_ROOT.` Temporary fixtures use `TMPDIR` when set, otherwise `os.tmpdir()`; keep that directory outside the worktree. No ambient environment is forwarded to the Linux launcher. It supplies isolated credential/config paths, PostgreSQL shared libraries, and fixed `PGHOST=127.0.0.1`/`PGDATABASE=postgres`, so Linux psql calls omit the host/database overrides rejected by that launcher. Ports remain unique and explicit. The harness stops and verifies its cluster before removing its Linux fixture; the Linux launcher removes its own per-command scratch. This is environment isolation and loopback-only testing, not an OS network sandbox. No automatic retries, provisioning or live testnet checks are part of these commands. Windows defaults are covered structurally by resolver tests; that is not evidence of an actual Windows integration run.
 
-The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent call; it grants no production table access. Intent tests assert exact terse psql stderr, stdout and exit status, deadline/replay behavior, concurrent single creation and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
+The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016/017 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent/sequence call; it grants no production table access. Intent/sequence tests assert exact terse psql stderr, stdout and exit status, deadline/replay and post-lock deadline behavior, concurrent single creation, exclusive per-pool ownership, independent stored pools, integer bounds and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
 
 On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\Local\Temp\opencode`, never the worktree. Every harness run prints exact `FIXTURE`/`LAUNCHER_SCRATCH` paths for parent cleanup, stops its owned PostgreSQL in `finally`, and verifies stopped status `3`. The Windows harness does not delete scratch. PostgreSQL's Windows EDB archive still lacks an independently verified publisher checksum; the local hash is not publisher attestation. Engram mirroring remains pending.
 
@@ -175,7 +215,7 @@ The following are **not implemented or proven** here:
 
 - Bounded paginated discovery and durable cursors for every new-pool donation, including donations with missing/wrong incident memos and donations never browser-notified.
 - Integrating the pure unsigned planner into authorized issuance, with persisted preparation loading, ledger fee/reserve/trustline checks and verified ledger outcomes. The planner alone does not issue a claimable balance.
-- Durable exact signed-envelope/hash intents before broadcast, cross-request source-sequence serialization and definitive outcome reconciliation after timeout or persistence failure.
+- Durable exact signed-envelope/hash intents before broadcast, integration of the exclusive source ownership with definitive outcome reconciliation after timeout or persistence failure.
 - Authenticated admin sweep, atomic claim+original-donor payment for eligible issued balances, unissued remainder refunds and durable issued/unissued accounting. There is no refund fallback or generic signing endpoint.
 - Integration guards preventing legacy service-role accounting callers from registering/allocating new D1 pool payments outside this overlay. Existing contracts are deliberately unchanged, so their direct use cannot be treated as D1 proof.
 

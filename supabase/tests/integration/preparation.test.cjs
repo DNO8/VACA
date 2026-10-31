@@ -83,6 +83,7 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
         launcher,
         "psql",
         ...args,
+        "--set", "VERBOSITY=terse",
         "-c",
         "set role service_role; " + source,
       ], { env });
@@ -96,7 +97,7 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
       child.once("error", reject);
       child.once("close", (code) => {
         record(stderr);
-        resolve({ code, stdout: stdout.trim().replace(/^SET\r?\n/, ""), stderr });
+        resolve({ code, stdout: stdout.trim().replace(/^SET\r?\n/, ""), rawStdout: stdout, stderr });
       });
     });
   }
@@ -286,17 +287,24 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
     // 016 is optional here so test-first runs reach the public RPC, not a missing-file check.
     const intentsMigration = path.join(repo, "supabase/migrations/016_d1_issuance_intents.sql");
     if (fs.existsSync(intentsMigration)) apply("016.sql", fs.readFileSync(intentsMigration, "utf8"));
+    const sequencesMigration = path.join(repo, "supabase/migrations/017_d1_issuance_sequences.sql");
+    if (fs.existsSync(sequencesMigration)) apply("017.sql", fs.readFileSync(sequencesMigration, "utf8"));
     // Test-only public observation RPC: no production table grants are weakened.
     apply("observe.sql", `
       create function public.fixture_snapshot() returns jsonb language plpgsql
       security definer set search_path = '' as $$
-      declare result jsonb; intents jsonb := '[]'::jsonb;
+      declare result jsonb; intents jsonb := '[]'::jsonb; sequences jsonb := '[]'::jsonb;
       begin
         if pg_catalog.to_regclass('public.d1_issuance_intents') is not null then
           execute 'select coalesce(jsonb_agg(to_jsonb(t) order by request_id), ''[]''::jsonb)
                    from public.d1_issuance_intents t' into intents;
         end if;
+        if pg_catalog.to_regclass('public.d1_issuance_sequences') is not null then
+          execute 'select coalesce(jsonb_agg(to_jsonb(t) order by request_id), ''[]''::jsonb)
+                   from public.d1_issuance_sequences t' into sequences;
+        end if;
         select pg_catalog.jsonb_build_object(
+          'sequences', sequences,
           'reservations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.release_requests t),
           'payments', (select jsonb_agg(to_jsonb(t) order by transaction_hash, operation_id) from public.donation_payments t),
           'allocations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.donation_allocations t),
@@ -356,8 +364,52 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
         request: { ...request, deadline: shortDeadline } });
     }
     const shortIntent = JSON.parse(sql(register(20)));
+    const reserve = (n, sequence = "0", admin = key) =>
+      `select public.d1_reserve_issuance_sequence('${id(n)}','${admin}',${sequence === null ? "null" : "'" + sequence + "'"});`;
+    // Behavioral RED without 017: reach the public RPC, not a missing-file assertion.
+    const sequenceBefore = snapshot();
+    const sequenceRace = await Promise.all([1, 2].map(() => concurrent(reserve(20))));
+    assert.deepEqual(sequenceRace.map((r) => r.code), [0, 0], JSON.stringify(sequenceRace));
+    assert.deepEqual(sequenceRace.map((r) => r.stderr), ["", ""]);
+    assert.equal(sequenceRace[0].stdout, sequenceRace[1].stdout);
+    const sequenceReceipt = JSON.parse(sequenceRace[0].stdout);
+    assert.deepEqual(sequenceReceipt, {
+      kind: "d1_issuance_sequence_reservation", revision: 1,
+      request_id: id(20), namespace: id(100), network: "TESTNET", pool: key,
+      observed_account_sequence: "0", transaction_sequence: "1", intent: shortIntent,
+    });
+    const sequenceAfter = snapshot();
+    assert.equal(sequenceAfter.sequences.length, 1);
+    assert.deepEqual(sequenceAfter.sequences[0], {
+      namespace: id(100), request_id: id(20), receipt: sequenceReceipt,
+    });
+    delete sequenceBefore.sequences;
+    delete sequenceAfter.sequences;
+    assert.deepEqual(sequenceAfter, sequenceBefore, "Sequence ownership has no financial side effects");
+    for (const invalid of [null, "", "00", "01", "-1", "+1", " 1", "1 ", "1.0", "1e1",
+      "9223372036854775807", "9223372036854775808", "99999999999999999999"]) {
+      intentRejected(reserve(20, invalid), "invalid_issuance_sequence");
+    }
+    intentRejected("select public.d1_reserve_issuance_sequence(null,null,'0');", "invalid_issuance_sequence");
+    intentRejected(reserve(20, "1"), "issuance_sequence_conflict");
+    intentRejected(reserve(500), "d1_preparation_not_found");
+    intentRejected(reserve(99), "d1_preparation_not_found");
+    intentRejected(reserve(98), "d1_preparation_not_found");
+    intentRejected(reserve(2), "d1_issuance_intent_not_found");
+    intentRejected(reserve(20, "0", oldPool), "unauthorized_admin_wallet");
+    sql(`delete from public.admin_wallets where public_key = '${key}';`, false);
+    intentRejected(reserve(20), "unauthorized_admin_wallet");
+    sql(`insert into public.admin_wallets values ('${key}');`, false);
+    intentRejected(reserve(1), "issuance_source_busy");
     sql(`select pg_sleep(greatest(0, extract(epoch from '${shortDeadline}'::timestamptz - clock_timestamp())));`);
     intentRejected(register(21), "deadline_expired");
+    intentRejected(reserve(21), "d1_issuance_intent_not_found");
+    const expiredSequenceBefore = digest(snapshot());
+    assert.deepEqual(JSON.parse(sql(reserve(20))), sequenceReceipt, "Expired sequence replay is evidence only");
+    assert.equal(digest(snapshot()), expiredSequenceBefore);
+    intentRejected(reserve(1), "issuance_source_busy");
+    // Expiry cannot turn a conflicting observation into a fresh reservation.
+    intentRejected(reserve(20, "2"), "issuance_sequence_conflict");
     const expiredBefore = digest(snapshot());
     assert.deepEqual(JSON.parse(sql(register(20))), shortIntent, "Expired replay is immutable evidence only");
     assert.equal(digest(snapshot()), expiredBefore);
@@ -372,6 +424,71 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
     delete concurrentBefore.intents;
     delete concurrentAfter.intents;
     assert.deepEqual(concurrentAfter, concurrentBefore);
+    // A second stored pool has independent ownership; no caller-selected source exists.
+    const secondPool = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC6PV"; // Synthetic public bytes 0..01.
+    sql(`select public.d1_activate_pool('${id(101)}','${secondPool}',900);`);
+    const freshConfirmed = Number(sql("select floor(extract(epoch from clock_timestamp()))::bigint - 2;"));
+    const freshRequest = { ...request,
+      deadline: new Date((freshConfirmed + 300) * 1000).toISOString().replace(".000Z", "Z") };
+    for (const n of [30, 31, 32]) {
+      const cutoff = n === 32 ? freshConfirmed - 294 : freshConfirmed;
+      prepare({ ...input, request_id: id(n), confirmed_at: cutoff,
+        payment: { ...payment, pool: secondPool, operation_id: String(300 + n) },
+        request: { ...freshRequest,
+          deadline: new Date((cutoff + 300) * 1000).toISOString().replace(".000Z", "Z") } });
+      sql(register(n));
+    }
+    // Hold the pool row past the deadline. Observe acquisition before starting RPC.
+    const blocker = concurrent(`reset role; begin; set local application_name = 'd1_sequence_blocker';
+      select namespace from public.d1_pools where namespace = '${id(101)}' for update;
+      select pg_sleep(5); commit;`);
+    let locked = false;
+    for (let attempt = 0; attempt < 40; attempt++) {
+      locked = sql(`select exists(select 1 from pg_stat_activity where application_name = 'd1_sequence_blocker'
+        and wait_event = 'PgSleep');`, false) === "t";
+      if (locked) break;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    assert.equal(locked, true, "Blocker must own pool lock before reservation starts");
+    assert.equal(sql(`select clock_timestamp() < to_timestamp(${freshConfirmed + 6});`), "t",
+      "Reservation must begin before cutoff so only the lock wait exhausts its window");
+    intentRejected(reserve(32), "deadline_expired");
+    const blocked = await blocker;
+    assert.equal(blocked.code, 0, blocked.stderr);
+    assert.equal(blocked.stderr, "");
+    const competingBefore = snapshot();
+    const competing = await Promise.all([30, 31].map((n) =>
+      concurrent(reserve(n, "9223372036854775806"))));
+    assert.deepEqual(competing.map((r) => r.code).sort(), [0, 1]);
+    const loser = competing.find((r) => r.code === 1);
+    assert.equal(loser.rawStdout, "SET\n");
+    assert.equal(loser.stderr, "ERROR:  issuance_source_busy\n");
+    const winning = JSON.parse(competing.find((r) => r.code === 0).stdout);
+    assert.equal(winning.pool, secondPool);
+    assert.equal(winning.namespace, id(101));
+    assert.equal(winning.observed_account_sequence, "9223372036854775806");
+    assert.equal(winning.transaction_sequence, "9223372036854775807");
+    const competingAfter = snapshot();
+    assert.equal(competingAfter.sequences.length, 2);
+    assert.equal(competingAfter.sequences.filter((r) => r.namespace === id(101)).length, 1);
+    delete competingBefore.sequences;
+    delete competingAfter.sequences;
+    assert.deepEqual(competingAfter, competingBefore);
+    // No API role can read or mutate sequence ownership, even service_role.
+    for (const role of ["anon", "authenticated", "service_role"]) {
+      if (role !== "service_role") intentRejected(reserve(20), "permission denied for function d1_reserve_issuance_sequence", role);
+      for (const statement of [
+        "select * from public.d1_issuance_sequences;",
+        `insert into public.d1_issuance_sequences values ('${id(101)}','${id(501)}','{}');`,
+        "update public.d1_issuance_sequences set receipt = '{}';",
+        "delete from public.d1_issuance_sequences;",
+        "truncate public.d1_issuance_sequences;",
+      ]) intentRejected(statement, "permission denied for table d1_issuance_sequences", role);
+    }
+    assert.equal(sql(`select relrowsecurity from pg_class where oid = 'public.d1_issuance_sequences'::regclass;`), "t");
+    assert.equal(sql(`select prosecdef and proconfig = array['search_path=""']
+      from pg_proc where oid = 'public.d1_reserve_issuance_sequence(uuid,text,text)'::regprocedure;`), "t");
+    console.log("SEQUENCE_CASES=canonical,bounds,admin,stored-intent,expiry,lock-wait,replay,exclusive,independent-pools,grants");
     // No API role can read or mutate intents directly, even service_role.
     for (const role of ["anon", "authenticated", "service_role"]) {
       if (role !== "service_role") intentRejected(register(1), "permission denied for function d1_register_issuance_intent", role);
