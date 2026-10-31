@@ -310,6 +310,75 @@ PostgreSQL evidence is not new proof of this coordinator; its tests use a fake R
 transport with the real adapter and offline SDK-decoded XDR. No SQL changed in this
 integration unit; local model concurrency is not a new SQL concurrency proof.
 
+## Private discovery journal — T1a only, not verified donations
+
+`019_d1_discovery.sql` adds trusted-backend, service-role-only RPCs (no HTTP route):
+`d1_load_discovery_checkpoint(p_namespace UUID, p_authorized_by TEXT)` and
+`d1_record_discovery_page(p_namespace UUID, p_authorized_by TEXT, p_page JSONB)`.
+A supplied admin key is **not authentication**. Every lookup/save/replay checks
+current admin membership; namespace must identify an existing 015 pool. Network
+is always `TESTNET`, pool comes from that row, never caller assertions. Locks follow
+admin → pool → checkpoint → operation; the pool serializes absent rows and all pages.
+
+The exact page type for the later **trusted Horizon parser**, not public clients:
+
+```typescript
+type DiscoveryRecord = {
+  paging_token: string; ledger: number; transaction_hash: string;
+  operation_id: string; operation: Record<string, unknown>;
+};
+type DiscoveryPage = {
+  revision: 1; from_cursor: string; to_cursor: string;
+  through_ledger: number; ledger_hash: string; closed_at: number;
+  records: DiscoveryRecord[];
+};
+```
+
+No missing/null/unknown outer or record fields. Cursor/token/operation IDs are
+canonical decimal uint64 strings (no signs, whitespace, leading zeros or exponent);
+IDs/tokens are positive, initial cursor is `"0"`. Tokens strictly increase above
+`from_cursor`; `to_cursor` equals the last token, or `from_cursor` for empty pages.
+Arithmetic is exact SQL numeric, including `18446744073709551615`, without increment
+or overflow. Ledger numbers are whole uint32 (0–4294967295), record ledger ≤
+`through_ledger`; `closed_at` is whole Unix UTC seconds 0–253402300799 (year 9999).
+Hashes are exactly 64 lowercase hex characters. This is a bounded projection of
+Horizon paging/ledger identifiers, not a claim that arbitrary SQL input came from Horizon.
+Maximum 200 records, 16,384 UTF-8 bytes per opaque operation object, 1,048,576
+bytes per page, measured using PostgreSQL JSONB text serialization. JSONB retains
+canonical JSON values, not original HTTP whitespace/key order/duplicate keys.
+
+Lookup returns `{kind: "d1_discovery_checkpoint_lookup", revision: 1, namespace,
+network: "TESTNET", pool, checkpoint}`; checkpoint is null initially, otherwise
+`{cursor, through_ledger, ledger_hash, closed_at}`. Lookup never creates rows and
+never loads an unbounded record history. Full original records are retained privately
+for a later paginated refund/discovery API, which is **not implemented here**.
+Save returns the immutable receipt `{kind: "d1_discovery_page", revision: 1,
+namespace, network: "TESTNET", pool, from_cursor, to_cursor, checkpoint_ledger,
+checkpoint_hash, page_count, record_count}`. `page_count` is cumulative committed
+pages, `record_count` is this page's length. Exact page snapshot and receipt persist.
+
+Identity is `(namespace, from_cursor, through_ledger, ledger_hash)`; exact replay
+returns its original receipt without rewinding a newer checkpoint. Changed replay,
+stale cursor CAS, ledger/time rewind, inconsistent hash/time for the same ledger,
+or duplicate token/transaction-operation identity conflicts. Several later empty
+pages can advance ledger/hash independently of cursor. New records and checkpoint
+commit atomically; concurrent identical pages return one receipt, competing pages
+have one winner. Rejections leave all state/counters unchanged. Private RLS tables
+deny direct API-role reads/DML, including service_role; RPCs use empty search paths.
+SQL errors: `invalid_discovery_page` and absent-pool `pool_not_activated` use 22023;
+`discovery_conflict` uses 23505; revoked/nonmember admin uses 42501
+`unauthorized_admin_wallet`. Normal PostgreSQL serialization errors remain 40001.
+No automatic retry, release or compensation on unknown outcomes.
+
+**Opaque observations are not donor/funding truth.** Outgoing and unsupported raw
+operations are retained too. The later T1b parser must verify server chain facts,
+network/account/history coverage, donor/asset/amount/time/memo provenance and
+quarantine classification. Neither activation `first_ledger`, an empty journal,
+nor a direct page call proves complete history or readiness. No allocation,
+legacy counter, sequence ownership, reserve/release, fee budget, signer, deployment
+or refund is changed. T1 and full D1 remain incomplete (S1–S6); separate team-funded
+fees/reserves and original-donor refund policy remain obligations, not evidence.
+
 ## Database boundary
 
 `015_d1_testnet_custody.sql` adds private activation/preparation overlay tables and service-role-only SECURITY DEFINER RPCs with empty search paths. It does not change the recovered functions/tables, backfill historical rows, release capacity on expiry, or invent new accounting counters.
@@ -343,7 +412,7 @@ D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node --test supabase/te
 
 Linux requires an explicit absolute `D1_TOOL_ROOT`; missing/relative values fail before any fixture is created with `Linux fixtures require an absolute D1_TOOL_ROOT.` Temporary fixtures use `TMPDIR` when set, otherwise `os.tmpdir()`; keep that directory outside the worktree. No ambient environment is forwarded to the Linux launcher. It supplies isolated credential/config paths, PostgreSQL shared libraries, and fixed `PGHOST=127.0.0.1`/`PGDATABASE=postgres`, so Linux psql calls omit the host/database overrides rejected by that launcher. Ports remain unique and explicit. The harness stops and verifies its cluster before removing its Linux fixture; the Linux launcher removes its own per-command scratch. This is environment isolation and loopback-only testing, not an OS network sandbox. No automatic retries, provisioning or live testnet checks are part of these commands. Windows defaults are covered structurally by resolver tests; that is not evidence of an actual Windows integration run.
 
-The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016/017/018 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent/sequence/journal call (including the new journal state); it grants no production table access. Intent/sequence tests assert exact terse psql stderr, stdout and exit status, deadline/replay and post-lock deadline behavior, concurrent single creation, exclusive per-pool ownership, independent stored pools, integer bounds and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
+The optional nonsecret `D1_TOOL_ROOT` environment value on Windows selects the already installed tool directory for the Node harness only. It is not a network URL or application setting. The harness forwards only Windows system-directory variables to the sanitized launcher, fixes PostgreSQL to `127.0.0.1`, reserves a fresh port, and never reads ambient DB credentials. It creates minimal fixture `admin_wallets`/`incidents`/roles, applies only the retained 014/latest statement strings and authored 015/016/017/018/019 locally, and probes the public RPCs. A test-only SECURITY DEFINER snapshot RPC hashes all affected rows and counters around each rejected intent/sequence/journal call (including the new journal state); it grants no production table access. Intent/sequence tests assert exact terse psql stderr, stdout and exit status, deadline/replay and post-lock deadline behavior, concurrent single creation, exclusive per-pool ownership, independent stored pools, integer bounds and API privileges. The existing preparation scenario still runs in the same fixture. The Linux launcher adds network denial itself; do not duplicate `--deny-net`. The recovery snapshot remains read-only; it is not a complete bootstrap. Parallel psql processes exercise capacity and replay races.
 
 On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\Local\Temp\opencode`, never the worktree. Every harness run prints exact `FIXTURE`/`LAUNCHER_SCRATCH` paths for parent cleanup, stops its owned PostgreSQL in `finally`, and verifies stopped status `3`. The Windows harness does not delete scratch. PostgreSQL's Windows EDB archive still lacks an independently verified publisher checksum; the local hash is not publisher attestation. Engram mirroring remains pending.
 
@@ -351,7 +420,7 @@ On Windows, fixtures and launcher scratch remain under `C:\Users\Danilo\AppData\
 
 The following are **not implemented or proven** here:
 
-- Bounded paginated discovery and durable cursors for every new-pool donation, including donations with missing/wrong incident memos and donations never browser-notified.
+- Trusted Horizon discovery/parser and complete history coverage for every new-pool donation, including missing/wrong incident memos and donations never browser-notified. The 019 opaque durable page/cursor journal alone does not provide that verification.
 - Connecting the trusted local coordinator to independently authenticated authorized issuance, with ledger fee/reserve/trustline checks and verified ledger outcomes. Local unsigned planning alone does not issue a claimable balance.
 - Durable exact signed-envelope/hash intents before broadcast, integration of the exclusive source ownership with definitive outcome reconciliation after timeout or persistence failure.
 - Authenticated admin sweep, atomic claim+original-donor payment for eligible issued balances, unissued remainder refunds and durable issued/unissued accounting. There is no refund fallback or generic signing endpoint.

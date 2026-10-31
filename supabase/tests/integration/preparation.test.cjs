@@ -291,6 +291,8 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
     if (fs.existsSync(sequencesMigration)) apply("017.sql", fs.readFileSync(sequencesMigration, "utf8"));
     const journalMigration = path.join(repo, "supabase/migrations/018_d1_unsigned_transactions.sql");
     if (fs.existsSync(journalMigration)) apply("018.sql", fs.readFileSync(journalMigration, "utf8"));
+    const discoveryMigration = path.join(repo, "supabase/migrations/019_d1_discovery.sql");
+    if (fs.existsSync(discoveryMigration)) apply("019.sql", fs.readFileSync(discoveryMigration, "utf8"));
     // Test-only public observation RPC: no production table grants are weakened.
     apply("observe.sql", `
       create function public.fixture_snapshot() returns jsonb language plpgsql
@@ -310,6 +312,8 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
                    from public.d1_unsigned_transactions t' into journal;
         end if;
         select pg_catalog.jsonb_build_object(
+          'discovery', case when pg_catalog.to_regclass('public.d1_discovery_pages') is null then null
+            else public.fixture_discovery_snapshot() end,
           'journal', journal, 'sequences', sequences,
           'reservations', (select jsonb_agg(to_jsonb(t) order by request_id) from public.release_requests t),
           'payments', (select jsonb_agg(to_jsonb(t) order by transaction_hash, operation_id) from public.donation_payments t),
@@ -322,7 +326,25 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
       end; $$;
       revoke all on function public.fixture_snapshot() from public;
       grant execute on function public.fixture_snapshot() to service_role;`);
+    // Separate fixture-only observer keeps missing-019 RED at the real public RPC.
+    apply("observe-discovery.sql", `create function public.fixture_discovery_snapshot() returns jsonb
+      language plpgsql security definer set search_path = '' as $$ declare result jsonb; begin
+      if pg_catalog.to_regclass('public.d1_discovery_pages') is null then return null; end if;
+      execute 'select jsonb_build_object(
+        ''checkpoints'', (select jsonb_agg(to_jsonb(t) order by namespace) from public.d1_discovery_checkpoints t),
+        ''pages'', (select jsonb_agg(to_jsonb(t) order by namespace, through_ledger, from_cursor) from public.d1_discovery_pages t),
+        ''operations'', (select jsonb_agg(to_jsonb(t) order by namespace, paging_token) from public.d1_discovery_operations t))'
+      into result; return result; end; $$;
+      revoke all on function public.fixture_discovery_snapshot() from public;
+      grant execute on function public.fixture_discovery_snapshot() to service_role;`);
     const snapshot = () => JSON.parse(sql("select public.fixture_snapshot();"));
+    const discoveryLoad = (namespace = id(100), admin = key) =>
+      `select public.d1_load_discovery_checkpoint('${namespace}','${admin}');`;
+    // Behavioral RED: undefined_function must fail here before 019 exists.
+    assert.deepEqual(JSON.parse(sql(discoveryLoad())), {
+      kind: "d1_discovery_checkpoint_lookup", revision: 1, namespace: id(100),
+      network: "TESTNET", pool: key, checkpoint: null,
+    });
     const register = (n, admin = key) =>
       `select public.d1_register_issuance_intent('${id(n)}','${admin}');`;
     function intentRejected(source, message, role = "service_role") {
@@ -673,6 +695,116 @@ test("local D1 preparation reuses allocation contracts and isolates historical f
         where oid = 'public.${signature}'::regprocedure;`), "t");
     }
     console.log("JOURNAL_CASES=lookup,opaque,canonical,bounds,admin,reservation,expiry,lock-wait,replay,conflict,concurrency,grants,capacity");
+    const page = {
+      revision: 1, from_cursor: "0", to_cursor: "9007199254740993", through_ledger: 950,
+      ledger_hash: "d".repeat(64), closed_at: 1700000000,
+      // Synthetic opaque JSON, explicitly NOT Horizon-verified incoming payments.
+      records: [{ paging_token: "9007199254740993", ledger: 949,
+        transaction_hash: "e".repeat(64), operation_id: "9007199254740993",
+        operation: { type: "unsupported", direction: "outgoing", original: ["retain", 1] } }],
+    };
+    const discover = (value = page, namespace = id(100), admin = key) =>
+      `select public.d1_record_discovery_page('${namespace}','${admin}',${lit(value)});`;
+    const discoveryBefore = snapshot();
+    const discoveryRace = await Promise.all([1, 2].map(() => concurrent(discover())));
+    assert.deepEqual(discoveryRace.map((r) => r.code), [0, 0]);
+    assert.deepEqual(discoveryRace.map((r) => r.stderr), ["", ""]);
+    assert.equal(discoveryRace[0].stdout, discoveryRace[1].stdout);
+    for (const r of discoveryRace) assert.equal(r.rawStdout, "SET\n" + r.stdout + "\n");
+    const discoveryReceipt = JSON.parse(discoveryRace[0].stdout);
+    assert.deepEqual(discoveryReceipt, { kind: "d1_discovery_page", revision: 1,
+      namespace: id(100), network: "TESTNET", pool: key,
+      from_cursor: page.from_cursor, to_cursor: page.to_cursor, checkpoint_ledger: 950,
+      checkpoint_hash: page.ledger_hash, page_count: 1, record_count: 1 });
+    const discoveryAfter = snapshot();
+    assert.deepEqual(discoveryAfter.discovery.operations[0].record, page.records[0]);
+    assert.deepEqual(discoveryAfter.discovery.pages[0].page, page);
+    delete discoveryBefore.discovery;
+    delete discoveryAfter.discovery;
+    assert.deepEqual(discoveryAfter, discoveryBefore, "Discovery has no economic side effects");
+    const terminal = { ...page, from_cursor: page.to_cursor, records: [], through_ledger: 951,
+      ledger_hash: "f".repeat(64), closed_at: page.closed_at + 1 };
+    const terminalReceipt = JSON.parse(sql(discover(terminal)));
+    const later = { ...terminal, through_ledger: 952, ledger_hash: "a".repeat(64), closed_at: page.closed_at + 2 };
+    assert.equal(JSON.parse(sql(discover(later))).page_count, 3);
+    const latest = JSON.parse(sql(discoveryLoad()));
+    assert.deepEqual(latest.checkpoint, { cursor: page.to_cursor, through_ledger: 952,
+      ledger_hash: later.ledger_hash, closed_at: later.closed_at });
+    const replayState = digest(snapshot());
+    assert.deepEqual(JSON.parse(sql(discover())), discoveryReceipt);
+    assert.deepEqual(JSON.parse(sql(discover(terminal))), terminalReceipt);
+    assert.equal(digest(snapshot()), replayState, "Old replay never rewinds ledger/cursor");
+    intentRejected(discover({ ...page, records: [{ ...page.records[0], operation: {} }] }), "discovery_conflict");
+    intentRejected(discover({ ...later, ledger_hash: "b".repeat(64) }), "discovery_conflict");
+    intentRejected(discover({ ...terminal, through_ledger: 949 }), "discovery_conflict");
+    intentRejected(discover({ ...later, from_cursor: "0", to_cursor: "0" }), "discovery_conflict");
+    intentRejected(discoveryLoad(id(9999)), "pool_not_activated");
+    intentRejected(discover(page, id(9999)), "pool_not_activated");
+    for (const invalid of [null, [], {}, { ...later, extra: true }, { ...later, revision: 2 },
+      { ...later, records: null }, { ...later, records: Array(201).fill(page.records[0]) },
+      ...[null, "00", "-1", "1.0", "1e2", "18446744073709551616", 1].map((from_cursor) => ({ ...later, from_cursor })),
+      ...[null, "952", -1, 4294967296, 1.5].map((through_ledger) => ({ ...later, through_ledger })),
+      ...[null, -1, 253402300800, 1.5, "1700000000"].map((closed_at) => ({ ...later, closed_at })),
+      ...[null, "A".repeat(64), "a".repeat(63)].map((ledger_hash) => ({ ...later, ledger_hash })),
+      ...Object.keys(later).map((field) => { const value = { ...later }; delete value[field]; return value; }),
+    ]) intentRejected(discover(invalid), "invalid_discovery_page");
+    const nextRecord = { ...page.records[0], paging_token: "9007199254740994", operation_id: "9007199254740994" };
+    const next = { ...later, to_cursor: nextRecord.paging_token, records: [nextRecord],
+      through_ledger: 953, ledger_hash: "b".repeat(64), closed_at: later.closed_at + 1 };
+    for (const record of [null, {}, { ...nextRecord, extra: 1 }, { ...nextRecord, ledger: 954 },
+      { ...nextRecord, operation: [] }, { ...nextRecord, operation: { raw: "x".repeat(16384) } },
+      ...[null, "00", "0", "18446744073709551616", 42].map((operation_id) => ({ ...nextRecord, operation_id })),
+      ...[null, "0", "9007199254740993", "18446744073709551616"].map((paging_token) => ({ ...nextRecord, paging_token })),
+    ]) intentRejected(discover({ ...next, records: [record] }), "invalid_discovery_page");
+    intentRejected(discover({ ...next, records: [nextRecord, nextRecord] }), "invalid_discovery_page");
+    intentRejected(discover({ ...next, records: [{ ...nextRecord, operation_id: page.records[0].operation_id }] }), "discovery_conflict");
+    const casBefore = snapshot();
+    const cas = await Promise.all([next, { ...next, through_ledger: 954,
+      ledger_hash: "a".repeat(64), closed_at: next.closed_at + 1 }]
+      .map((value) => concurrent(discover(value))));
+    assert.deepEqual(cas.map((r) => r.code).sort(), [0, 1]);
+    assert.equal(cas.find((r) => r.code === 1).rawStdout, "SET\n");
+    assert.equal(cas.find((r) => r.code === 1).stderr, "ERROR:  discovery_conflict\n");
+    const casWinner = cas.find((r) => r.code === 0);
+    assert.equal(casWinner.stderr, "");
+    assert.equal(casWinner.rawStdout, "SET\n" + casWinner.stdout + "\n");
+    const casAfter = snapshot();
+    assert.equal(casAfter.discovery.operations.length, casBefore.discovery.operations.length + 1);
+    assert.equal(casAfter.discovery.pages.length, casBefore.discovery.pages.length + 1);
+    assert.equal(JSON.parse(sql(discoveryLoad())).checkpoint.cursor, next.to_cursor);
+    delete casBefore.discovery;
+    delete casAfter.discovery;
+    assert.deepEqual(casAfter, casBefore, "CAS loser creates no holes or economic side effects");
+    const max = { ...later, from_cursor: next.to_cursor, to_cursor: "18446744073709551615",
+      through_ledger: 4294967295, ledger_hash: "c".repeat(64), closed_at: 253402300799,
+      records: [{ ...nextRecord, paging_token: "18446744073709551615", operation_id: "18446744073709551615", ledger: 4294967295 }] };
+    assert.equal(JSON.parse(sql(discover(max))).to_cursor, max.to_cursor);
+    assert.equal(JSON.parse(sql(discoveryLoad())).checkpoint.cursor, max.to_cursor);
+    sql(`delete from public.admin_wallets where public_key = '${key}';`, false);
+    for (const namespace of [id(100), id(101), id(9999)]) {
+      intentRejected(discoveryLoad(namespace), "unauthorized_admin_wallet");
+      intentRejected(discover(page, namespace), "unauthorized_admin_wallet");
+    }
+    sql(`insert into public.admin_wallets values ('${key}');`, false);
+    for (const role of ["anon", "authenticated", "service_role"]) {
+      if (role !== "service_role") {
+        intentRejected(discoveryLoad(), "permission denied for function d1_load_discovery_checkpoint", role);
+        intentRejected(discover(), "permission denied for function d1_record_discovery_page", role);
+      }
+      for (const table of ["checkpoints", "pages", "operations"]) {
+        const name = "d1_discovery_" + table;
+        for (const statement of [`select * from public.${name};`, `insert into public.${name} default values;`,
+          `update public.${name} set namespace = '${id(500)}';`, `delete from public.${name};`, `truncate public.${name};`]) {
+          intentRejected(statement, "permission denied for table " + name, role);
+        }
+        assert.equal(sql(`select relrowsecurity from pg_class where oid = 'public.${name}'::regclass;`), "t");
+      }
+    }
+    for (const signature of ["d1_load_discovery_checkpoint(uuid,text)", "d1_record_discovery_page(uuid,text,jsonb)"]) {
+      assert.equal(sql(`select prosecdef and proconfig = array['search_path=""'] from pg_proc
+        where oid = 'public.${signature}'::regprocedure;`), "t");
+    }
+    console.log("DISCOVERY_CASES=opaque,checkpoint,admin,replay,empty,cas,uint64,ordering,rollback,grants");
     assert.equal(
       sql(
         `select public.allocate_donation_to_release_request('${id(99)}','${key}',${
