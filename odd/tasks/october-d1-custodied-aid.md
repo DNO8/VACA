@@ -38,6 +38,13 @@ User, verbatim:
 
 Accepted policy: the team funds Stellar transaction fees and claimable-balance reserves from a separate operational balance, without reducing donations, beneficiary allocations or original-donor refunds and without consuming excluded historical funds. Testnet only. No concrete account, key, transfer, deployment or production default is authorized by this policy.
 
+### S5 — Continue local D1 integration
+
+User, verbatim:
+> genial continuemos con la integracion
+
+Continue bounded local backend integration under S2/S4. No secret loading, deployment, live ledger operations or publishing inferred; unsigned dependency-injected orchestration does not prove account state, operational funding or durable ledger execution.
+
 ## Tasks
 
 - [x] T1 — S1 — Route: inline Git preparation, then delegated read-only mapping because integration understanding exceeded the inline evidence budget. Current baselines and clean feature trees observed; commit: none, repository preparation only.
@@ -297,3 +304,9 @@ Next bounded unit is durable exclusive pool sequence ownership, preserving curre
 Work-unit e7c0d2a11699167abce5bf8a9f97ba00a7baaac7 (257changedlines) adds private017 reservation of one sequence owner per storedpool andrequest intent. It enforces currentadmin replay, exactboundeddecimalintegerincrement, storedsourcebinding, postlockdeadline, immutableexactreplay and conflictingrequest exclusion without monetarycounterchanges. Ownership has no automaticexpiry/recycle; futureverifiedreconciliation is required before reuse. This is not Horizonconsensus or fundingproof.
 Writer actualrealRPCmissingfunction RED→GREEN and15offlineunit/typecheck passed. Independent verifier mvvn0v9h-f-x6oi accepted immutable0dd5c59..e7c0d2a, realPGfixture,15units/typecheck and adversarialbigint/authorization/searchpath/concurrentownership/stateprobes; no blockers/advisories. Parentjob-4samecombinedPGfixtureexit0 in26s:SEQUENCE_CASES andINTENT_CASES passed,serverstoppedstatus3,PID49171absent,fixturegone. No remotesigning/ledger/network operations. Nativeassessmentmedium,item4escalationhigh requiring verifier(done),reviewDuefalse under_budget; no nativeSTART/receipt.
 Current bounded local units are verified; completeS2 still lacks durablesignedenvelopes, trustedaccount/operationalfundingchecks, submission/outcome reconciliation, expiry recovery and original-donor refunds. No fullD1 or deployment/publicproof claim. SourceWindowscheckout preserved and branchunpublished.
+
+### L38 — Trusted local unsigned coordination verified, 2026-10-31
+
+User resumed integration as S5. Work-unit afe1a91a3750320ed9bf9a323d1c7ba871fbbc47 (410changedlines) connects persisted016intent, trusted account-observation dependency,017sequence reservation and unsignedplanner viaexistingCustodyDatabase. It validates request/Testnet/pool/namespace/nestedreceipt/nextsequence bindings, usespersistedallocation andobservedsequence withoutdoubleincrement, sanitizesfailures and neverreleases/retriesownership. HTTP/index/signing/network remain disconnected.
+Writer observed initialbehaviorRED thenfocused9/full24/typecheckGREEN. Independentverifier mvvocpll-i-bx35 foundonecandidate-causedmalformedRPCmessageblocker: objectmessageescapedrawTypeError,arraymessagecoercedknownerror410. Correction4534560de3fdf21fe17eefd413e388686eee10a7 (64lines) guardsnewissuanceerrornormalization and adds16adapterregressions pluscommittedreservationfailuretest. ActualcorrectionRED21pass5fail→GREEN16adapter+10coordinator/full41/typecheck. Targetedrecheckmvvospnu-k-2j3b passedunchangedoriginalprobe+16+10 andclosedtheblocker, no new sweep. Parent full41+allTS typecheckexit0. Legacy prepare/helpers byte-identical; preexistinglegacycoercionadvisorynotfixedoutsideT9. SQLunchanged, realPGnotrerun for thisunit.
+Nativeassessforinitial410lineunitand64linecorrection returnedmedium,item2escalationhigh requiringverifier(done),reviewDuefalse under_budget. No reviewSTART/authority/receipt. FullS2 remainsincomplete: authenticatedruntime/accountfreshness/consensus andseparateoperationalfundingproof, durableunsigned/signedenvelopes, submission/reconciliation, discovery andoriginal-donorrefunds remain missing. Replanning may changebytes; request/sequence persistence is notanexacttransactionjournal.
