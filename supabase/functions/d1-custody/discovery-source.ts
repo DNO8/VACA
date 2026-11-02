@@ -1,6 +1,7 @@
 import { Keypair, Networks } from "@stellar/stellar-sdk";
 import { CustodyError } from "./handler.ts";
 import { type DiscoveryRecord, parseDiscoveredOperation } from "./discovery.ts";
+import { type IncludedTransactionObservation, parseIncludedTransaction } from "./transaction-observation.ts";
 
 export interface DiscoveryCheckpoint {
   cursor: string;
@@ -39,7 +40,28 @@ export interface PoolAccountObservation {
   issuedBalances: { code: string; issuer: string; balance: string; sellingLiabilities: string }[];
   account: { subentry_count: number; num_sponsoring: number; num_sponsored: number };
 }
+export interface TransactionObservationPage {
+  revision: 1;
+  from_cursor: string;
+  to_cursor: string;
+  through_ledger: number;
+  ledger_hash: string;
+  closed_at: number;
+  records: IncludedTransactionObservation[];
+}
+export interface TransactionPageObservation {
+  page: TransactionObservationPage;
+  complete: boolean;
+  account: PoolAccountObservation;
+}
 interface Header { sequence: number; hash: string; closedAt: number }
+// TX cursors are not income-operation cursors: low 12 bits must be zero,
+// with a positive ledger and transaction position. Zero is the initial sentinel.
+function transactionToken(value: unknown): bigint {
+  const id = token(value);
+  valid(id === 0n || ((id >> 32n) > 0n && (id & 4095n) === 0n && ((id >> 12n) & 1048575n) > 0n));
+  return id;
+}
 const ORIGIN = "https://horizon-testnet.stellar.org";
 const MAX_BODY = 1048576;
 const TIMEOUT_MS = 10000;
@@ -235,6 +257,55 @@ export class HorizonDiscoverySource {
       const current = header(latest[0]);
       valid(current.sequence === saved.through_ledger && current.hash === saved.ledger_hash && current.closedAt === saved.closed_at);
       return record;
+    } catch {
+      throw new CustodyError("dependency_unavailable", 503);
+    }
+  }
+
+  /** One fee-history page, independent of income discovery's operation cursor.
+   * Empty-only completion is indexer evidence, not durable coverage/readiness. */
+  async readTransactionPageAtCheckpoint(context: PoolObservationContext, transactionCursor: string): Promise<TransactionPageObservation> {
+    try {
+      // Preserve checkpoint descriptors so the existing account validator rejects
+      // malformed clones rather than normalizing invalid backend state. All
+      // caller-owned scalars/checkpoint fields are captured before the first await.
+      const pool = context.pool, firstLedger = sequence(context.firstLedger), from = transactionCursor;
+      const saved: DiscoveryCheckpoint = Object.create(Object.getPrototypeOf(context.checkpoint),
+        Object.getOwnPropertyDescriptors(context.checkpoint));
+      const cursor = transactionToken(from);
+      valid(cursor === 0n || ((cursor >> 32n) >= BigInt(firstLedger) && (cursor >> 32n) <= BigInt(sequence(saved.through_ledger))));
+      const account = await this.readAccountAtCheckpoint({ pool, firstLedger, checkpoint: saved });
+      const anchor = account.anchor;
+      const transactions = list(await this.read(`/accounts/${encodeURIComponent(pool)}/transactions?order=asc&include_failed=true&limit=100&cursor=${from}`), 100);
+      // Check the entire page before enrichment. No skipping historical records,
+      // inferring gaps from TOIDs, following hrefs, retries or partial results.
+      let last = cursor;
+      for (const raw of transactions) {
+        const dto = object(raw), next = transactionToken(dto.paging_token), ledger = sequence(dto.ledger);
+        valid(next > last && (next >> 32n) === BigInt(ledger) && ledger >= firstLedger && ledger <= anchor.sequence);
+        last = next;
+      }
+      const ledgers = new Map<number, unknown>();
+      const records: IncludedTransactionObservation[] = [];
+      for (const raw of transactions) {
+        const dto = object(raw), ledger = sequence(dto.ledger);
+        if (!ledgers.has(ledger)) {
+          const fetched = await this.read("/ledgers/" + ledger), parsed = header(fetched);
+          valid(parsed.sequence === ledger && parsed.closedAt <= anchor.closedAt);
+          valid(ledger !== anchor.sequence || (parsed.hash === anchor.hash && parsed.closedAt === anchor.closedAt));
+          ledgers.set(ledger, fetched);
+        }
+        records.push(parseIncludedTransaction({ transaction: dto, ledger: ledgers.get(ledger),
+          context: { pool, firstLedger, anchor } }));
+      }
+      // Even an empty list cannot certify the saved anchor if the head moved.
+      const latest = list(await this.read("/ledgers?limit=1&order=desc"), 1);
+      valid(latest.length === 1);
+      const current = header(latest[0]);
+      valid(current.sequence === anchor.sequence && current.hash === anchor.hash && current.closedAt === anchor.closedAt);
+      return { page: { revision: 1, from_cursor: from, to_cursor: records.length ? records[records.length - 1].pagingToken : from,
+        through_ledger: anchor.sequence, ledger_hash: anchor.hash, closed_at: anchor.closedAt, records },
+        complete: transactions.length === 0, account };
     } catch {
       throw new CustodyError("dependency_unavailable", 503);
     }
