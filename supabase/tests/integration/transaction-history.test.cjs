@@ -23,6 +23,7 @@ test('private atomic transaction history and independent empty-anchor coverage',
   const sql = (s, role = 'service_role') => ok('psql', [...args, '-c', (role ? `set role ${role}; ` : '') + s]).replace(/^SET\r?\n/, '');
   const json = s => JSON.parse(sql(s));
   const load = (namespace = ns, who = pool) => `select public.d1_load_transaction_history_state('${namespace}','${who}');`;
+  const list = (after = '0', limit = '100', namespace = ns) => `select public.d1_list_transaction_records('${namespace}','${pool}','${after.replaceAll("'", "''")}',${limit});`;
   const save = (p, who = pool, namespace = ns) => `select public.d1_record_transaction_page('${namespace}','${who}',${lit(p)});`;
   const page = (records = [], from = '0', ledger = 900) => ({ revision: 1, from_cursor: from,
     to_cursor: records.at(-1)?.pagingToken || from, through_ledger: ledger, ledger_hash: (ledger === 900 ? 'b' : 'c').repeat(64), closed_at: ledger + 100, records });
@@ -57,7 +58,7 @@ test('private atomic transaction history and independent empty-anchor coverage',
       insert into public.admin_wallets values ('${pool}');`);
     const retained = JSON.parse(fs.readFileSync(path.join(repo, 'recovery/supabase/2026-10-27/retained-migrations.json'), 'utf8'));
     for (const v of ['014', '20261011060218']) apply(v + '.sql', retained.migrations.find(m => m.version === v).statements.join(';\n'));
-    for (const name of ['015_d1_testnet_custody.sql', '019_d1_discovery.sql', '021_d1_discovery_state.sql', '024_d1_transaction_history.sql']) {
+    for (const name of ['015_d1_testnet_custody.sql', '019_d1_discovery.sql', '021_d1_discovery_state.sql', '024_d1_transaction_history.sql', '025_d1_transaction_queries.sql']) {
       const file = path.join(repo, 'supabase/migrations', name); if (fs.existsSync(file)) apply(name, fs.readFileSync(file, 'utf8'));
     }
     sql(`select public.d1_activate_pool('${ns}','${pool}',900); select public.d1_activate_pool('${ns2}','${admin}',900);`);
@@ -86,6 +87,15 @@ test('private atomic transaction history and independent empty-anchor coverage',
     assert.deepEqual(receipt, { kind: 'd1_transaction_page', revision: 1, namespace: ns, network: 'TESTNET', pool,
       first_ledger: 900, authorized_by: pool, page: first, checkpoint: receipt.checkpoint, page_count: 1, record_count: 2, page_record_count: 2 });
     assert.equal(json(load()).coverage_complete, false); assert.deepEqual(JSON.parse(facts()), [a, b]);
+    assert.deepEqual(json(list('0', '1')), { kind: 'd1_transaction_records', revision: 1, namespace: ns, network: 'TESTNET', pool,
+      from_cursor: '0', next_cursor: a.pagingToken, records: [a], has_more: true, history_state: json(load()) }); // New public query RED before025.
+    assert.deepEqual(json(list(a.pagingToken, '1')).records, [b]);
+    assert.deepEqual(json(`select public.d1_list_transaction_records('${ns}','${pool}');`).records, [a, b]);
+    const tail = json(list(b.pagingToken)); assert.deepEqual(tail.records, []); assert.equal(tail.next_cursor, b.pagingToken); assert.equal(tail.has_more, false);
+    assert.deepEqual(json(list('0', '100', ns2)).records, []);
+    for (const after of ['01', '-1', '1', '4097', '18446744073709551616']) rejected(list(after), 'invalid_transaction_query');
+    for (const limit of ['0', '101', 'null']) rejected(list('0', limit), 'invalid_transaction_query');
+    assert.deepEqual(json(list('18446744073709547520')).records, []);
     assert.equal(json(load(ns2)).record_count, 0); assert.equal(json(load(ns2)).coverage_complete, false);
     const overlap = record(11); overlap.transactionHash = a.transactionHash; overlap.raw.transaction.hash = a.transactionHash;
     rejected(save(page([overlap], b.pagingToken)), 'transaction_history_conflict');
@@ -117,6 +127,7 @@ test('private atomic transaction history and independent empty-anchor coverage',
     rejected(save(page([record(11)], '0')), 'transaction_history_conflict');
     for (const role of ['anon', 'authenticated']) {
       rejected(load(), 'permission denied for function d1_load_transaction_history_state', role);
+      rejected(list(), 'permission denied for function d1_list_transaction_records', role);
       rejected(save(first), 'permission denied for function d1_record_transaction_page', role);
     }
     for (const role of ['anon', 'authenticated', 'service_role']) for (const table of ['checkpoints', 'pages', 'records']) {
@@ -130,6 +141,8 @@ test('private atomic transaction history and independent empty-anchor coverage',
     sql(`delete from public.admin_wallets where public_key = '${pool}';`, null);
     const denied = run('psql', [...args, '-c', `set role service_role; ${save(first)}`]);
     assert.equal(denied.status, 1); assert.equal(denied.stdout, 'SET\n'); assert.equal(denied.stderr, 'ERROR:  unauthorized_admin_wallet\n');
+    const deniedQuery = run('psql', [...args, '-c', `set role service_role; ${list()}`]);
+    assert.equal(deniedQuery.status, 1); assert.equal(deniedQuery.stdout, 'SET\n'); assert.equal(deniedQuery.stderr, 'ERROR:  unauthorized_admin_wallet\n');
     sql(`insert into public.admin_wallets values ('${pool}');`, null);
     assert.deepEqual(json(income(page())), incomeReceipt); // Preserve one old-history receipt assertion.
     json(`select public.d1_record_discovery_page('${ns2}','${pool}',${lit(page())});`);
@@ -146,6 +159,22 @@ test('private atomic transaction history and independent empty-anchor coverage',
     assert.equal(json(load()).record_count, 3); assert.equal(json(load()).page_count, 4);
     assert.equal(json(load()).coverage_complete, false); assert.equal(JSON.parse(facts()).length, 3);
     assert.deepEqual(json(save(first)), receipt);
+    // Cross the decimal-width boundary so lexical ordering would put the new TX first.
+    const highLedger = 2500000000, high = record(20), highTime = highLedger + 100;
+    json(income(page([], '0', highLedger)));
+    const from = json(load()).checkpoint.cursor;
+    Object.assign(high, { ledger: highLedger, ledgerHash: 'c'.repeat(64), closedAt: highTime, pagingToken: String((BigInt(highLedger) << 32n) + 4096n) });
+    high.context.anchor = { sequence: highLedger, hash: high.ledgerHash, closedAt: highTime };
+    Object.assign(high.raw.ledger, { sequence: highLedger, hash: high.ledgerHash, closed_at: new Date(highTime * 1000).toISOString().replace('.000Z', 'Z') });
+    Object.assign(high.raw.transaction, { ledger: highLedger, paging_token: high.pagingToken, created_at: high.raw.ledger.closed_at });
+    json(save(page([high], from, highLedger)));
+    const all = json(list()); assert.deepEqual(all.records, JSON.parse(facts())); assert.equal(all.records.length, 4);
+    assert.equal(all.records[0].pagingToken, a.pagingToken); assert.equal(all.records.at(-1).pagingToken, high.pagingToken);
+    assert.equal(all.has_more, false); assert.equal(all.next_cursor, high.pagingToken); assert.deepEqual(all.history_state, json(load()));
+    const head = json(list('0', '2')); assert.deepEqual(head.records, [a, b]); assert.equal(head.has_more, true);
+    assert.equal(json(list(head.next_cursor, '2')).records.at(-1).pagingToken, high.pagingToken);
+    assert.deepEqual(json(save(first)), receipt); assert.equal(json(load()).checkpoint.through_ledger, highLedger);
     console.log('TRANSACTION_HISTORY_ATOMIC_REPLAY_COVERAGE_RACE_OK');
+    console.log('TRANSACTION_QUERY_NUMERIC_PAGINATION_AUTHORIZATION_OK');
   } finally { process.removeListener('SIGTERM', terminate); cleanup(); }
 });
