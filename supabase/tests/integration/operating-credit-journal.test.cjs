@@ -63,7 +63,7 @@ test('private immutable operating-credit observation journal', async () => {
       insert into public.admin_wallets values ('${pool}');`);
     const retained = JSON.parse(fs.readFileSync(path.join(repo, 'recovery/supabase/2026-10-27/retained-migrations.json'), 'utf8'));
     for (const version of ['014', '20261011060218']) apply(version + '.sql', retained.migrations.find(m => m.version === version).statements.join(';\n'));
-    for (const name of ['015_d1_testnet_custody.sql', '019_d1_discovery.sql', '021_d1_discovery_state.sql', '022_d1_operating_credit_observations.sql']) {
+    for (const name of ['015_d1_testnet_custody.sql', '019_d1_discovery.sql', '021_d1_discovery_state.sql', '022_d1_operating_credit_observations.sql', '026_d1_operating_credit_queries.sql']) {
       const file = path.join(repo, 'supabase/migrations', name);
       if (fs.existsSync(file)) apply(name, fs.readFileSync(file, 'utf8'));
     }
@@ -88,6 +88,40 @@ test('private immutable operating-credit observation journal', async () => {
     assert.deepEqual(json(save(a)), receipt(a)); assert.deepEqual(json(save(b)), receipt(b));
     assert.deepEqual(json(load(a.operationId)), { ...missing, receipt: receipt(a) });
     assert.equal(json(load(a.operationId, ns2)).receipt, null);
+    const creditState = (namespace = ns, admin = pool) => `select public.d1_load_operating_credit_state('${namespace}','${admin}');`;
+    const list = (after = '0', limit = 100, namespace = ns, admin = pool) => `select public.d1_list_operating_credits('${namespace}','${admin}','${after}',${limit});`;
+    const setState = json(creditState()); // Actual public missing-RPC RED for026.
+    assert.equal(setState.kind, 'd1_operating_credit_state'); assert.equal(setState.revision, 1);
+    assert.equal(setState.namespace, ns); assert.equal(setState.pool, pool); assert.equal(setState.network, 'TESTNET');
+    assert.equal(setState.receipt_count, 2); assert.match(setState.set_hash, /^[0-9a-f]{64}$/);
+    assert.deepEqual(setState.discovery_state, state());
+    const listing = json(list());
+    assert.deepEqual(listing, { kind: 'd1_operating_credits', revision: 1, namespace: ns, network: 'TESTNET', pool,
+      from_cursor: '0', next_cursor: b.operationId, receipts: [receipt(a), receipt(b)], has_more: false, credit_state: setState });
+    assert.deepEqual(json(`select public.d1_list_operating_credits('${ns}','${pool}');`), listing);
+    const first = json(list('0', 1)); assert.deepEqual(first.receipts, [receipt(a)]); assert.equal(first.has_more, true);
+    assert.equal(first.next_cursor, a.operationId); assert.deepEqual(first.credit_state, setState);
+    assert.deepEqual(json(list(a.operationId, 1)).receipts, [receipt(b)]);
+    assert.deepEqual(json(list(b.operationId)).receipts, []);
+    assert.equal(json(list('18446744073709551615')).next_cursor, '18446744073709551615');
+    assert.deepEqual(json(list('0', 100, ns2)).receipts, []); assert.equal(json(creditState(ns2)).receipt_count, 0);
+    assert.notEqual(json(creditState(ns2)).set_hash, setState.set_hash);
+    // Owner-seeded NON-SDK receipts isolate numeric ordering from022 validation.
+    const synthetic = ['9', '10'].map(operationId => receipt({ ...a, namespace: ns2, pool: funder, operationId }));
+    for (const r of synthetic) sql(`insert into public.d1_operating_credit_observations values ('${ns2}','${r.observation.operationId}',${lit(r)});`, null);
+    assert.deepEqual(json(list('0', 100, ns2)).receipts, synthetic); // Lexical order would be10,9.
+    const identity = json(creditState(ns2));
+    sql(`update public.d1_operating_credit_observations set receipt = pg_catalog.jsonb_set(receipt,'{authorized_by}',to_jsonb('${funder}'::text)) where namespace = '${ns2}' and operation_id = '9';`, null);
+    const alteredSet = json(creditState(ns2)); assert.equal(alteredSet.receipt_count, identity.receipt_count);
+    assert.notEqual(alteredSet.set_hash, identity.set_hash); // Full membership, not count alone.
+    assert.deepEqual(json(list()), listing); // Other namespace never alters original state/receipts.
+    for (const query of [list('01'), list('18446744073709551616'), list('0', 0), list('0', 101),
+      `select public.d1_list_operating_credits('${ns}','${pool}',null,100);`]) rejected(query, 'invalid_operating_credit_query');
+    assert.deepEqual(json(creditState()), setState);
+    for (const role of ['anon', 'authenticated']) {
+      rejected(list(), 'permission denied for function d1_list_operating_credits', role);
+      rejected(creditState(), 'permission denied for function d1_load_operating_credit_state', role);
+    }
     for (const mutate of [o => o.amountStroops = '2', o => o.record.operation.amount = '2.0000000',
       o => o.record.operation.memo.value = 'OTHER', o => o.record.operation.asset.type = 'issued',
       o => o.transactionHash = 'c'.repeat(64), o => o.anchor.sequence++, o => o.record.operation.raw.extra = true]) {
@@ -116,6 +150,8 @@ test('private immutable operating-credit observation journal', async () => {
     json(pageRpc(next)); json(pageRpc({ ...next, from_cursor: next.to_cursor, records: [] }));
     for (const o of candidates) { rejected(save(o), 'invalid_operating_credit'); assert.equal(json(load(o.operationId)).receipt, null); }
     assert.deepEqual(json(save(minimum)), receipt(minimum));
+    const expanded = json(creditState()); assert.equal(expanded.receipt_count, 3); assert.notEqual(expanded.set_hash, setState.set_hash);
+    assert.deepEqual(json(list()).receipts, [receipt(a), receipt(b), receipt(minimum)]);
     sql(`insert into public.donation_payments(transaction_hash,operation_id,payment,donation_stroops)
       values ('${tracked.transactionHash}','${tracked.operationId}','{}',1);`, null);
     rejected(save(tracked), 'invalid_operating_credit');
@@ -146,12 +182,20 @@ test('private immutable operating-credit observation journal', async () => {
     sql(`insert into public.admin_wallets values ('${funder}');`, null);
     assert.deepEqual(json(save(a, funder)), receipt(a));
     assert.deepEqual(json(load(a.operationId, ns, funder)).receipt, receipt(a));
+    assert.equal(json(creditState(ns, funder)).set_hash, expanded.set_hash);
+    assert.deepEqual(json(list('0', 100, ns, funder)).receipts, [receipt(a), receipt(b), receipt(minimum)]);
     sql(`delete from public.admin_wallets where public_key = '${pool}';`, null);
     const denied = run('psql', [...args, '-c', `set role service_role; ${save(a)}`]);
     assert.equal(denied.status, 1); assert.equal(denied.stdout, 'SET\n'); assert.equal(denied.stderr, 'ERROR:  unauthorized_admin_wallet\n');
+    for (const query of [creditState(), list('invalid', 0)]) {
+      const r = run('psql', [...args, '-c', `set role service_role; ${query}`]);
+      assert.equal(r.status, 1); assert.equal(r.stdout, 'SET\n'); assert.equal(r.stderr, 'ERROR:  unauthorized_admin_wallet\n');
+    }
     sql(`insert into public.admin_wallets values ('${pool}');`, null);
     assert.deepEqual(json(save(a)), receipt(a)); assert.deepEqual(json(save(b)), receipt(b));
     assert.deepEqual(json(pageRpc(empty)), emptyReceipt); assert.deepEqual(json(pageRpc(page)), originalPage);
+    assert.equal(json(creditState()).set_hash, expanded.set_hash);
+    console.log('CREDIT_SET_IDENTITY_PAGINATION_AUTHORIZATION_OK');
     console.log('JOURNAL_AUTHORIZATION_REPLAY_REJECTION_OK');
   } finally {
     if (started) ok('pg_ctl', ['-D', data, '-m', 'immediate', '-w', '-t', '5', 'stop']);
