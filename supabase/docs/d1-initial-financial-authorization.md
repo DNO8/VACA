@@ -53,5 +53,7 @@ The deterministic SDK fixture covers awaited persistence, actual bytes/hash,
 substituted facts/receipts, argument mutation, unsafe transport, unknown outcomes,
 clock rollback/expiry, admin denial and single callback execution. No real keys,
 network, signing activation, deployed journeys or complete D1 acceptance is implied.
-Initial-only quarantine of pool-source activity still requires later verified
-setup/disposition support before claiming a full issued-asset lifecycle.
+Initial accounting permits only positive ordinary-credit setup before protected
+income; it proves neither setup authorization nor backend custody. Actual setup
+commands, verified execution dispositions and the full issued-asset lifecycle
+remain separate work.

@@ -63,8 +63,10 @@ export async function observeInitialFinancialSnapshot(client: Client, input: Con
     const history = await readTransactionHistory(readOnly, namespace, authenticatedAdmin, pool);
     check(history.state.checkpoint !== null);
     const cp = history.state.checkpoint, anchor = { sequence: cp.through_ledger, hash: cp.ledger_hash, closedAt: cp.closed_at };
-    // Even failed pool-source transactions consume sequence/fees. No unknown disposition is initial.
-    check(history.records.every(r => r.source !== pool && r.poolOperationSourceIndices.length === 0));
+    // Only successful credit-trustline candidates reach the strict pre-principal accounting check.
+    // Failed/source-only/other pool activity remains quarantined; actual fees still count.
+    check(history.records.every(r => (r.source !== pool && r.poolOperationSourceIndices.length === 0) ||
+      (r.outcome === "success" && r.poolOperationSourceIndices.length > 0 && r.poolOperationSourceIndices.every(i => r.operationTypes[i] === 6))));
     const credits = await readOperatingCredits(readOnly, namespace, authenticatedAdmin, pool);
     check(same(credits.state.discovery_state, history.state.income_state));
     const provider = input.source ?? new HorizonDiscoverySource();

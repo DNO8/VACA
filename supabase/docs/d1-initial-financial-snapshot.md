@@ -23,9 +23,11 @@ backend/test injection; production defaults to `HorizonDiscoverySource`.
   preparation against an actual protected donation by original donor, asset,
   stroops, operation/hash, confirmation time and ledger. Operating credits or an
   absent payment cannot stand in for a donation.
-- Quarantine **every** pool-source or effective pool-source transaction, successful
-  or failed, plus unexplained operations. Failed included transactions can consume
-  fees/sequence; outgoing activity does not prove a debt was discharged.
+- Quarantine failed/source-only/other pool activity early. Only successful
+  effective-pool-source trustline candidates reach strict principal accounting:
+  ordinary credit, positive limit, before every protected incoming operation after
+  exact D1OPS exclusions. Zero-limit/LP/later setup remains unexplained. This is
+  non-principal setup classification, never custody/signing proof or debt discharge.
 - Read the account again, require the exact owned observed sequence, and compute
   caps from verified credits, actual pool-paid fees, balances/liabilities and
   sponsorship/reserve fields. Missing funded issued balances fail closed; zero
@@ -60,10 +62,10 @@ and issued protection, unissued fee provisions, insufficient team/physical caps,
 missing evidence, all final-read drift, freshness, failed/successful pool activity
 and sanitized errors. Isolated fixture clocks/accounts are not live acceptance.
 
-This initial-only composition intentionally rejects prior pool-source trustline
-setup as well as claim/refund execution until verified T4 dispositions exist.
-Issued-balance arithmetic tests are not a completed issued-asset setup journey.
-A durable owner-bound financial gate must still consume/revalidate these facts,
-persist all fee provisions, enforce freshness before signing and reconcile actual
-execution. Post-execution remaining debt, runtime signer, full refunds, client
+Initial positive credit setup is now accounting-supported under the narrow rule
+above; actual setup/signing commands and a complete issued-asset journey are not
+supplied. Claim/refund/outgoing execution still requires verified T4 dispositions.
+The separate durable SDK gate consumes/revalidates these facts, persists provisions
+and checks action-entry freshness; runtime must guard actual signing/submission
+and reconcile execution. Post-execution remaining debt, runtime signer, full refunds, client
 migration and both D1 lifecycle journeys remain separate unfinished work.

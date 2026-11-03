@@ -1,4 +1,4 @@
-import { Keypair, Networks, Transaction, TransactionBuilder } from "@stellar/stellar-sdk";
+import { Asset as StellarAsset, Keypair, Networks, Transaction, TransactionBuilder } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
 import { CustodyError } from "./handler.ts";
 import { parseIncludedTransaction } from "./transaction-observation.ts";
@@ -54,6 +54,7 @@ export function calculateOriginalObligations(input: { namespace: string; pool: s
     valid(Array.isArray(data.transactions) && data.transactions.length <= 1000 && Array.isArray(data.operatingCredits) && data.operatingCredits.length <= 1000);
     const incomes = new Map<string, Donation & { envelope: string; ledger: number }>();
     const result: OriginalObligations = { nativeDonorLiabilityStroops: "0", issuedDonorLiabilities: [], donations: [], observedOperatingCreditStroops: "0", operatingOperationIds: [], unexplainedActivity: [] };
+    const initialSetup = new Map<string, bigint>();
     const hashes = new Set<string>(); let previous = 0n;
     for (const value of data.transactions) {
       const stored = value as ReturnType<typeof parseIncludedTransaction>;
@@ -66,7 +67,15 @@ export function calculateOriginalObligations(input: { namespace: string; pool: s
       const tx = TransactionBuilder.fromXDR(record.envelopeXdr, Networks.TESTNET); valid(tx instanceof Transaction);
       for (let i = 0; i < tx.operations.length; i++) {
         const op = tx.operations[i], source = op.source ?? tx.source;
-        if (source === pool) { result.unexplainedActivity.push({ transactionHash: record.transactionHash, operationIndex: i, reason: "unexplained_pool_operation" }); continue; }
+        if (source === pool) {
+          result.unexplainedActivity.push({ transactionHash: record.transactionHash, operationIndex: i, reason: "unexplained_pool_operation" });
+          // Accounting only: non-principal setup can precede, never discharge, protected income.
+          if (op.type === "changeTrust" && op.line instanceof StellarAsset && !op.line.isNative() &&
+              /^(0|[1-9][0-9]{0,11})\.[0-9]{7}$/.test(op.limit) && BigInt(op.limit.replace(".", "")) > 0n && BigInt(op.limit.replace(".", "")) <= 9223372036854775807n) {
+            initialSetup.set(record.transactionHash + ":" + i, BigInt(record.pagingToken) + BigInt(i + 1));
+          }
+          continue;
+        }
         if (op.type !== "payment" && op.type !== "createAccount") {
           // Other-account manageData cannot move pool principal; unknown effects must be reconciled.
           if (op.type !== "manageData") result.unexplainedActivity.push({ transactionHash: record.transactionHash, operationIndex: i, reason: "unsupported_operation" });
@@ -102,6 +111,11 @@ export function calculateOriginalObligations(input: { namespace: string; pool: s
       if (income.asset.type === "native") native = add(native, BigInt(income.amountStroops));
       else { const key = income.asset.code + ":" + income.asset.issuer, old = issued.get(key); issued.set(key, { code: income.asset.code, issuer: income.asset.issuer, amount: add(old?.amount ?? 0n, BigInt(income.amountStroops)) }); }
     }
+    const firstProtected = result.donations[0]?.operationId;
+    result.unexplainedActivity = result.unexplainedActivity.filter(a => {
+      const id = initialSetup.get(a.transactionHash + ":" + a.operationIndex);
+      return id === undefined || (firstProtected !== undefined && id >= BigInt(firstProtected));
+    });
     result.nativeDonorLiabilityStroops = native.toString(); result.observedOperatingCreditStroops = creditTotal.toString();
     result.issuedDonorLiabilities = [...issued.values()].sort((a, b) => (a.code + ":" + a.issuer).localeCompare(b.code + ":" + b.issuer)).map(a => ({ code: a.code, issuer: a.issuer, amountStroops: a.amount.toString() }));
     return snapshot(result) as OriginalObligations;
