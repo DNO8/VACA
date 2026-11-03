@@ -18,6 +18,7 @@ test('private initial financial observations bind locked state without granting 
   const load = (hash = '0'.repeat(64), n = 1, admin = pool) => `select public.d1_load_initial_financial_observation('${id(n)}','${admin}','${hash}');`;
   const candidates = new Map();
   const save = (snapshot, n = 1, admin = pool) => { const q = `select public.d1_record_initial_financial_observation('${id(n)}','${admin}',${lit(snapshot)});`; candidates.set(q, { snapshot, n }); return q; };
+  const saveFresh = (snapshot, admin = pool) => { const q = `select public.d1_record_fresh_initial_financial_observation('${id(1)}','${admin}',${lit(snapshot)});`; candidates.set(q, { snapshot, n: 1 }); return q; };
   const unsigned = n => `select public.d1_load_unsigned_transaction('${id(n)}','${pool}');`;
   const fee = () => `select public.d1_load_issuance_fee_commitments('${id(1)}','${pool}');`;
   let storedHash = '0'.repeat(64);
@@ -50,7 +51,7 @@ test('private initial financial observations bind locked state without granting 
       insert into public.admin_wallets values ('${pool}'),('${other}'); insert into public.incidents values ('incident','vaquita','${pool}');`);
     const retained = JSON.parse(fs.readFileSync(path.join(repo, 'recovery/supabase/2026-10-27/retained-migrations.json'), 'utf8'));
     for (const v of ['014', '20261011060218']) apply(v + '.sql', retained.migrations.find(m => m.version === v).statements.join(';\n'));
-    for (const name of fs.readdirSync(path.join(repo, 'supabase/migrations')).filter(n => /^0(1[5-9]|2[0-8])_/.test(n)).sort()) apply(name, fs.readFileSync(path.join(repo, 'supabase/migrations', name), 'utf8'));
+    for (const name of fs.readdirSync(path.join(repo, 'supabase/migrations')).filter(n => /^0(1[5-9]|2[0-9])_/.test(n)).sort()) apply(name, fs.readFileSync(path.join(repo, 'supabase/migrations', name), 'utf8'));
     sql(`select public.d1_activate_pool('${id(100)}','${pool}',900); select public.d1_activate_pool('${id(101)}','${other}',900);`);
     const now = Math.floor(Date.now() / 1000), deadline = new Date((now + 300) * 1000).toISOString().replace('.000Z', 'Z');
     for (const n of [1, 2, 3]) {
@@ -80,6 +81,11 @@ test('private initial financial observations bind locked state without granting 
     storedHash = receipt.snapshot_hash; assert.match(storedHash, /^[0-9a-f]{64}$/); assert.deepEqual(receipt.snapshot, snapshot); assert.equal(receipt.transaction_hash, 'a'.repeat(64)); assert.equal(receipt.authorized_by, pool);
     assert.deepEqual(json(load(storedHash)).observation, receipt); assert.deepEqual(json(load(storedHash, 3)).observation, null);
     const after = state(); assert.deepEqual(after.unsigned, before.unsigned); assert.deepEqual(after.fees, before.fees);
+    const validated = json(saveFresh(snapshot)); // Actual public missing-RPC RED before029 exists.
+    assert.deepEqual(validated, { kind: 'd1_fresh_initial_financial_observation', revision: 1, request_id: id(1), namespace: id(100), network: 'TESTNET', pool, authorized_by: pool, transaction_hash: receipt.transaction_hash, snapshot_hash: storedHash, validated_at: validated.validated_at, expires_at: snapshot.expiresAt, observation: receipt });
+    assert.equal(Number.isSafeInteger(validated.validated_at) && validated.validated_at >= snapshot.observedAt && validated.validated_at < validated.expires_at, true);
+    const rotated = json(saveFresh(snapshot, other)); assert.deepEqual(rotated, { ...validated, authorized_by: other, validated_at: rotated.validated_at });
+    assert.equal(Number.isSafeInteger(rotated.validated_at) && rotated.validated_at >= snapshot.observedAt && rotated.validated_at < rotated.expires_at, true);
     const fresh = structuredClone(snapshot); fresh.observedAt++; const renewal = json(save(fresh)); assert.notEqual(renewal.snapshot_hash, storedHash);
     assert.deepEqual(json(load(renewal.snapshot_hash)).observation, renewal); assert.deepEqual(json(load(storedHash)).observation, receipt); assert.deepEqual(state().fees, before.fees);
     for (const mutate of [s => { s.namespace = id(101); }, s => { s.commitment.future_refund_fee_stroops = '301'; }, s => { s.historyState.page_count++; }, s => { s.creditState.set_hash = 'f'.repeat(64); }]) {
@@ -95,12 +101,13 @@ test('private initial financial observations bind locked state without granting 
     const expired = structuredClone(snapshot); expired.observedAt = now - 1; expired.expiresAt = now; rejected(save(expired), 'initial_financial_observation_expired');
     for (const isolation of ['repeatable read', 'serializable']) {
       const v = structuredClone(snapshot); v.observedAt += 2; rejected(`begin isolation level ${isolation}; ${save(v)}`, 'initial_financial_observation_isolation_required');
+      rejected(`begin isolation level ${isolation}; ${saveFresh(snapshot)}`, 'initial_financial_observation_isolation_required');
       const replay = sql(`begin isolation level ${isolation}; ${save(snapshot)} commit;`).split('\n'); assert.equal(replay[0], 'BEGIN'); assert.equal(replay[2], 'COMMIT'); assert.deepEqual(JSON.parse(replay[1]), receipt);
     }
-    for (const role of ['anon', 'authenticated']) { rejected(load(storedHash), 'permission denied for function d1_load_initial_financial_observation', role); rejected(save(snapshot), 'permission denied for function d1_record_initial_financial_observation', role); }
+    for (const role of ['anon', 'authenticated']) { rejected(load(storedHash), 'permission denied for function d1_load_initial_financial_observation', role); rejected(save(snapshot), 'permission denied for function d1_record_initial_financial_observation', role); rejected(saveFresh(snapshot), 'permission denied for function d1_record_fresh_initial_financial_observation', role); }
     for (const role of ['anon', 'authenticated', 'service_role']) for (const q of ['select * from public.d1_initial_financial_observations;', 'delete from public.d1_initial_financial_observations;', 'update public.d1_initial_financial_observations set receipt=receipt;']) rejected(q, 'permission denied for table d1_initial_financial_observations', role);
     assert.deepEqual(json(save(snapshot, 1, other)), receipt); sql(`delete from public.admin_wallets where public_key = '${other}';`, null);
-    rejected(load(storedHash, 1, other), 'unauthorized_admin_wallet'); rejected(save(null, 1, other), 'unauthorized_admin_wallet');
+    rejected(load(storedHash, 1, other), 'unauthorized_admin_wallet'); rejected(save(null, 1, other), 'unauthorized_admin_wallet'); rejected(saveFresh(snapshot, other), 'unauthorized_admin_wallet');
     // Public state advance, then an event-driven owned lock proves freshness AFTER waiting.
     const advancedNow = Math.floor(Date.now() / 1000), advanced = { ...page, through_ledger: 901, ledger_hash: 'c'.repeat(64), closed_at: advancedNow };
     sql(`select public.d1_record_discovery_page('${id(100)}','${pool}',${lit(advanced)}); select public.d1_record_transaction_page('${id(100)}','${pool}',${lit(advanced)});`);
@@ -108,20 +115,29 @@ test('private initial financial observations bind locked state without granting 
     const timed = structuredClone(snapshot); timed.historyState = json(`select public.d1_load_transaction_history_state('${id(100)}','${pool}');`); timed.creditState = json(`select public.d1_load_operating_credit_state('${id(100)}','${pool}');`);
     timed.anchor = { sequence: 901, hash: 'c'.repeat(64), closedAt: advancedNow }; timed.account.anchor = structuredClone(timed.anchor); timed.observedAt = advancedNow; timed.expiresAt = advancedNow + 2;
     const stable = state(), marker = path.join(fixture, 'lock-held'), ready = Promise.withResolvers(); let held = false;
-    timed.observedAt = Math.floor(Date.now() / 1000); timed.expiresAt = timed.observedAt + 3;
+    timed.observedAt = Math.floor(Date.now() / 1000); timed.expiresAt = timed.observedAt + 5;
     const timedHash = sql(`select encode(sha256(convert_to((${lit(timed)})::text,'UTF8')),'hex');`); assert.equal(json(load(timedHash)).observation, null);
+    const timedFresh = structuredClone(timed); timedFresh.expiresAt--; const timedValidation = json(saveFresh(timedFresh));
+    assert.deepEqual(timedValidation.observation.snapshot, timedFresh);
     const watch = fs.watch(fixture, (_event, name) => { if (name === 'lock-held' && fs.existsSync(marker)) { held = true; ready.resolve(); } });
     try {
-      const blocker = concurrent(`begin; select public.d1_load_unsigned_transaction('${id(1)}','${pool}'); copy(select 1) to '${marker}'; select pg_sleep(4); commit;`, false);
+      const blocker = concurrent(`begin; select public.d1_load_unsigned_transaction('${id(1)}','${pool}'); copy(select 1) to '${marker}'; select pg_sleep(6); commit;`, false);
       await Promise.race([ready.promise, blocker.then(() => { assert.equal(held, true, 'Locker exited before readiness'); })]);
       assert.equal(sql(`select extract(epoch from clock_timestamp()) < ${timed.expiresAt};`), 't');
-      const [lock, writer] = await Promise.all([blocker, concurrent(save(timed))]); assert.equal(lock.status, 0, lock.stderr); assert.equal(lock.stderr, '');
-      assert.equal(writer.status, 1); assert.equal(writer.stdout, 'SET\n'); assert.equal(writer.stderr, 'ERROR:  initial_financial_observation_expired\n'); assert.deepEqual(state(), stable); assert.equal(json(load(timedHash)).observation, null);
+      const [lock, writer, freshWriter] = await Promise.all([blocker, concurrent(save(timed)), concurrent(saveFresh(timedFresh))]); assert.equal(lock.status, 0, lock.stderr); assert.equal(lock.stderr, '');
+      for (const result of [writer, freshWriter]) { assert.equal(result.status, 1); assert.equal(result.stdout, 'SET\n'); assert.equal(result.stderr, 'ERROR:  initial_financial_observation_expired\n'); }
+      assert.deepEqual(state(), stable); assert.equal(json(load(timedHash)).observation, null); assert.deepEqual(json(load(timedValidation.snapshot_hash)).observation, timedValidation.observation);
     } finally { watch.close(); }
+    const current = structuredClone(timed); current.observedAt = Math.floor(Date.now() / 1000); current.expiresAt = advancedNow + 30;
+    const currentValidation = json(saveFresh(current)); assert.deepEqual(currentValidation.observation.snapshot, current);
+    const finalPage = { ...advanced, through_ledger: 902, ledger_hash: 'd'.repeat(64), closed_at: Math.floor(Date.now() / 1000) };
+    sql(`select public.d1_record_discovery_page('${id(100)}','${pool}',${lit(finalPage)}); select public.d1_record_transaction_page('${id(100)}','${pool}',${lit(finalPage)});`);
+    rejected(saveFresh(current), 'initial_financial_observation_conflict'); assert.deepEqual(json(load(currentValidation.snapshot_hash)).observation, currentValidation.observation);
     // One bounded SQL clock wait proves *actual* expired replay, never a fake timestamp override.
     sql(`select pg_sleep(greatest(0, ${snapshot.expiresAt} - extract(epoch from clock_timestamp()) + 0.02));`);
     assert.equal(sql(`select extract(epoch from clock_timestamp()) > ${snapshot.expiresAt};`), 't');
-    assert.deepEqual(json(save(snapshot)), receipt); assert.deepEqual(json(load(storedHash)).observation, receipt);
+    assert.deepEqual(json(save(snapshot)), receipt); assert.deepEqual(json(load(storedHash)).observation, receipt); rejected(saveFresh(snapshot), 'initial_financial_observation_expired');
+    console.log('FRESH_INITIAL_FINANCIAL_OBSERVATION_REPLAY_AND_CLOCK_OK');
     console.log('INITIAL_FINANCIAL_OBSERVATION_SCOPE_REPLAY_FRESHNESS_ISOLATION_OK');
   } finally { process.removeListener('SIGTERM', terminate); cleanup(); }
 });
