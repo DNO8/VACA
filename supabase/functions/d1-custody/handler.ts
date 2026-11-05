@@ -1,6 +1,7 @@
 // New local implementation based on recovered contracts, not recovered original source.
 import { hash, Keypair } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
+import { issueHttp, type IssuanceHttpDependencies } from "./issuance-http.ts";
 
 export interface VerifiedPayment {
   transaction_hash: string;
@@ -40,6 +41,7 @@ export class CustodyError extends Error {
 
 export interface CustodyConfiguration {
   poolSigner: Keypair;
+  issuance?: IssuanceHttpDependencies;
   now?: () => number;
   ledger?: { payment(transactionHash: string, operationId: string): Promise<VerifiedPayment> };
   database?: { prepare(input: Preparation): Promise<unknown> };
@@ -97,6 +99,9 @@ async function boundedBody(request: Request): Promise<string> {
 export function createCustodyHandler(configuration: CustodyConfiguration): CustodyHandler {
   return async (request) => {
     const path = new URL(request.url).pathname;
+    if (request.method === "POST" && path === "/functions/v1/d1-custody/issue" && configuration.issuance) {
+      return issueHttp(request, configuration.issuance, configuration.poolSigner.publicKey());
+    }
     if (request.method === "POST" && path === "/functions/v1/d1-custody/prepare") {
       try {
         // Bound memory use before JSON parsing. No body-controlled network or ledger facts.
