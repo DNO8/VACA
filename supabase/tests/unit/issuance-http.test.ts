@@ -7,7 +7,7 @@ import { fixture, equal, pool, admin, team, namespace, requestId } from "../fixt
 type ObjectDTO = Record<string, unknown>;
 type Reply = { data: unknown; error: unknown };
 type Signed = ObjectDTO & { transaction_hash: string; envelope_hash: string; signed_xdr: string; reservation: unknown };
-const load = "d1_load_submission_attempt", claim = "d1_claim_submission_attempt";
+const outcomeLoad = "d1_load_issuance_outcome", load = "d1_load_submission_attempt", claim = "d1_claim_submission_attempt";
 const signer = Keypair.fromRawEd25519Seed(Buffer.alloc(32, 101));
 const wallet = Keypair.fromRawEd25519Seed(Buffer.alloc(32, 104));
 function object(value: unknown): ObjectDTO {
@@ -34,7 +34,8 @@ function setup() {
     async rpc(name, args): Promise<Reply> {
       trace.push(name); calls.push({ name, args: structuredClone(args) });
       let data: unknown;
-      if (name === load) data = { kind: "d1_submission_attempt_lookup", revision: 1, ...scope, attempt };
+      if (name === outcomeLoad) data = { kind: "d1_issuance_outcome_lookup", revision: 1, ...scope, outcome: null };
+      else if (name === load) data = { kind: "d1_submission_attempt_lookup", revision: 1, ...scope, attempt };
       else if (name === "d1_load_signed_transaction") data = { kind: "d1_signed_transaction_lookup", revision: 1, ...scope, transaction: signed };
       else if (name === "d1_load_initial_financial_observation") data = {
         kind: "d1_initial_financial_observation_lookup", revision: 1, ...scope,
@@ -113,11 +114,11 @@ async function rejected(h: Harness, code: string, status = 503, request = h.requ
   equal(h.stored(), before); equal(h.counters(), counters);
 }
 function requestArguments(h: Harness) {
-  const scoped = [load, claim, "d1_load_signed_transaction", "d1_record_signed_transaction", "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"];
+  const scoped = [outcomeLoad, load, claim, "d1_load_signed_transaction", "d1_record_signed_transaction", "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"];
   for (const { name, args } of h.calls.filter(c => scoped.includes(c.name))) {
     equal([args.p_request_id, args.p_authorized_by], [requestId, admin]);
     const scope = { p_request_id: requestId, p_authorized_by: admin };
-    if ([load, "d1_load_signed_transaction", "d1_load_unsigned_transaction"].includes(name)) equal(args, scope);
+    if ([outcomeLoad, load, "d1_load_signed_transaction", "d1_load_unsigned_transaction"].includes(name)) equal(args, scope);
     if (name === claim) equal(args, { ...scope, p_snapshot_hash: h.attempt.snapshot_hash, p_attempt_id: h.attempt.attempt_id });
     if (name === "d1_record_signed_transaction") equal(args, { ...scope, p_snapshot_hash: h.signed.snapshot_hash, p_signed_xdr: h.signed.signed_xdr });
     if (name === "d1_load_initial_financial_observation") equal(args, { ...scope, p_snapshot_hash: h.signed.snapshot_hash });
@@ -128,7 +129,7 @@ Deno.test("issue HTTP canonical proof reaches real fresh SDK signing and one dur
   await pending(h);
   equal([h.keys, h.posts.length, h.f.h.persisted.size], [1, 1, 1]);
   equal(JSON.stringify([h.f.h.owner, h.f.h.history, h.f.h.credit, h.f.h.records]), principal);
-  equal(h.trace[0], load); equal(h.trace.slice(-2), [claim, "POST"]);
+  equal(h.trace.slice(0, 2), [outcomeLoad, load]); equal(h.trace.slice(-2), [claim, "POST"]);
   equal(h.trace.indexOf("account") < h.trace.indexOf("signer"), true);
   equal(h.trace.indexOf("d1_record_fresh_initial_financial_observation") < h.trace.indexOf("signer"), true);
   equal(h.trace.indexOf("signer") < h.trace.indexOf("d1_record_signed_transaction"), true);
@@ -144,7 +145,7 @@ Deno.test("issue HTTP existing validated 031 survives fresh proof timestamps and
   await Promise.all([pending(h), pending(h, h.request({ timestamp: h.f.h.now - 1 }))]);
   equal(h.stored(), before); equal(h.counters(), counters); requestArguments(h);
   equal(h.trace.filter(n => n === load).length, 2);
-  equal(h.trace.filter(n => ![load, "d1_load_signed_transaction", "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"].includes(n)), []);
+  equal(h.trace.filter(n => ![outcomeLoad, load, "d1_load_signed_transaction", "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"].includes(n)), []);
 });
 Deno.test("issue HTTP rejects invalid stale and wrong-scope wallet proofs before any RPC signer or provider", async () => {
   for (const [change, badSignature, code, status] of [
@@ -163,7 +164,7 @@ Deno.test("issue HTTP current database admin denial is distinct from dependency 
       return { data: null, error: { code: "42501", message: "unauthorized_admin_wallet" } };
     };
     await rejected(h, exactDenial ? "unauthorized_admin_wallet" : "initial_submission_unavailable", exactDenial ? 403 : 503);
-    equal(h.trace, [load]); equal(h.f.h.calls, []); equal(h.counters(), [0, 0, 0]); requestArguments(h);
+    equal(h.trace, [outcomeLoad]); equal(h.f.h.calls, []); equal(h.counters(), [0, 0, 0]); requestArguments(h);
   }
 });
 Deno.test("issue HTTP refuses forged stored signed envelopes and submission receipts without new financial effects or resubmission", async () => {
@@ -184,7 +185,7 @@ Deno.test("issue HTTP refuses forged stored signed envelopes and submission rece
       return reply;
     };
     await rejected(h, "initial_submission_unavailable"); requestArguments(h);
-    equal(h.trace.filter(n => ![load, "d1_load_signed_transaction", "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"].includes(n)), []);
+    equal(h.trace.filter(n => ![outcomeLoad, load, "d1_load_signed_transaction", "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"].includes(n)), []);
   }
 });
 Deno.test("issue HTTP unknown 031 commit is sanitized and never posts retries reads back resets or releases ownership", async () => {
