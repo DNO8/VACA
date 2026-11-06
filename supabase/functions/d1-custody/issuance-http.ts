@@ -2,6 +2,7 @@ import { CustodyError } from "./handler.ts";
 import { verifyIssuanceCommand } from "./issuance-command.ts";
 import { submitInitialIssuance } from "./initial-issuance-submission.ts";
 import { recordInitialIssuanceOutcome } from "./initial-issuance-outcome-journal.ts";
+import { HorizonDiscoverySource } from "./discovery-source.ts";
 
 type SignerConfiguration = Parameters<typeof submitInitialIssuance>[1];
 export interface IssuanceHttpDependencies {
@@ -10,6 +11,7 @@ export interface IssuanceHttpDependencies {
     readonly source: NonNullable<SignerConfiguration["source"]>;
   };
   readonly fetcher: typeof fetch;
+  readonly availabilityFetcher?: typeof fetch;
 }
 const unavailable = () => new CustodyError("initial_submission_unavailable", 503);
 function failure(error: CustodyError): Response {
@@ -116,10 +118,27 @@ export async function issueHttp(request: Request, dependencies: IssuanceHttpDepe
       const payment = object(preparation.payment), request = object(preparation.request);
       check(typeof payment.transaction_hash === "string" && /^[0-9a-f]{64}$/.test(payment.transaction_hash));
       const failed = receipt.observed_outcome.outcome === "failed";
+      let availability: Awaited<ReturnType<HorizonDiscoverySource["readClaimableBalance"]>> | undefined;
+      if (receipt.observed_outcome.outcome === "success") {
+        const availabilityFetcher = dependencies.availabilityFetcher;
+        if (availabilityFetcher !== undefined) {
+          check(typeof availabilityFetcher === "function");
+          // Only SDK-validated saved economics and derived ID reach the concrete source.
+          // No financial snapshot anchor is reused as a current observation.
+          availability = await new HorizonDiscoverySource(availabilityFetcher).readClaimableBalance({
+            pool: command.pool, claimableBalanceId: receipt.observed_outcome.claimableBalanceId,
+            beneficiary: request.beneficiary, asset: snapshot(request.asset), amount: request.amount, deadline: request.deadline,
+            minimumLedger: receipt.observed_outcome.observation.ledger,
+            now: configuration.now.bind(configuration), maximumAgeSeconds: configuration.maximumAgeSeconds,
+            futureToleranceSeconds: configuration.futureToleranceSeconds,
+          });
+        }
+      }
       return Response.json({ state: failed ? "issuance_failed_observed" : "issuance_observed", verification: "persisted_sdk_observation",
         requestId: command.requestId, transactionHash: receipt.transaction_hash, donor: payment.donor, beneficiary: request.beneficiary,
         asset: request.asset, amount: request.amount, paymentTransactionHash: payment.transaction_hash, deadline: request.deadline,
-        ...(!failed ? { claimableBalanceId: receipt.observed_outcome.claimableBalanceId } : {}) }, {
+        ...(!failed ? { claimableBalanceId: receipt.observed_outcome.claimableBalanceId } : {}),
+        ...(availability !== undefined ? { availability } : {}) }, {
         status: 200, headers: { "cache-control": "no-store" },
       });
     }

@@ -1,6 +1,6 @@
-# Initial issuance HTTP: pending or a persisted SDK observation
+# Initial issuance HTTP: pending, SDK outcome, and optional presence
 
-The optional backend route first checks the existing outcome journal. A validated historical outcome returns **200 / persisted_sdk_observation**; valid absence continues through the existing submission SDK gate and returns **202 / pending / unverified**. Neither response is fresh consensus, current claimable-balance availability, settlement, or permission to refund, retry, reset, or release ownership.
+The optional backend route first checks the existing outcome journal. A validated historical outcome returns **200 / persisted_sdk_observation**; valid absence continues through the existing submission SDK gate and returns **202 / pending / unverified**. Explicit optional current-presence observation is described below. None of these responses is consensus, settlement, or permission to refund, retry, reset, or release ownership.
 
 ## Request and configuration
 
@@ -11,6 +11,7 @@ Configure `createCustodyHandler` with optional `issuance: { client, configuratio
 - `client` is the existing submission SDK RPC client; current database admin membership is authoritative, not dependency injection.
 - `configuration` is `InitialSignerConfiguration` without `requestId` or `authenticatedAdmin`, with an explicitly required `source.readAccountAtCheckpoint` and controlled `loadPoolSigner`. Its pool must match the handler's public pool identity.
 - `fetcher` is explicitly required; this HTTP adapter never selects a default network transport.
+- Optional `availabilityFetcher?: typeof fetch` is a separate server-owned low-level transport, not an authorization/result callback. Configure it alongside `fetcher`; omission preserves the exact legacy response and performs no availability reads.
 
 Each call derives a new configuration bound to the verified request ID and wallet. It does not mutate shared configuration or accept caller XDR, account facts, destinations, amounts, or authorization-result callbacks.
 
@@ -36,7 +37,25 @@ For an existing receipt, `recordInitialIssuanceOutcome` revalidates cached 032 a
 
 Included failure returns **200** with `state: "issuance_failed_observed"` and the same selected mapping, but **omits** `claimableBalanceId`. Issued assets retain their validated code and issuer. Every response uses `Cache-Control: no-store`.
 
-The canonical 64-hex payment hash is persisted metadata, not newly verified donation-chain proof. This selected mapping is not a full liability calculation, current CB/refund status or terminal accounting. Historical reads do not use the financial clock, account source, signer or fetcher; no automatic outcome save or readback occurs.
+The canonical 64-hex payment hash is persisted metadata, not newly verified donation-chain proof. This selected mapping is not a full liability calculation, current CB/refund status or terminal accounting. Historical SDK validation does not use the financial clock, account source, signer or fetcher; no automatic outcome save or readback occurs.
+
+## Optional current indexer presence
+
+Only after canonical proof, current database admin membership, and cached 032 plus historical 031/030/018 SDK validation succeed may an included **success** use `availabilityFetcher`. The adapter constructs the concrete `HorizonDiscoverySource`; it never falls back to global fetch. Failed issuance, pending/fresh paths, invalid proof, revoked admin, and corrupt stored evidence perform no availability reads.
+
+The reader captures only the internally validated mapping and trusted configuration clock/policy. It performs four fixed-Testnet GETs: root → latest header → `/claimable_balances/<SDK-derived ID>` → latest header. Root network/latest sequence and both headers must agree; the head cannot precede included issuance. Canonical positive 32-bit resource ledger numbers/strings are normalized. The head must remain within configured `maximumAgeSeconds` (positive, at most 30) and `futureToleranceSeconds` (0–2) at both freshness checks; the old financial snapshot anchor is not current evidence.
+
+Presence requires the exact v0 ID, native or issued asset, full saved amount, and exactly the beneficiary-before-deadline and pool-NOT-before-deadline claimants. Predicates must match the immutable canonical RFC3339 deadline without extra branches; optional epoch metadata must agree. The unchanged transport enforces fixed origin, no redirects/credential forwarding, 1 MiB, and a 10-second whole-fetch/body deadline per GET.
+
+Success preserves every outer field and appends only:
+
+```json
+{"availability":{"verification":"current_indexer_observation","state":"present","claimableBalanceId":"<SDK-derived ID>","observedLedger":12,"ledgerHash":"<current header hash>","observedClosedAt":1793102406}}
+```
+
+This is positive indexer presence, **not beneficiary eligibility, consensus, settlement, or disposition authority**. A 404, timeout, malformed/oversized response, wrong network, stale/future head or drift returns sanitized **503 `initial_submission_unavailable`** and stops: no retry, RPC readback/save, submission fallback, ownership release, claim/refund inference, or compensation.
+
+Local flow: **prepare → issue → explicit reconcile → issue + positive presence**. Reconciliation may need multiple separately authenticated calls. Beneficiary claim, authorized recovery/full original-donor refund, terminal accounting, production runtime and clients remain pending; this flow is not live-chain evidence.
 
 ## Errors
 

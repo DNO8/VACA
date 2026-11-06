@@ -54,6 +54,18 @@ export interface TransactionPageObservation {
   complete: boolean;
   account: PoolAccountObservation;
 }
+export interface ClaimableBalanceContext {
+  readonly pool: string;
+  readonly claimableBalanceId: string;
+  readonly beneficiary: unknown;
+  readonly asset: unknown;
+  readonly amount: unknown;
+  readonly deadline: unknown;
+  readonly minimumLedger: number;
+  readonly now: () => number;
+  readonly maximumAgeSeconds: number;
+  readonly futureToleranceSeconds: number;
+}
 interface Header { sequence: number; hash: string; closedAt: number }
 // TX cursors are not income-operation cursors: low 12 bits must be zero,
 // with a positive ledger and transaction position. Zero is the initial sentinel.
@@ -190,6 +202,78 @@ export class HorizonDiscoverySource {
       // Also cancel on deadline, even when read() itself is stalled. Do not
       // await cancellation: a broken stream must not delay the bounded result.
       void reader?.cancel().catch(() => {});
+    }
+  }
+
+  /** Positive current indexer presence only; absence never identifies a claimant or disposition. */
+  async readClaimableBalance(context: ClaimableBalanceContext) {
+    try {
+      // Capture internally validated mapping and trusted clock policy before any await.
+      const { pool, claimableBalanceId, beneficiary, amount, deadline, maximumAgeSeconds, futureToleranceSeconds } = context;
+      const minimumLedger = sequence(context.minimumLedger), asset = object(context.asset);
+      valid(typeof this.fetcher === "function" && typeof context.now === "function");
+      const now = context.now.bind(context);
+      valid(typeof pool === "string" && typeof beneficiary === "string" && beneficiary !== pool);
+      Keypair.fromPublicKey(pool); Keypair.fromPublicKey(beneficiary);
+      valid(typeof claimableBalanceId === "string" && /^00000000[0-9a-f]{64}$/.test(claimableBalanceId));
+      valid(typeof amount === "string" && BigInt(horizonStroops(amount)) > 0n);
+      let expectedAsset: string;
+      if (asset.type === "native") {
+        valid(Object.keys(asset).join(",") === "type"); expectedAsset = "native";
+      } else {
+        valid(asset.type === "issued" && Object.keys(asset).sort().join(",") === "code,issuer,type");
+        valid(typeof asset.code === "string" && /^[A-Za-z0-9]{1,12}$/.test(asset.code) && typeof asset.issuer === "string");
+        Keypair.fromPublicKey(asset.issuer); expectedAsset = asset.code + ":" + asset.issuer;
+      }
+      valid(typeof deadline === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(deadline));
+      const deadlineSeconds = seconds(Date.parse(deadline) / 1000);
+      valid(new Date(deadlineSeconds * 1000).toISOString().replace(".000Z", "Z") === deadline);
+      valid(Number.isInteger(maximumAgeSeconds) && maximumAgeSeconds > 0 && maximumAgeSeconds <= 30 &&
+        Number.isInteger(futureToleranceSeconds) && futureToleranceSeconds >= 0 && futureToleranceSeconds <= 2);
+      let lastNow = seconds(now());
+      const fresh = (anchor: Header) => {
+        const current = seconds(now());
+        valid(current >= lastNow && current - anchor.closedAt <= maximumAgeSeconds && anchor.closedAt - current <= futureToleranceSeconds);
+        lastNow = current;
+      };
+      // Only this resource's official API/SDK ledger representation differs.
+      const resourceLedger = (value: unknown) => {
+        if (typeof value === "string") { valid(/^[1-9][0-9]{0,9}$/.test(value)); return sequence(Number(value)); }
+        return sequence(value);
+      };
+      const before = (value: unknown) => {
+        const predicate = object(value), keys = Object.keys(predicate).sort().join(",");
+        valid((keys === "abs_before" || keys === "abs_before,abs_before_epoch") && predicate.abs_before === deadline);
+        if (Object.hasOwn(predicate, "abs_before_epoch"))
+          valid(predicate.abs_before_epoch === deadlineSeconds || predicate.abs_before_epoch === String(deadlineSeconds));
+      };
+      const root = object(await this.read("/"));
+      valid(root.network_passphrase === Networks.TESTNET);
+      const latest = sequence(root.history_latest_ledger);
+      const headPath = "/ledgers?limit=1&order=desc";
+      const first = list(await this.read(headPath), 1);
+      valid(first.length === 1);
+      const anchor = header(first[0]);
+      valid(anchor.sequence === latest && anchor.sequence >= minimumLedger); fresh(anchor);
+      const balance = object(await this.read("/claimable_balances/" + claimableBalanceId));
+      valid(balance.id === claimableBalanceId && balance.asset === expectedAsset && balance.amount === amount &&
+        resourceLedger(balance.last_modified_ledger) <= anchor.sequence);
+      valid(Array.isArray(balance.claimants) && balance.claimants.length === 2);
+      const claimants = balance.claimants.map(object);
+      valid(claimants.every(c => Object.keys(c).sort().join(",") === "destination,predicate"));
+      const beneficiaryClaimant = claimants.find(c => c.destination === beneficiary), poolClaimant = claimants.find(c => c.destination === pool);
+      valid(beneficiaryClaimant !== undefined && poolClaimant !== undefined);
+      before(beneficiaryClaimant.predicate);
+      const recovery = object(poolClaimant.predicate);
+      valid(Object.keys(recovery).join(",") === "not"); before(recovery.not);
+      const last = list(await this.read(headPath), 1);
+      valid(last.length === 1);
+      const final = header(last[0]);
+      valid(final.sequence === anchor.sequence && final.hash === anchor.hash && final.closedAt === anchor.closedAt); fresh(final);
+      return { verification: "current_indexer_observation" as const, state: "present" as const, claimableBalanceId,
+        observedLedger: anchor.sequence, ledgerHash: anchor.hash, observedClosedAt: anchor.closedAt };
+    } catch {
+      throw new CustodyError("dependency_unavailable", 503);
     }
   }
 
