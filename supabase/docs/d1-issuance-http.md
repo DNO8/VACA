@@ -48,6 +48,20 @@ The canonical 64-hex payment hash is persisted metadata, not newly verified dona
 
 Thrown dependency errors, including a forged 403, remain sanitized 503. Responses never expose XDR, signing keys, financial snapshots, provider JSON, or arbitrary exception text. Unknown outcomes trigger no automatic retry, readback, ingestion, outcome save, ownership reset, or release. A later explicit authenticated request can load the retained attempt without resubmitting.
 
+## Explicit reconciliation
+
+`POST /functions/v1/d1-custody/reconcile` requires the same canonical envelope with signed action `reconcile` and empty `payload`. Issue and reconciliation proofs are not interchangeable. Configure optional `reconciliation: { client, configuration: { namespace, pool, now, source } }`; both `source.readPage` and `source.readTransactionPageAtCheckpoint` must be explicitly supplied. No default source or transport is selected, and the configured pool must match the handler's public identity.
+
+After proof verification, the route requires SDK-valid historical 031/030/018/financial evidence through a load-only gate: fresh clock, key, account and action paths are disabled. Missing or corrupt attempts cannot create, sign, claim or submit. It then loads 032 once. An existing outcome is revalidated through the accepted SDK using cached 032 and historical loads only, without source calls or writes.
+
+For valid absence, one discovery page is awaited. Incomplete discovery returns **202** with `{"state":"reconciliation_progress","requestId":"<verified ID>","transactionHash":"<validated hash>","stage":"discovery"}`. Complete discovery permits one transaction page at the newly saved income anchor; a nonempty page returns the same response with `stage: "transactions"`. Only an acknowledged empty, complete transaction page permits the SDK history reader and one outcome save. No page-fetch loops or automatic follow-up calls are added.
+
+A validated existing or newly saved outcome returns **200** with only `{"state":"issuance_outcome_recorded","requestId":"<verified ID>","transactionHash":"<validated hash>","outcome":"success"}`; included failure uses `outcome: "failed"`. All responses use `Cache-Control: no-store`. Use the existing issue endpoint for the selected donor/deadline/CB mapping; reconciliation does not duplicate it.
+
+Invalid requests and invalid/stale proofs retain 400/401 parser errors. Exact null-data database `42501` / `unauthorized_admin_wallet` denial returns 403; unknown, missing or malformed evidence and dependency failures return 503 `issuance_reconciliation_unavailable`. Neither missing transactions nor timeouts mean included failure. Unknown 019/024/032 saves stop that call without retry, readback or compensation, even if the write committed. Another explicit call may refresh discovery while retaining the old transaction cursor and records; head/state drift fails closed without automatic reanchoring.
+
+Reconciliation never grants current CB availability, settlement, refund, retry or ownership-release authority and never automatically follows submission. Gross debt, financial gates and immutable execution receipts remain unchanged.
+
 ## Local boundary
 
 Without optional dependencies, existing route/method, prepare, and config behavior remains unchanged. The production public-only `index.ts` is unchanged: no private provider is activated or deployment authorized. These local mocks are not live Stellar transaction evidence.

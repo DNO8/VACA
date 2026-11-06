@@ -29,8 +29,14 @@ async function bodyOf(request: Request): Promise<unknown> {
   } catch { throw invalid(); }
 }
 /** Internal runtime boundary: wallet proof is not current admin membership or durable permission. */
-export async function verifyIssuanceCommand(request: Request, configuration: IssuanceCommandConfiguration): Promise<VerifiedIssuanceCommand> {
-  if (new URL(request.url).pathname !== "/functions/v1/d1-custody/issue") throw new CustodyError("not_found", 404);
+export function verifyIssuanceCommand(request: Request, configuration: IssuanceCommandConfiguration): Promise<VerifiedIssuanceCommand> {
+  return verifyCommand(request, configuration, "issue");
+}
+export function verifyReconciliationCommand(request: Request, configuration: IssuanceCommandConfiguration): Promise<VerifiedIssuanceCommand> {
+  return verifyCommand(request, configuration, "reconcile");
+}
+async function verifyCommand(request: Request, configuration: IssuanceCommandConfiguration, action: "issue" | "reconcile"): Promise<VerifiedIssuanceCommand> {
+  if (new URL(request.url).pathname !== "/functions/v1/d1-custody/" + action) throw new CustodyError("not_found", 404);
   if (request.method !== "POST") throw new CustodyError("method_not_allowed", 405);
   let pool: string, namespace: string, clock: () => number;
   try {
@@ -39,7 +45,7 @@ export async function verifyIssuanceCommand(request: Request, configuration: Iss
   } catch { throw unavailable(); }
   const body = await bodyOf(request);
   if (!exact(body, ["version", "network", "pool", "namespace", "action", "request_id", "timestamp", "payload", "wallet", "signature"]) ||
-      body.version !== 1 || body.network !== "TESTNET" || body.pool !== pool || body.namespace !== namespace || body.action !== "issue" ||
+      body.version !== 1 || body.network !== "TESTNET" || body.pool !== pool || body.namespace !== namespace || body.action !== action ||
       typeof body.request_id !== "string" || !uuid.test(body.request_id) || typeof body.timestamp !== "number" || !Number.isSafeInteger(body.timestamp) || body.timestamp < 0 ||
       !exact(body.payload, []) || typeof body.wallet !== "string" || typeof body.signature !== "string" || !/^[A-Za-z0-9+/]{86}==$/.test(body.signature)) throw invalid();
   const signatureBytes = Buffer.from(body.signature, "base64");

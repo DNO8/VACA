@@ -2,6 +2,7 @@
 import { hash, Keypair } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
 import { issueHttp, type IssuanceHttpDependencies } from "./issuance-http.ts";
+import { reconcileHttp, type ReconciliationHttpDependencies } from "./issuance-reconciliation-http.ts";
 
 export interface VerifiedPayment {
   transaction_hash: string;
@@ -42,6 +43,7 @@ export class CustodyError extends Error {
 export interface CustodyConfiguration {
   poolSigner: Keypair;
   issuance?: IssuanceHttpDependencies;
+  reconciliation?: ReconciliationHttpDependencies;
   now?: () => number;
   ledger?: { payment(transactionHash: string, operationId: string): Promise<VerifiedPayment> };
   database?: { prepare(input: Preparation): Promise<unknown> };
@@ -101,6 +103,9 @@ export function createCustodyHandler(configuration: CustodyConfiguration): Custo
     const path = new URL(request.url).pathname;
     if (request.method === "POST" && path === "/functions/v1/d1-custody/issue" && configuration.issuance) {
       return issueHttp(request, configuration.issuance, configuration.poolSigner.publicKey());
+    }
+    if (request.method === "POST" && path === "/functions/v1/d1-custody/reconcile" && configuration.reconciliation) {
+      return reconcileHttp(request, configuration.reconciliation, configuration.poolSigner.publicKey());
     }
     if (request.method === "POST" && path === "/functions/v1/d1-custody/prepare") {
       try {
