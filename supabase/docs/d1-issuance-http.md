@@ -81,8 +81,26 @@ Invalid requests and invalid/stale proofs retain 400/401 parser errors. Exact nu
 
 Reconciliation never grants current CB availability, settlement, refund, retry or ownership-release authority and never automatically follows submission. Gross debt, financial gates and immutable execution receipts remain unchanged.
 
+## Server runtime composition
+
+`index.ts` and local public-interface tests use the same side-effect-free `createCustodyRuntime(base, lifecycle?)` factory from `runtime.ts`. Without `lifecycle`, it delegates unchanged preparation, config and unmatched-route behavior; private routes remain unconfigured. The entrypoint still supplies only its existing public pool identity and preparation dependencies. No private provider, trusted namespace, new environment variable or production signing capability is provisioned by this extraction.
+
+To compose the private routes on the server, explicitly provide:
+
+```ts
+const handler = createCustodyRuntime(base, {
+  client,
+  configuration, // Trusted namespace, pool, clock, financial source and controlled loadPoolSigner.
+  fetcher, // Required submission transport; no implicit global fallback.
+  reconciliationSource, // Explicit readPage and readTransactionPageAtCheckpoint.
+  availabilityFetcher, // Optional, distinct current-presence transport.
+});
+```
+
+The factory mounts the existing issuance and reconciliation adapters. It does not call the signer, financial source, reconciliation pages or transports during construction. Request IDs and admin identities remain derived from action-specific wallet proofs and checked by the database; neither the factory nor its dependency injection authorizes a caller. Financial authorization still precedes private signer loading. Historical attempts and SDK-validated cached outcomes do not load a private signer or repeat submission; cached reconciliation does not fetch pages. Availability is passed only through the explicit optional transport.
+
+Runtime tests exercise pending issuance, cached SDK outcome/reconciliation, proof/admin/financial rejection and unknown-outcome ownership retention. Their included receipt is built through the SDK fixture, not discovered through a complete mounted history-ingestion journey. They are not a complete beneficiary claim or expired refund journey.
+
 ## Local boundary
 
-Without optional dependencies, existing route/method, prepare, and config behavior remains unchanged. The production public-only `index.ts` is unchanged: no private provider is activated or deployment authorized. These local mocks are not live Stellar transaction evidence.
-
-No outcome is inferred from provider acknowledgements. Mounted production runtime, terminal fee/principal/sequence accounting, ownership retirement, refunds and client integration remain separate work; local fixtures are not deployed or live transaction evidence.
+No outcome is inferred from provider acknowledgements. Production private-provider configuration and activation, terminal fee/principal/sequence accounting, ownership retirement, refunds and client integration remain separate work. Local ephemeral fixtures are not deployed or live Stellar transaction evidence, and no deployment or real signing key is authorized.
