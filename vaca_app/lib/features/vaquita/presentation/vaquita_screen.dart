@@ -190,6 +190,8 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
   double _pendingXlm = 0;
   bool _loading = true;
   bool _claiming = false;
+  bool _claimsLoading = false;
+  bool _claimsUnavailable = false;
   String? _error;
   String? _notice;
   List<String> _claimTransactionHashes = const [];
@@ -203,19 +205,12 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
   Future<void> _load() async {
     final db = ref.read(databaseProvider);
     final feed = await ref.read(vaquitaFeedServiceProvider).fetchFeed();
-    final claims = await ref.read(stellarWalletServiceProvider).pendingClaims();
+    await _refreshClaims();
     final localIds =
         (await db.select(db.incidents).get()).map((i) => i.id).toSet();
     if (!mounted) return;
-    var pending = 0.0;
-    if (claims case Success(value: final balances)) {
-      for (final b in balances) {
-        pending += double.tryParse(b.amount) ?? 0;
-      }
-    }
     setState(() {
       _loading = false;
-      _pendingXlm = pending;
       if (feed case Success(value: final items)) {
         _mine = items
             .where((i) => i.isPromoted && localIds.contains(i.incidentId))
@@ -224,6 +219,24 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
       } else if (feed case Failure(error: final error)) {
         _error = error.message ?? 'No se pudo cargar Vaquitas.';
       }
+    });
+  }
+
+  Future<void> _refreshClaims() async {
+    if (_claimsLoading || _claiming || !mounted) return;
+    setState(() => _claimsLoading = true);
+    final claims = await ref.read(stellarWalletServiceProvider).pendingClaims();
+    if (!mounted) return;
+    var pending = 0.0;
+    if (claims case Success(value: final balances)) {
+      for (final balance in balances) {
+        pending += double.tryParse(balance.amount) ?? 0;
+      }
+    }
+    setState(() {
+      _claimsLoading = false;
+      _claimsUnavailable = claims is Failure;
+      _pendingXlm = pending;
     });
   }
 
@@ -275,7 +288,10 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
         message: _error!,
       );
     }
-    if (_mine.isEmpty && _pendingXlm <= 0) {
+    if (_mine.isEmpty &&
+        _pendingXlm <= 0 &&
+        !_claimsUnavailable &&
+        !_claimsLoading) {
       return const _EmptyVaquitas();
     }
     return ListView.separated(
@@ -287,6 +303,9 @@ class _MyVaquitasState extends ConsumerState<_MyVaquitas> {
           return _ClaimCard(
             pendingXlm: _pendingXlm,
             claiming: _claiming,
+            claimsLoading: _claimsLoading,
+            claimsUnavailable: _claimsUnavailable,
+            onRetry: _refreshClaims,
             error: _error,
             notice: _notice,
             transactionHashes: _claimTransactionHashes,
@@ -345,6 +364,9 @@ class _ClaimCard extends StatelessWidget {
   const _ClaimCard({
     required this.pendingXlm,
     required this.claiming,
+    required this.claimsLoading,
+    required this.claimsUnavailable,
+    required this.onRetry,
     required this.onClaim,
     required this.onOpenTransaction,
     required this.transactionHashes,
@@ -354,6 +376,9 @@ class _ClaimCard extends StatelessWidget {
 
   final double pendingXlm;
   final bool claiming;
+  final bool claimsLoading;
+  final bool claimsUnavailable;
+  final VoidCallback onRetry;
   final VoidCallback onClaim;
   final ValueChanged<String> onOpenTransaction;
   final List<String> transactionHashes;
@@ -385,7 +410,17 @@ class _ClaimCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.xxs),
-            if (pendingXlm > 0)
+            if (claimsLoading)
+              const Text(
+                'Consultando ayuda pendiente…',
+                style: AppTypography.caption,
+              )
+            else if (claimsUnavailable)
+              const Text(
+                'No se pudo consultar la ayuda pendiente.',
+                style: AppTypography.caption,
+              )
+            else if (pendingXlm > 0)
               Text(
                 '${pendingXlm.toStringAsFixed(2)} XLM testnet reclamables',
                 style: AppTypography.caption,
@@ -394,6 +429,11 @@ class _ClaimCard extends StatelessWidget {
               const Text(
                 'Sin ayuda pendiente por ahora.',
                 style: AppTypography.caption,
+              ),
+            if (claimsUnavailable)
+              TextButton(
+                onPressed: claimsLoading ? null : onRetry,
+                child: const Text('Reintentar consulta'),
               ),
             if (notice != null)
               Padding(
@@ -427,7 +467,7 @@ class _ClaimCard extends StatelessWidget {
                   ),
                 ),
               ),
-            if (pendingXlm > 0) ...[
+            if (pendingXlm > 0 && !claimsLoading && !claimsUnavailable) ...[
               const SizedBox(height: AppSpacing.xs),
               VacaButton(
                 label: claiming ? 'Reclamando…' : 'Reclamar ayuda',
