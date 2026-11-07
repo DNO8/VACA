@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "scope": "Byte-identical SDK Unit A integration only; not whole D1 acceptance",
+  "source_commit_peer_reported": "1c65e77ab669203531cf0e34b951c58af2f7dde7",
+  "integration_baseline": "3c4fbcdf78cc02fdeed197862240ce392775c961",
+  "frozen_inputs_verified": 80,
+  "existing_dependencies_identical": 76,
+  "payload": {
+    "supabase/functions/d1-custody/refund-candidate-journal.ts": {
+      "bytes": 9931,
+      "sha256": "8ad8742249851ae74c3f285c9ee58555da394255abde834c1e8e126c0371d58d"
+    },
+    "supabase/tests/unit/refund-candidate-journal.test.ts": {
+      "bytes": 17151,
+      "sha256": "27dda91a5067c7b7c71ea888f7d3dc850c7b5b7fa109b2a826766d47b42d3160"
+    },
+    "supabase/docs/d1-refund-candidate-journal.md": {
+      "bytes": 1469,
+      "sha256": "88c8f83780db3d6314deca856f387da49ca30a6b8f6cc355429e4b2054d97264"
+    }
+  },
+  "source_manifest_sha256": "44c17a279b9e51dbe2286d4496c1aad51f9061a6137e6f25bcf529e866a596b8",
+  "source_snapshot": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-verifier-1k24x23a/source",
+  "source_proof": {
+    "writer_connected_pass": 17,
+    "writer_connected_fail": 0,
+    "standalone_typecheck_exit": 0,
+    "independent_pass": 8,
+    "independent_fail": 0,
+    "independent_seconds": 14.883159075980075,
+    "independent_invocations": 1,
+    "basis": "Existing retained source/snapshot evidence; not new execution in integration clone"
+  },
+  "source_assessment_peer_reported": {
+    "available": false,
+    "nativeRisk": "unassessable",
+    "reason": "unrelated untracked declaration",
+    "reviewDue": "not supplied",
+    "native_approval": false
+  },
+  "new_functional_runs": 0,
+  "original_root_writes": false,
+  "source_semantic_changes": false,
+  "remote_writes": false,
+  "fund_movements": false,
+  "retained_evidence": {
+    "focused.process.json": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/focused.process.json",
+      "bytes": 168,
+      "sha256": "2733cc4922dca65dd1f53f9ccfadb1ef1cba9abd94cd38895edea7527e1f0bf3"
+    },
+    "focused.stdout": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/focused.stdout",
+      "bytes": 2357,
+      "sha256": "4121e38074c78074bfa249efda0261badad56785bb1dff1217bdef88295d23e0"
+    },
+    "focused.stderr": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/focused.stderr",
+      "bytes": 323,
+      "sha256": "68cdbfe5915520bbc67733dd6d0e2da3e25e7223fc1d719bbefb0b0103e1188f"
+    },
+    "check.process.json": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/check.process.json",
+      "bytes": 236,
+      "sha256": "2edc77758a5bf8a6ca36c0cd250129e4964c5c4aec48815232868ce9619513dc"
+    },
+    "check.stderr": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/check.stderr",
+      "bytes": 221,
+      "sha256": "bbb688e057c79d387aca951d1f7f6dd2558e363d037623d10d523849f0ebfefa"
+    },
+    "independent.execution.json": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/independent.execution.json",
+      "bytes": 2820,
+      "sha256": "7e2597292c94ca91da149d43392d98b74ff492c84e894261dafdcd04cc48953b"
+    },
+    "independent.cleanup.json": {
+      "path": "/home/danilo/worktrees/vaca-d1-wsl-baseline/supabase/.temp/d1-refund-candidate-journal-xku9246o/independent.cleanup.json",
+      "bytes": 410,
+      "sha256": "095a75fae28a771a4e19aa27329ce02615114b43c819a81724f68b030c2ecf72"
+    }
+  }
+}
