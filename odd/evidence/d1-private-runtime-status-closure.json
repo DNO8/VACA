@@ -1,0 +1,44 @@
+{
+  "behaviorCommit": "f58335e9909994a1a1d985c7e414282c0269df59",
+  "trackingCommit": "0ee387b13cf3cb8e8560cf7a3fe6828e0de1ca71",
+  "sourceBase": "b21dd441ab6098405b5543f6d7fc325fc300adfa",
+  "behaviorPaths": 3,
+  "behaviorChangedLines": 74,
+  "verificationTask": "mw666n6p-v-ha62",
+  "verdict": "ADMIT boundedT1; partialS1, S2nonoverlap, S3preservation, NOT fulluseritems2/4/5",
+  "checks": {
+    "reviewInputs": 680,
+    "protectedInputsAfterAdjudication": 679,
+    "protectedSupabaseMobileBaseline": 584,
+    "parentFinalRuntimeInputs": 166,
+    "captureFileHashes": 48,
+    "retainedDifferentialBaseBlobs": 38,
+    "committedBehaviorPayloadHashes": 3
+  },
+  "metadataPaths": [
+    "odd/tasks/d1-private-runtime-status.md",
+    "odd/evidence/d1-private-runtime-status.json",
+    "odd/evidence/d1-private-runtime-status-adjudication.md",
+    "odd/evidence/d1-private-runtime-status-closure.json"
+  ],
+  "metadataHashesExcludingThisFile": {
+    "odd/tasks/d1-private-runtime-status.md": "64d160fc814bed60b2682a5f1b6509fea29767ab99046b5679c32b954626e821",
+    "odd/evidence/d1-private-runtime-status.json": "65a6ce3da7d13663c5c2e670c9719b33ec589f98e4ba25fc849fe1008e36281f",
+    "odd/evidence/d1-private-runtime-status-adjudication.md": "0cb1689d51085c05b8eb0cc1674662a96048fcf8773d97dae6c38a9d8ce48d2d"
+  },
+  "risk": "item2 administrative route composition; self+independent verification fulfilled",
+  "native": "medium/escalHIGHsecurity2/RDDon/reviewDuefalse-underbudget/unconsumed/unknown; noSTART/nativeapproval",
+  "failuresRetained": [
+    "37 genuinebehaviorRED",
+    "39 dynamicimportread-denied BEFOREroutes",
+    "40 human-authorized runtime-only read correction denied handler BEFOREroutes",
+    "initial git add ignored intendedguide; includedexactpath-f, noignorerulechange"
+  ],
+  "resolvedProof": "41 human-authorized static-import comparison:stdout/stderr/exits equal0;4existingrouteszeroeffects,165inputsunchanged,nonewread/netpermissions",
+  "limits": [
+    "Parentfunctionalruntimeonly; independentread-onlyadjudication, not child execution or immutablefilesystem.",
+    "Source/test/guide remain finalGREEN/checkbytes, no replay.",
+    "Checkpointpendingstatus is historical, not current approval.",
+    "No actualprovider/index.ts activation/clientintegration/refundexecution/settlement/fulljourneys orfinancialpeer/D3/livefunds/SQL/deploy/crossroot changes."
+  ]
+}
