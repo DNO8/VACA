@@ -12,6 +12,18 @@ import 'refund_test_fixtures.dart';
 
 void main() {
   refundWireTests();
+  test('original gross must be positive; zero settled components stay valid',
+      () {
+    final zero = refundFixture('not_started');
+    (zero['donation']! as Map)['grossAmount'] = '0.0000000';
+    expect(() => RefundStatus.parse(zero, refundTestScope),
+        throwsA(isA<RefundProtocolError>()));
+    final complete = refundFixture('settled')..['refund'] = null;
+    final accounting = complete['settlement']! as Map;
+    accounting['beneficiaryClaimedAmount'] = '10.0000000';
+    accounting['donorRefundedAmount'] = '0.0000000';
+    expect(RefundStatus.parse(complete, refundTestScope).isSettled, isTrue);
+  });
   test('UTC RFC3339 retains original deadline spelling and rejects overflow',
       () {
     for (final deadline in [

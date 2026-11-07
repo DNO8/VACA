@@ -86,7 +86,8 @@ class RefundStatus {
     );
     RefundValidation.hash(donation['paymentTransactionHash']);
     RefundValidation.publicKey(donation['donor']);
-    final gross = RefundValidation.amount(donation['grossAmount']);
+    final gross =
+        RefundValidation.amount(donation['grossAmount'], positive: true);
     _asset(donation['asset']);
     final refund = body['refund'];
     RefundValidation.require(
