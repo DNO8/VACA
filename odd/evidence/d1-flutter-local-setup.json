@@ -1,10 +1,11 @@
 {
   "schema": 1,
-  "state": "blocked_replacement_download_timeout",
+  "state": "local_sdk_prerequisite_verified",
   "authorization": [
     "Authorize project-local Flutter setup",
     "Authorize one bounded resume",
-    "Preserve lockfile; replace local SDK (recommended)"
+    "Preserve lockfile; replace local SDK (recommended)",
+    "Authorize one 3.41.9 archive resume"
   ],
   "original_failures": "job16 compilefailure beforeI/O; job17 downloadtimeout124 remainfailed; see d1-flutter-local-setup-failed-download.json",
   "source_checkpoint": "eec0b5a54e6b879a9457955d77a47dacc157dd33",
@@ -122,6 +123,157 @@
         "pub-get.invocation.json": "715f68cd1c36a9e5d0fe53726bffa09a8b899cc83a3a30c3f5e1b517f00d8f2d",
         "result.json": "38e6e4f34db516e14e4c215691a6bd817fa8b3294994ff178afa3e4be9df5b92"
       }
+    },
+    {
+      "job": "job-23",
+      "capture": "supabase/.temp/flutter-setup-replacement-download-resume-wbyucf_t",
+      "result": {
+        "exit": 0,
+        "seconds": 18.178750224993564,
+        "archive_bytes": 1518927432,
+        "installed": false,
+        "integrity_verified": true,
+        "timed_out": false,
+        "archive_sha256": "cf2631dde02570733921a530f47a96abe896b5e334682d2743c29530ea88bb2e",
+        "original_partial_unchanged": true,
+        "http_status": "206"
+      },
+      "files_sha256": {
+        "invocation.json": "c24b781c244e18bd860bfa31656e3b27a3ba3b010f3c679777b5ddcc9dd1345b",
+        "pin.json": "e681b9e456b76a99f962ca538e5d830b70a85bf939234d20d7832b77f31b000c",
+        "headers.txt": "80c2cef6f3f25e31705f749d9a9ab8c309ab5636683b6d108cbc4645b4453729",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "58985087b616c69a8f0c29aa6c54e2b86d0d86872666ca200cc189019c1d97bf",
+        "result.json": "3365fbdf311dd30b4779549814091d694ba27cda4398ffef9da8f26ae3d50593"
+      }
+    },
+    {
+      "job": "job-24",
+      "capture": "supabase/.temp/flutter-setup-replacement-extract-5vp136ej",
+      "result": {
+        "exit": 0,
+        "seconds": 26.750768915982917,
+        "archive_sha256": "cf2631dde02570733921a530f47a96abe896b5e334682d2743c29530ea88bb2e",
+        "counts": {
+          "members": 25408,
+          "expanded_file_bytes": 2573972275,
+          "links": 0
+        },
+        "target": "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter",
+        "extracted": true,
+        "sdk_executed": false,
+        "confinement": "new staging directory, flutter-only members and normalized links, stdlib data_filter, postwalk",
+        "target_overwritten": false,
+        "target_replaced_non_destructively": true,
+        "previous_sdk_preserved": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/flutter-setup-preserved-3.41.0-7vj5i2lr/flutter",
+        "previous_critical_sha256": {
+          "bin/flutter": "ebf74cfdcd1cb57787c6cef8e6a8dfc1deeb26e6e5e034538bda16a184160c97",
+          "bin/cache/dart-sdk/bin/dart": "d41175f0bd8be231c94af48d4088ec3e711b20eb0ee52771d184bf5788c8a042",
+          "bin/cache/flutter_tools.snapshot": "673595de74357c4a7c6bedf1e23ea1d9b3dc0527bcd4ddc6d5fb753d031238f2"
+        },
+        "previous_critical_identity_unchanged": true
+      },
+      "files_sha256": {
+        "invocation.json": "42f684f6d90261cdb189beb69b1898f3b439989a18916706fc3ee4abadbc17d9",
+        "result.json": "2ede8f50f7cb075cde3c53fde7fda6deb0ccf9186983e7b62b56b904be8268e8"
+      }
+    },
+    {
+      "job": "job-25",
+      "capture": "supabase/.temp/flutter-setup-replacement-version-x55lvi3r",
+      "result": {
+        "exit": 0,
+        "phase": "version",
+        "seconds": 0.23678762797499076,
+        "steps": [
+          {
+            "name": "flutter-version",
+            "exit": 0,
+            "seconds": 0.18802420503925532,
+            "stdout_sha256": "fe2b8bf94ee1f4357d9f0cedb3e48e11b1769f058c0bed6dc594c8a27261d12d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "dart-version",
+            "exit": 0,
+            "seconds": 0.004699762037489563,
+            "stdout_sha256": "aec0deb0431af41549d28510392a11f7cbfc1d38fb9e29954bcd865d4b54802d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "mobile_inputs": 103,
+        "mobile_changed": [],
+        "global_environment_modified": false,
+        "live_wallet_smoke_test": "not run"
+      },
+      "files_sha256": {
+        "flutter-version.stdout.txt": "fe2b8bf94ee1f4357d9f0cedb3e48e11b1769f058c0bed6dc594c8a27261d12d",
+        "dart-version.invocation.json": "77bc0ffea26b7db60ed0a1cb462560236dab16aff3feda3d8a36f69ff0caed17",
+        "dart-version.stdout.txt": "aec0deb0431af41549d28510392a11f7cbfc1d38fb9e29954bcd865d4b54802d",
+        "flutter-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dart-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "steps.json": "551f69b38d4661f5eee0fe1d58ff5de33ebaa049aaeae8c58413d2ea4b1049d3",
+        "flutter-version.invocation.json": "37bd6fe092f420c82bc9b451aa60fbe0586a4876d5b4aca46451afa5abfaa7cc",
+        "result.json": "b7961cd8863f66e02496fb2da54ebb6aca88e0b2dbb3b0db9e9bc949f55f37c1"
+      }
+    },
+    {
+      "job": "job-26",
+      "capture": "supabase/.temp/flutter-setup-replacement-locked-deps-2yuugicl",
+      "result": {
+        "exit": 0,
+        "phase": "locked-deps",
+        "seconds": 20.291574626986403,
+        "steps": [
+          {
+            "name": "pub-get",
+            "exit": 0,
+            "seconds": 20.269279427011497,
+            "stdout_sha256": "a7b9b2bb62edde1a7f59f31270f2d617580375b77609c9219eca63782c8690ba",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "mobile_inputs": 103,
+        "mobile_changed": [],
+        "global_environment_modified": false,
+        "live_wallet_smoke_test": "not run"
+      },
+      "files_sha256": {
+        "pub-get.stdout.txt": "a7b9b2bb62edde1a7f59f31270f2d617580375b77609c9219eca63782c8690ba",
+        "steps.json": "f4834681819eaf6ed645795edb12f94acd9d1ffb3cf69df5645b69fcd5541006",
+        "pub-get.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pub-get.invocation.json": "2fbd79c189c70dae23443902bc69d5c2d621d3f4a67f9e3cc17eae71bbe2b96f",
+        "result.json": "d60af87303ea0d8c70b8b459db4d137b7887c9df1a73fc1c69384004fc18a961"
+      }
+    },
+    {
+      "job": "job-27",
+      "capture": "supabase/.temp/flutter-setup-replacement-wallet-tests-xr3611la",
+      "result": {
+        "exit": 0,
+        "phase": "wallet-tests",
+        "seconds": 10.301808235992212,
+        "steps": [
+          {
+            "name": "wallet-tests",
+            "exit": 0,
+            "seconds": 10.295360827993136,
+            "stdout_sha256": "a96dfc6f169a6b2b2c177923721763a999775cfd1cd44f9b5c5e4cbc2b6d3c11",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "mobile_inputs": 103,
+        "mobile_changed": [],
+        "global_environment_modified": false,
+        "live_wallet_smoke_test": "not run"
+      },
+      "files_sha256": {
+        "wallet-tests.stdout.txt": "a96dfc6f169a6b2b2c177923721763a999775cfd1cd44f9b5c5e4cbc2b6d3c11",
+        "wallet-tests.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wallet-tests.invocation.json": "4b9059f406efd9d6eec6437d9df6113c2fca0c07cafcfe4c31734788b04331cd",
+        "steps.json": "935b1827f802abc0d92e4d7fa97560f723b446dcf1b7c03e2037bccd884ec89f",
+        "result.json": "d70481f6256c7175af31bbdcf00d5b742dbaab040dfdc63f81d10f14e6df4a49"
+      }
     }
   ],
   "helper_sha256": {
@@ -159,11 +311,51 @@
     "lockfile_modified": false,
     "scope_limit": "Do not change pubspec/lock or replace existing SDK without explicit decision."
   },
-  "wallet_tests": "not run; selected existing6-test fakegateway service suite only; live smoke not run",
-  "independent_verifier": "not run; functional prerequisite failed",
-  "native_review": "not run; partial setup is not approved",
-  "acceptance": "3.41.0 integrity/extraction/version only; FAILED lockedget.3.41.9sourcepins match but download TIMEOUT/NO integrityverdict; no replacement or mobileproof. WholeD1 incomplete.",
-  "next_decision": "ONE explicitly authorized3.41.9resume into separatecopy under unchanged80+5/fullSHA-before-extract; orretainblocked. OriginalSDK/lock/captures preserved.",
+  "wallet_tests": {
+    "executor": "parent",
+    "suite": "vaca_app/test/stellar_wallet_service_test.dart",
+    "pass": 6,
+    "fail": 0,
+    "stdout_tail": "00:00 +6: All tests passed!",
+    "live_testnet_smoke": "not run"
+  },
+  "independent_verifier": {
+    "state": "ADMIT SDK prerequisite only",
+    "task_id": "mw61hh8d-p-m2kp",
+    "method": "Independent readonly static/hash adjudication of parent runtime, NOT child execution",
+    "report": "odd/evidence/d1-flutter-local-setup-adjudication.json",
+    "report_file_sha256": "129cd918450960f802e79465fb94ea72dcc94f318d3f50cdcdafb5aed32c2be9",
+    "input_manifest": "supabase/.temp/flutter-setup-helper/final-parent-inputs.json",
+    "matched_inputs": 120,
+    "matched_mobile": 103,
+    "matched_capture_hashes": 65,
+    "preserved_critical_hashes": 3,
+    "readonly_commands": 2,
+    "readonly_command_exits": [
+      0,
+      0
+    ],
+    "index_stable_during_review": true,
+    "s1_whole_d1": "outofscope, NOT accepted",
+    "s2": "met within prerequisite scope",
+    "s3": "met",
+    "blockers": [],
+    "advisory": "Usage example inherited other variables. Nonblocking passive clarification adds env -i after report; no actual SDK/functional-check change, no new verification gate."
+  },
+  "native_review": {
+    "assessment": "odd/evidence/d1-flutter-local-setup-assessment.json",
+    "nativeRisk": "medium",
+    "risk": "high",
+    "escalation_item": 5,
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "candidate_consumed": false,
+    "outcome": "unknown",
+    "native_approval": false,
+    "scope": "Assessment covered4stagedpaths237difflines before passive usage-wording clarification; ignored SDKbytes are not native-review candidate."
+  },
+  "acceptance": "LOCAL SDK prerequisite verified: official3.41.9 SHA/confined non-destructive replacement/exactversions/enforcedlockget/existing6wallet tests +independentreadonly evidenceADMIT. No fullapp/build/live/wholeD1/nativeapproval.",
+  "next_decision": "No SDK decision needed. Finish scoped primary/metadata commits/readback, then continue authorized remaining D1 work.",
   "replacement_source_pin": {
     "helper": "mw605hea-o-x9w6",
     "parent_spotcheck_response": "mw607td8hgsbjm",
@@ -234,5 +426,29 @@
     "download_replacement.py": "de537243eafdea2390146fbbbc2b3d5eb2c9a3f41e523e33eaccd0fcb5911473",
     "extract_replacement.py": "af07a0cbe2c2cdd2177e4e69501aa93a5253295840399a9e7f05c41064e2a139",
     "run_replacement_check.py": "bfb62e825974acb5529bda26333ec3091b31c493a69ad5b0574b3afe4756edc8"
+  },
+  "current_sdk": {
+    "flutter": "3.41.9",
+    "dart": "3.11.5",
+    "framework_revision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "target": ".tooling/flutter",
+    "previous_sdk_preserved": "supabase/.temp/flutter-setup-preserved-3.41.0-7vj5i2lr/flutter",
+    "previous_critical_identity_unchanged": true
+  },
+  "review_switch_cli_probe": {
+    "command": "cd /home/danilo/projects/vaca-d1-t5b-proof && gentle-ai review mode status && git status --short && git diff --check",
+    "exit": 127,
+    "stdout": "",
+    "stderr": "/bin/bash: line 1: gentle-ai: command not found\n",
+    "not_executed": [
+      "git status --short",
+      "git diff --check"
+    ],
+    "meaning": "CLI not on this bash PATH; not proof review is disabled or that native facade is unavailable. No CLI retry or global PATH change."
+  },
+  "closure_readback": {
+    "pre_passive_closure_inputs_matched": 120,
+    "pre_passive_closure_index_matched": true,
+    "post_review_changes": "Passive report/assessment/tracker/evidence bookkeeping and usage env -i clarification only; SDK/config/runtime/helper/mobile inputs unchanged."
   }
 }

@@ -1,4 +1,5 @@
 /supabase/.temp/
+/.tooling/flutter/
 
 # Android release signing — nunca versionar
 **/key.properties
