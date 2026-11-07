@@ -35,7 +35,10 @@ export function verifyIssuanceCommand(request: Request, configuration: IssuanceC
 export function verifyReconciliationCommand(request: Request, configuration: IssuanceCommandConfiguration): Promise<VerifiedIssuanceCommand> {
   return verifyCommand(request, configuration, "reconcile");
 }
-async function verifyCommand(request: Request, configuration: IssuanceCommandConfiguration, action: "issue" | "reconcile"): Promise<VerifiedIssuanceCommand> {
+export function verifyStatusCommand(request: Request, configuration: IssuanceCommandConfiguration): Promise<VerifiedIssuanceCommand> {
+  return verifyCommand(request, configuration, "status");
+}
+async function verifyCommand(request: Request, configuration: IssuanceCommandConfiguration, action: "issue" | "reconcile" | "status"): Promise<VerifiedIssuanceCommand> {
   if (new URL(request.url).pathname !== "/functions/v1/d1-custody/" + action) throw new CustodyError("not_found", 404);
   if (request.method !== "POST") throw new CustodyError("method_not_allowed", 405);
   let pool: string, namespace: string, clock: () => number;
