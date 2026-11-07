@@ -54,7 +54,10 @@ class StellarSdkWalletGateway implements StellarWalletGateway {
         usdcTrustlineReady: usdcBalance != null,
         usdcBalance: usdcBalance ?? '0.0000000',
       );
-    } catch (_) {
+    } on ErrorResponse catch (error) {
+      // Only this personal-account lookup's explicit absence is unfunded.
+      // Unknown failures must not authorize FriendBot or transaction preparation.
+      if (error.code != 404) rethrow;
       return StellarWalletSnapshot(
         accountId: credentials.accountId,
         balance: '0.0000000',
