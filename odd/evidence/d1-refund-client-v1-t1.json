@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+    "format",
+    "vaca_app/lib/features/refund/domain/refund_scope.dart",
+    "vaca_app/lib/features/refund/domain/refund_status.dart",
+    "vaca_app/test/refund_test_fixtures.dart",
+    "vaca_app/test/refund_status_test.dart"
+  ],
+  "timeoutSeconds": 25,
+  "elapsedSeconds": 0.18157758802408352,
+  "exit": 0,
+  "stdout": "Formatted vaca_app/lib/features/refund/domain/refund_scope.dart\nFormatted vaca_app/lib/features/refund/domain/refund_status.dart\nFormatted vaca_app/test/refund_test_fixtures.dart\nFormatted vaca_app/test/refund_status_test.dart\nFormatted 4 files (4 changed) in 0.06 seconds.\n",
+  "stderr": "",
+  "functionalTests": "deferred; not run",
+  "files": {
+    "vaca_app/lib/features/refund/domain/refund_scope.dart": {
+      "sha256": "093fcc2a6d721a1a55b44f0043587bc0386d186f4ad9b4848b03ad6aab081da3",
+      "lines": 85
+    },
+    "vaca_app/lib/features/refund/domain/refund_status.dart": {
+      "sha256": "f9c19ace3bf575c9df3a29ee11db5c496c35068774f5e20c6a932acd4c51cfa5",
+      "lines": 196
+    },
+    "vaca_app/test/refund_test_fixtures.dart": {
+      "sha256": "1a8c4453b60c9463ed32919c642a0383c718a96c4f0458b03e5b8803547420b2",
+      "lines": 64
+    },
+    "vaca_app/test/refund_status_test.dart": {
+      "sha256": "e0edb1e7cb36751d40ee4f5b861f6494a8293e3e272decfa5ba78aa20573728c",
+      "lines": 46
+    }
+  }
+}

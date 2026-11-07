@@ -1,0 +1,25 @@
+{
+  "functionalVerification": "deferred; no runtime acceptance",
+  "firstBehaviorCommit": "682d57f4a96d66bf6de77cb56d8aedfb7f13fe45",
+  "fixtureCommit": "1300dbf03d4b898c54c07705a802f3353f59b508",
+  "transportCommit": "347e7561f4de380bcd969bacac4340216a3d2d50",
+  "transportBase": "1300dbf03d4b898c54c07705a802f3353f59b508",
+  "transportAuthoredLines": 392,
+  "consumerCommit": "99343d097f9748cd5e31443f8ff5da8546505cd5",
+  "consumerBase": "347e7561f4de380bcd969bacac4340216a3d2d50",
+  "consumerAuthoredLines": 378,
+  "operationLogs": [
+    {
+      "path": "odd/evidence/d1-refund-client-v1-commits-operations-01.json",
+      "sha256": "78ce16e386c7816ceefe20611ada5351140a2786e1ba585e5fa4a2b306aaa644",
+      "operations": 30
+    },
+    {
+      "path": "odd/evidence/d1-refund-client-v1-commits-operations-02.json",
+      "sha256": "666974e9870bd375712dda6bde736296dd92270066a05525e0e18ec049c191aa",
+      "operations": 7
+    }
+  ],
+  "operationsSha256": "59acdde865f9d62355a2c65287f95424f0b0c71ec3574d8d9c665d838e614944",
+  "normalization": "Lossless partition of original captured operation array into <=340-line parts; no operation, stdout, stderr or exit code discarded"
+}

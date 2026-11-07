@@ -1,0 +1,86 @@
+{
+  "kind": "Captured Git operations; source-only, not functional acceptance",
+  "operations": [
+    {
+      "argv": [
+        "git",
+        "add",
+        "-f",
+        "--",
+        "vaca_app/lib/features/refund/data/refund_client.dart",
+        "vaca_app/test/refund_client_test.dart",
+        "vaca_app/docs/d1-refund-client.md"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "vaca_app/docs/d1-refund-client.md\nvaca_app/lib/features/refund/data/refund_client.dart\nvaca_app/test/refund_client_test.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--numstat"
+      ],
+      "exit": 0,
+      "stdout": "38\t0\tvaca_app/docs/d1-refund-client.md\n90\t0\tvaca_app/lib/features/refund/data/refund_client.dart\n250\t0\tvaca_app/test/refund_client_test.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "feat(refund): retain first-submit hold across recovery",
+        "-m",
+        "Serialize same-isolate consumers and use status only after a recorded attempt. Include deterministic scenarios and integration guide. Functional execution deferred. Risk: item 4 (concurrency)."
+      ],
+      "exit": 0,
+      "stdout": "[feat/d1-t5b-proof 99343d0] feat(refund): retain first-submit hold across recovery\n 3 files changed, 378 insertions(+)\n create mode 100644 vaca_app/docs/d1-refund-client.md\n create mode 100644 vaca_app/lib/features/refund/data/refund_client.dart\n create mode 100644 vaca_app/test/refund_client_test.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "99343d097f9748cd5e31443f8ff5da8546505cd5\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

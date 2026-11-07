@@ -1,0 +1,76 @@
+{
+  "functionalTests": "deferred; not run",
+  "steps": [
+    {
+      "argv": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+        "format",
+        "vaca_app/lib/features/refund/domain/refund_status.dart",
+        "vaca_app/test/refund_status_test.dart"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 0.07551364501705393,
+      "stdout": "Formatted vaca_app/test/refund_status_test.dart\nFormatted 2 files (1 changed) in 0.04 seconds.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+        "analyze",
+        "lib/features/refund/data/refund_client.dart",
+        "lib/features/refund/data/refund_http_client.dart",
+        "lib/features/refund/data/refund_submission_journal.dart",
+        "lib/features/refund/data/refund_wallet_signer.dart",
+        "lib/features/refund/domain/refund_scope.dart",
+        "lib/features/refund/domain/refund_status.dart",
+        "test/refund_status_test.dart",
+        "test/refund_test_fixtures.dart",
+        "test/refund_client_test.dart"
+      ],
+      "cwd": "/home/danilo/projects/vaca-d1-t5b-proof/vaca_app",
+      "timeoutSeconds": 25,
+      "exit": 0,
+      "elapsedSeconds": 18.86719388398342,
+      "stdout": "Analyzing refund_client.dart, refund_http_client.dart, refund_submission_journal.dart, refund_wallet_signer.dart, refund_scope.dart, refund_status.dart, refund_status_test.dart, refund_test_fixtures.dart, refund_client_test.dart...\n\n   info - lib/features/refund/data/refund_client.dart:20:70 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_client.dart:20:71 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_client.dart:27:47 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_client.dart:48:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures\n   info - lib/features/refund/data/refund_client.dart:51:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures\n   info - lib/features/refund/data/refund_client.dart:54:37 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_client.dart:87:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures\n   info - lib/features/refund/data/refund_http_client.dart:26:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_http_client.dart:63:60 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_submission_journal.dart:27:57 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_submission_journal.dart:29:59 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_submission_journal.dart:40:47 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_submission_journal.dart:46:78 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/data/refund_wallet_signer.dart:53:61 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_scope.dart:80:68 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_status.dart:42:78 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_status.dart:54:75 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_status.dart:105:75 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_status.dart:125:62 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_status.dart:170:55 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - lib/features/refund/domain/refund_status.dart:190:78 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:12:63 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:18:52 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:43:14 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:47:58 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:50:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures\n   info - test/refund_client_test.dart:53:13 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:53:14 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:55:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:60:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:87:75 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:89:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:104:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:104:8 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:108:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:108:8 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:115:77 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:118:9 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:139:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures\n   info - test/refund_client_test.dart:146:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:146:8 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:147:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:171:59 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:172:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:195:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:200:77 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:202:9 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:224:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:231:28 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:235:13 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:235:14 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_client_test.dart:236:9 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:21:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:24:26 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:30:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:34:30 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:35:46 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:49:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:55:33 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:60:33 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:74:46 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:96:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:104:15 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:111:15 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:133:106 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:137:38 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:139:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures\n   info - test/refund_status_test.dart:141:58 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:142:11 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:145:44 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:149:74 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:153:44 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_status_test.dart:161:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:38:71 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:48:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:48:6 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:84:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:90:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:95:11 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n   info - test/refund_test_fixtures.dart:101:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas\n\n80 issues found.\n",
+      "stderr": ""
+    }
+  ],
+  "files": {
+    "vaca_app/lib/features/refund/domain/refund_scope.dart": {
+      "sha256": "093fcc2a6d721a1a55b44f0043587bc0386d186f4ad9b4848b03ad6aab081da3",
+      "lines": 85
+    },
+    "vaca_app/lib/features/refund/domain/refund_status.dart": {
+      "sha256": "693fe252f2404b8ac7857b67e3501cf8ad6b24f31da286c0f3764ccf7b676479",
+      "lines": 197
+    },
+    "vaca_app/lib/features/refund/data/refund_client.dart": {
+      "sha256": "809e58684484ee8ebc803fd1f24d9f1110a63caf133c0667cba5ad35d0c8dad1",
+      "lines": 90
+    },
+    "vaca_app/lib/features/refund/data/refund_wallet_signer.dart": {
+      "sha256": "6d5750741809661c37a2ed2cb5f6c1c0248a84f952dce57886ce1d76d5aa531a",
+      "lines": 59
+    },
+    "vaca_app/lib/features/refund/data/refund_http_client.dart": {
+      "sha256": "24e403597400bfe25757ab9bd37b48191cee68ae1f5e67b4f79ef368077d7529",
+      "lines": 134
+    },
+    "vaca_app/lib/features/refund/data/refund_submission_journal.dart": {
+      "sha256": "0d2a1da11068d9beabee868743d7acbcb3a1baad667fee4cf759da9d893fc030",
+      "lines": 74
+    },
+    "vaca_app/test/refund_test_fixtures.dart": {
+      "sha256": "d2ac5f7c26d6375ac3b3293be3e0fe65d999d8168ab3a3f2a1287858ab3eb916",
+      "lines": 109
+    },
+    "vaca_app/test/refund_status_test.dart": {
+      "sha256": "df57d07d1aaa8dcbb46dbf5984f477c3a852fb7d47a35e4af084d5a223b6e479",
+      "lines": 164
+    },
+    "vaca_app/test/refund_client_test.dart": {
+      "sha256": "dd884163d5dbee93a3edc2970d0a1ae89361f5359507b94a053f3e8764157cd2",
+      "lines": 250
+    }
+  }
+}

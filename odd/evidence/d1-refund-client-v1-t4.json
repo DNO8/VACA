@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+    "format",
+    "vaca_app/test/refund_test_fixtures.dart",
+    "vaca_app/test/refund_status_test.dart",
+    "vaca_app/test/refund_client_test.dart"
+  ],
+  "exit": 0,
+  "elapsedSeconds": 0.06225922197336331,
+  "stdout": "Formatted vaca_app/test/refund_test_fixtures.dart\nFormatted vaca_app/test/refund_status_test.dart\nFormatted vaca_app/test/refund_client_test.dart\nFormatted 3 files (3 changed) in 0.03 seconds.\n",
+  "stderr": "",
+  "functionalTests": "deferred; not run",
+  "files": {
+    "vaca_app/test/refund_test_fixtures.dart": {
+      "sha256": "d2ac5f7c26d6375ac3b3293be3e0fe65d999d8168ab3a3f2a1287858ab3eb916",
+      "lines": 109
+    },
+    "vaca_app/test/refund_status_test.dart": {
+      "sha256": "fc532513e9899c89866aeb7b34968952403d1855ab6fcb0f87ff06426c31a279",
+      "lines": 141
+    },
+    "vaca_app/test/refund_client_test.dart": {
+      "sha256": "dd884163d5dbee93a3edc2970d0a1ae89361f5359507b94a053f3e8764157cd2",
+      "lines": 250
+    }
+  }
+}
