@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "state": "closed_local_sdk_prerequisite",
+  "primary_commit": "431db640cbe9504c55e892a6e3edc8b7154903df",
+  "parent_checks": "Exact3.41.9/Dart3.11.5 versions, enforcedlockedget0/20.291574627s, wallet6pass0fail/10.301808236s; no reruns",
+  "independent_task": "mw61hh8d-p-m2kp",
+  "independent_verdict": "ADMIT SDK prerequisite ONLY; S2/S3met, S1wholeD1outofscope",
+  "method": "Independentreadonly adjudication of parent runtime, NOT childruntime",
+  "protected_runtime_helper_mobile_config_hashes": 116,
+  "all_protected_unchanged": true,
+  "artifacts_sha256": {
+    "odd/tasks/d1-flutter-local-setup.md": "568ad592e60e33bc73152d8fc1888b25043f029c87750b892a1df54ef18389cd",
+    "odd/evidence/d1-flutter-local-setup-adjudication.json": "129cd918450960f802e79465fb94ea72dcc94f318d3f50cdcdafb5aed32c2be9",
+    "odd/evidence/d1-flutter-local-setup-assessment.json": "5fa1bb1aec54ef450ab55a707fc07b85044deb919e9ce2cb13450f90e8d19d8c"
+  },
+  "native": "Exact237-line4-path assessment nativeM/escalatedHIGH5/reviewDuefalse-under_budget/rddON/unconsumed/outcomeunknown; NOapproval/START. Laterpassivedocs are not a new nativeassessment.",
+  "prior_failures": "16compile1,17timeout124,21lockedget65,22timeout124,CLIswitch127 and verifierwrongsky_enginepathENOENT retained; never retrospectivepasses",
+  "scope": "SDK+process-local caches only, expected ignoredappbuild outputs; no trackedmobile/lock/globalenv/system/funds/SQL/deploy/peer-root writes. Old3.41.0SDK/captures preserved.",
+  "next": "Continue remainingauthorizedD1 implementation; D2publication deferred; financialowner remains owner; wholeD1 incomplete."
+}
