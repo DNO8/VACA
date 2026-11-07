@@ -1,0 +1,139 @@
+{
+  "sourceBase": "7439feff26302a81f0888d410d8998c697c7cdc6",
+  "trackingCommit": "113d70bfb0fca3dddcf94faaa1dcd19b8b1075a3",
+  "method": "Parent fake-HTTP public SDK and real-service tests; independent read-only adjudication pending. No child runtime or immutable filesystem.",
+  "captures": [
+    {
+      "path": "supabase/.temp/d1-wallet-snapshot-analyze-kcdd4r5p",
+      "exit": 0,
+      "elapsedSeconds": 14.010033694037702,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-snapshot-analyze-kcdd4r5p",
+      "inputCount": 420,
+      "unchanged": true,
+      "files": {
+        "after.json": "2a8b9f0b4b7865e62ff2c551dd75c29d9ee0032cce1c9587166616a2c3bbd1f8",
+        "before.json": "2a8b9f0b4b7865e62ff2c551dd75c29d9ee0032cce1c9587166616a2c3bbd1f8",
+        "invocation.json": "32a441055990132360eaf305a0b719c9356bd8478ba1cc1ce6a54e1fcc5a9c74",
+        "result.json": "4459267d7c15ef99016cb89dc661bf611a18feb3b8f469c49c427a940ea1cd86",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "0a58a858b05c03fea9448a0c6dda08b8907a5a9b349a8f5c3d21464e558a6b35"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-wallet-snapshot-format-6dbxwxq0",
+      "exit": 0,
+      "elapsedSeconds": 0.11971485201502219,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-snapshot-format-6dbxwxq0",
+      "inputCount": 420,
+      "unchanged": false,
+      "files": {
+        "after.json": "17467436c849581ea28a8ee2f52572be4adfc65275d3bcf4a51b4474a6015864",
+        "before.json": "16e8e0d79e14d9eb03628618317d578a8d8f66c950eb53eb6099e9df47468bff",
+        "invocation.json": "745c9f176e9366995466614ea6e22696c1eb9121528550e872d4760d8b03fe7d",
+        "result.json": "fe07d724e34e71ad4fff92a8f8b3a843b7e0d11c1e92e980c1a89e472e051250",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "c603785b351e37aac99abb720ee653bdb82915b3cc907927af85dd492ac7a369"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-wallet-snapshot-format-czq2beqe",
+      "exit": 0,
+      "elapsedSeconds": 0.09602795098908246,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-snapshot-format-czq2beqe",
+      "inputCount": 420,
+      "unchanged": false,
+      "files": {
+        "after.json": "2a8b9f0b4b7865e62ff2c551dd75c29d9ee0032cce1c9587166616a2c3bbd1f8",
+        "before.json": "9937171e47a505bd5c2d0ed36fa97544d41e7c34020c610abf23c2e4e0548ff9",
+        "invocation.json": "745c9f176e9366995466614ea6e22696c1eb9121528550e872d4760d8b03fe7d",
+        "result.json": "f20ac81337ee37f88cc1f22cb6fdc5960ae80cd66391737bc39b25667eb589d8",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "2d44ce2782a4aa992abb28ae12eb62e4668878a82263e482883f4487866e032a"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-wallet-snapshot-green-f9f41kpu",
+      "exit": 0,
+      "elapsedSeconds": 2.70380950398976,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-snapshot-green-f9f41kpu",
+      "inputCount": 420,
+      "unchanged": true,
+      "files": {
+        "after.json": "2a8b9f0b4b7865e62ff2c551dd75c29d9ee0032cce1c9587166616a2c3bbd1f8",
+        "before.json": "2a8b9f0b4b7865e62ff2c551dd75c29d9ee0032cce1c9587166616a2c3bbd1f8",
+        "invocation.json": "5c12660891a38eb7bcd213660a66f3e834f96a782ec62e6a2470e753fee9d050",
+        "result.json": "dfae3c17131ce7cd8f9a871261e78820c0dabdc1f7eb7f35ad3ec817d66f2b2a",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "6f77123ce94d64bec4b277ee406a34e24101eaa1a9f1d4310283b8294c3ef924"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-wallet-snapshot-red-hc7hhuew",
+      "exit": 1,
+      "elapsedSeconds": 3.6400774179492146,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-snapshot-red-hc7hhuew",
+      "inputCount": 420,
+      "unchanged": true,
+      "files": {
+        "after.json": "17467436c849581ea28a8ee2f52572be4adfc65275d3bcf4a51b4474a6015864",
+        "before.json": "17467436c849581ea28a8ee2f52572be4adfc65275d3bcf4a51b4474a6015864",
+        "invocation.json": "2678ab455265ddae7cb274b93d612780d443fcbeacd123d182ff4f0b3780ef0c",
+        "result.json": "2f0c51cd48e7f7b1d071f121931f8a0a5e01a53eacd0034e5dbe5a91711deaa9",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "e60c2694919657f098b4cdf6c1d314f472bc9190c83fca99cba0d4d09be714de"
+      }
+    }
+  ],
+  "finalRuntimeInputs": 420,
+  "protectedBaseMobileFiles": 418,
+  "finalPayload": {
+    "vaca_app/lib/features/wallet/data/stellar_sdk_wallet_gateway.dart": "65ae82ddc35d40aa4fe7895a84f449f7d47d2bb27c10c895c4ae9f802ed4db37",
+    "vaca_app/test/stellar_wallet_snapshot_test.dart": "d21fe9c62f6320eaf9124f79df64966f069fd3fa0c77462a59f92746eeb59135",
+    "vaca_app/docs/d1-wallet-snapshot-fail-closed.md": "c75e9c05e0932386476ec2abe95e6f26cf26a770f87fcc084e2a2b0a4a2ff5e0"
+  },
+  "sdkSourcesObservedAfterRuntime": {
+    ".tooling/flutter/.pub-cache/hosted/pub.dev/stellar_flutter_sdk-1.9.4/lib/src/stellar_sdk.dart": "8ee0fd4f8c220539e3837648e72f9500aa728ea9b189215cd5ac4d6db50354e9",
+    ".tooling/flutter/.pub-cache/hosted/pub.dev/stellar_flutter_sdk-1.9.4/lib/src/requests/request_builder.dart": "ebafbfa0a262001bf85f9c5aed824077044ff25762c12731ff4b4d0ea8f973e1",
+    ".tooling/flutter/.pub-cache/hosted/pub.dev/stellar_flutter_sdk-1.9.4/lib/src/requests/accounts_request_builder.dart": "cfab0405bde7abdf169317723d9facab147961e9b07bd3e3ed441964a7ff3f2b",
+    ".tooling/flutter/.pub-cache/hosted/pub.dev/stellar_flutter_sdk-1.9.4/lib/src/responses/account_response.dart": "fb4b9f9d5bd4e8255e525dcbdc9db3e880ba01368c34aec99ee84b0f281cd20a",
+    ".tooling/flutter/.pub-cache/hosted/pub.dev/stellar_flutter_sdk-1.9.4/lib/stellar_flutter_sdk.dart": "1e3c0b359702fbb9e5364a29b0c216eda3726ea0093058f64cb01bd6e53a6637"
+  },
+  "assessmentSelectedFields": {
+    "risk": "high",
+    "nativeRisk": "medium",
+    "agentEscalation": {
+      "item": 2,
+      "label": "security",
+      "applied": true
+    },
+    "changedPaths": 3,
+    "changedLines": 229,
+    "candidate": {
+      "kind": "current-changes",
+      "consumed": false
+    },
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "writerProfile": "large",
+    "writerProfileSource": "runtime",
+    "plan": {
+      "writerSelfVerification": true,
+      "structuralReadbackOnly": false,
+      "independentVerifier": true
+    }
+  },
+  "limits": [
+    "RED2pass10fail exit1, no compile/setup failure.",
+    "GREEN18pass0fail includes12new cases and6applicable existing wallet regressions; not SDK metadata replay.",
+    "Final analysis0/noissues.",
+    "Fake HTTP per-instance, local ephemeral personal keys only, no network/sign/submit/funds/provider/SQL/build/deploy.",
+    "No shared CLI/options/parser changed; command differential is not applicable. Public snapshot callers load/refresh/create/fund/claimAll are covered in the new test.",
+    "Explicit404 is only personal-account existence, not transaction/claimable-balance absence or financial authorization.",
+    "Final-snapshot partial-success and UI wallet-load error presentation are not redesigned; service failure remains fail-closed.",
+    "No SDK source before/after identity claim from the post-runtime SDK source hashes.",
+    "WholeD1 and reserved financial integration remain incomplete."
+  ]
+}

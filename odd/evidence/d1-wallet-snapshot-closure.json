@@ -1,0 +1,46 @@
+{
+  "behaviorCommit": "b8a694de05847207e1fe14f9ff424181db7b56ce",
+  "sourceBase": "7439feff26302a81f0888d410d8998c697c7cdc6",
+  "trackingCommit": "113d70bfb0fca3dddcf94faaa1dcd19b8b1075a3",
+  "behaviorPaths": 3,
+  "behaviorChangedLines": 229,
+  "verificationTask": "mw645vcx-t-a1iq",
+  "verdict": "ADMIT scopedT1/S1-S3",
+  "checks": {
+    "reviewedInputs": 429,
+    "postAdjudicationProtectedInputsUnchanged": 428,
+    "parentFinalRuntimeInputs": 420,
+    "baselineProtectedMobileFiles": 418,
+    "captureFileHashes": 30,
+    "committedSourcePayloadHashes": 3
+  },
+  "metadataCandidatePaths": [
+    "odd/tasks/d1-wallet-snapshot-fail-closed.md",
+    "odd/evidence/d1-wallet-snapshot-fail-closed.json",
+    "odd/evidence/d1-wallet-snapshot-adjudication.md",
+    "odd/evidence/d1-wallet-snapshot-closure.json"
+  ],
+  "metadataPayloadHashesExcludingThisFile": {
+    "odd/tasks/d1-wallet-snapshot-fail-closed.md": "08349df9adf259d57c256a9ee51a372d86e66e7bbd72d67906959e686641d7cc",
+    "odd/evidence/d1-wallet-snapshot-fail-closed.json": "4f8360c4fd19bada490de3ddeff8076e260f3582bc04a57b8d961fc761991422",
+    "odd/evidence/d1-wallet-snapshot-adjudication.md": "05fef248e85acae45a26d9b42f083c7ebe98cfa286c2d6e155bea9153e21e08e"
+  },
+  "status": "Scoped implementation verified; passive metadata closure only. WholeD1 incomplete.",
+  "risk": "item2: personal-account unknown-state guard before financial preparation; parent verification plus independent read-only adjudication fulfilled.",
+  "native": "medium/escalatedHIGH2; reviewDuefalse/under_budget/RDDon/unconsumed/unknown, notapproval; noSTART.",
+  "limits": [
+    "Parent functional runtime only, not child runtime or immutable filesystem.",
+    "Source/test/guide finalbytes unchanged since GREEN and analysis.",
+    "Only task status/log changed after adjudication; source specs preserved.",
+    "No additional functional rerun, no funds/SQL/network/build/deploy/sign/submit/cross-root/D3 changes.",
+    "Financialowner contract31 and complete client/backend lifecycle remain unresolved."
+  ],
+  "packagingFailure": {
+    "command": "git diff --cached --check",
+    "exit": 2,
+    "wrapperExit": 1,
+    "reason": "Verbatim reviewer Markdown hard-break spaces; no commit/source/runtime mutation.",
+    "retained": "supabase/.temp/d1-wallet-snapshot-helper/closure-first-whitespace-failure.txt",
+    "correction": "Lossless JSON encoding of full original reviewer report inside its Markdown artifact."
+  }
+}
