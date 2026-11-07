@@ -1,0 +1,339 @@
+{
+  "kind": "Captured Git operations; source-only, not functional acceptance",
+  "operations": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "exit": 0,
+      "stdout": "/home/danilo/projects/vaca-d1-t5b-proof\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "symbolic-ref",
+        "--short",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "feat/d1-t5b-proof\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "f30257826528e316476f4484a1bbdce58d26f8cd\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "-f",
+        "--",
+        "odd/tasks/d1-refund-client-v1.md"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "docs(odd): track source-only refund client implementation"
+      ],
+      "exit": 0,
+      "stdout": "[feat/d1-t5b-proof 98a9ad2] docs(odd): track source-only refund client implementation\n 1 file changed, 28 insertions(+)\n create mode 100644 odd/tasks/d1-refund-client-v1.md\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "--",
+        "vaca_app/lib/features/refund/domain/refund_scope.dart",
+        "vaca_app/lib/features/refund/domain/refund_status.dart",
+        "vaca_app/test/refund_test_fixtures.dart",
+        "vaca_app/test/refund_status_test.dart"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "vaca_app/lib/features/refund/domain/refund_scope.dart\nvaca_app/lib/features/refund/domain/refund_status.dart\nvaca_app/test/refund_status_test.dart\nvaca_app/test/refund_test_fixtures.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--stat"
+      ],
+      "exit": 0,
+      "stdout": " .../lib/features/refund/domain/refund_scope.dart   |  85 +++++++++\n .../lib/features/refund/domain/refund_status.dart  | 196 +++++++++++++++++++++\n vaca_app/test/refund_status_test.dart              |  46 +++++\n vaca_app/test/refund_test_fixtures.dart            |  64 +++++++\n 4 files changed, 391 insertions(+)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "feat(refund): validate immutable v1 scope and state",
+        "-m",
+        "Source-only implementation with deterministic test cases; functional execution deferred. Risk: item 2 (untrusted financial state)."
+      ],
+      "exit": 0,
+      "stdout": "[feat/d1-t5b-proof 682d57f] feat(refund): validate immutable v1 scope and state\n 4 files changed, 391 insertions(+)\n create mode 100644 vaca_app/lib/features/refund/domain/refund_scope.dart\n create mode 100644 vaca_app/lib/features/refund/domain/refund_status.dart\n create mode 100644 vaca_app/test/refund_status_test.dart\n create mode 100644 vaca_app/test/refund_test_fixtures.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "682d57f4a96d66bf6de77cb56d8aedfb7f13fe45\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "682d57f4a96d66bf6de77cb56d8aedfb7f13fe45\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "--",
+        "vaca_app/test/refund_test_fixtures.dart"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "test(refund): add isolated storage and HTTP fixtures"
+      ],
+      "exit": 0,
+      "stdout": "[feat/d1-t5b-proof 1300dbf] test(refund): add isolated storage and HTTP fixtures\n 1 file changed, 45 insertions(+)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "1300dbf03d4b898c54c07705a802f3353f59b508\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "--",
+        "vaca_app/lib/features/refund/data/refund_wallet_signer.dart",
+        "vaca_app/lib/features/refund/data/refund_submission_journal.dart",
+        "vaca_app/lib/features/refund/data/refund_http_client.dart",
+        "vaca_app/lib/features/refund/domain/refund_status.dart",
+        "vaca_app/test/refund_status_test.dart"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "vaca_app/lib/features/refund/data/refund_http_client.dart\nvaca_app/lib/features/refund/data/refund_submission_journal.dart\nvaca_app/lib/features/refund/data/refund_wallet_signer.dart\nvaca_app/lib/features/refund/domain/refund_status.dart\nvaca_app/test/refund_status_test.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--numstat"
+      ],
+      "exit": 0,
+      "stdout": "134\t0\tvaca_app/lib/features/refund/data/refund_http_client.dart\n74\t0\tvaca_app/lib/features/refund/data/refund_submission_journal.dart\n59\t0\tvaca_app/lib/features/refund/data/refund_wallet_signer.dart\n4\t3\tvaca_app/lib/features/refund/domain/refund_status.dart\n118\t0\tvaca_app/test/refund_status_test.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "feat(refund): require durable one-use reservation for signed HTTP",
+        "-m",
+        "Exact personal-wallet proof, one-shot transport and UTC response validation. Source-only; functional checks deferred. Risk: item 2 (signing and untrusted responses)."
+      ],
+      "exit": 0,
+      "stdout": "[feat/d1-t5b-proof 347e756] feat(refund): require durable one-use reservation for signed HTTP\n 5 files changed, 389 insertions(+), 3 deletions(-)\n create mode 100644 vaca_app/lib/features/refund/data/refund_http_client.dart\n create mode 100644 vaca_app/lib/features/refund/data/refund_submission_journal.dart\n create mode 100644 vaca_app/lib/features/refund/data/refund_wallet_signer.dart\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "347e7561f4de380bcd969bacac4340216a3d2d50\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "347e7561f4de380bcd969bacac4340216a3d2d50\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}
