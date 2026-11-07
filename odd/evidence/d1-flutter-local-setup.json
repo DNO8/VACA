@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "state": "blocked_locked_dependency_graph",
+  "authorization": [
+    "Authorize project-local Flutter setup",
+    "Authorize one bounded resume"
+  ],
+  "original_failures": "job16 compilefailure beforeI/O; job17 downloadtimeout124 remainfailed; see d1-flutter-local-setup-failed-download.json",
+  "source_checkpoint": "eec0b5a54e6b879a9457955d77a47dacc157dd33",
+  "parent_actions": [
+    {
+      "job": "job-18",
+      "capture": "supabase/.temp/flutter-setup-resume-saf16f1n",
+      "result": {
+        "exit": 0,
+        "seconds": 20.365170037024654,
+        "archive_bytes": 1502848628,
+        "installed": false,
+        "integrity_verified": true,
+        "timed_out": false,
+        "archive_sha256": "368ae5b6993c51861324e704c42d61c4e290fba7213a88fd0e9fec15ded54599",
+        "original_partial_unchanged": true,
+        "http_status": "206"
+      },
+      "files_sha256": {
+        "invocation.json": "cc1aef164fa3d125fda7566396d54669f0b6d96e449778e12d4421c180a07ec7",
+        "pin.json": "29e0098e212597e8ed46ca32ecf892d6a1df35586a72fecb065424848e710070",
+        "headers.txt": "c8557623942805b5d89ac0d4aa19f2fce6c95101b2913ee1d6535e5c31d21151",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "ce1e1a85f455b275f7be385fe4d7e4f72d38cae0520c0ef0f17ce7e395c8fa26",
+        "result.json": "fcbcad50ab5577be0e1122a00a40cadfeb39cb51ecab530044302b6b9c612f5a"
+      }
+    },
+    {
+      "job": "job-19",
+      "capture": "supabase/.temp/flutter-setup-extract-nmdzgzxg",
+      "result": {
+        "exit": 0,
+        "seconds": 26.004905043984763,
+        "archive_sha256": "368ae5b6993c51861324e704c42d61c4e290fba7213a88fd0e9fec15ded54599",
+        "counts": {
+          "members": 25387,
+          "expanded_file_bytes": 2559449185,
+          "links": 0
+        },
+        "target": "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter",
+        "extracted": true,
+        "sdk_executed": false,
+        "confinement": "new staging directory, flutter-only members and normalized links, stdlib data_filter, postwalk",
+        "target_overwritten": false
+      },
+      "files_sha256": {
+        "invocation.json": "be5284d546f420a95dfd2112a13e2b866eccea032002900ee1860e4b3db401d6",
+        "result.json": "ec428e7631387460305a051ceb064084bb81350d4dedf48b65f88c659db5c46c"
+      }
+    },
+    {
+      "job": "job-20",
+      "capture": "supabase/.temp/flutter-setup-version-7ii3losm",
+      "result": {
+        "exit": 0,
+        "phase": "version",
+        "seconds": 0.24461562797660008,
+        "steps": [
+          {
+            "name": "flutter-version",
+            "exit": 0,
+            "seconds": 0.21008864499162883,
+            "stdout_sha256": "b2a6e76537833ce24a955b51f27ff4d1c0ddfb89e31f6d96267454ce32fe0b18",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "dart-version",
+            "exit": 0,
+            "seconds": 0.005423428025096655,
+            "stdout_sha256": "f888b2590878f7f99a1febb324413cd94e2d23aa110a52fc7d0446b37d0fb61d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "mobile_inputs": 103,
+        "mobile_changed": [],
+        "global_environment_modified": false,
+        "live_wallet_smoke_test": "not run"
+      },
+      "files_sha256": {
+        "flutter-version.stdout.txt": "b2a6e76537833ce24a955b51f27ff4d1c0ddfb89e31f6d96267454ce32fe0b18",
+        "dart-version.invocation.json": "0224e9322d763154822880d18e4b05c8414c3837c850b12cf8512e1eede22236",
+        "dart-version.stdout.txt": "f888b2590878f7f99a1febb324413cd94e2d23aa110a52fc7d0446b37d0fb61d",
+        "flutter-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dart-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "steps.json": "bd2f1abcb31ca7b35d78318426e0ed2dd1fe1a2fe15419927970366c6da35673",
+        "flutter-version.invocation.json": "5b7b60f4ec9307ef13813ff17d0e5b98ab137c91a8c9d2928bc4ab171c6f6fc3",
+        "result.json": "952c3a742f0127c0e6e6f3774682261bb0763111cf80aa3c9ad9aab364f20d72"
+      }
+    },
+    {
+      "job": "job-21",
+      "capture": "supabase/.temp/flutter-setup-locked-deps-e72_zs_8",
+      "result": {
+        "exit": 65,
+        "phase": "locked-deps",
+        "seconds": 22.504038931976538,
+        "steps": [
+          {
+            "name": "pub-get",
+            "exit": 65,
+            "seconds": 22.5008438929799,
+            "stdout_sha256": "c32a23e6763caed76d4c6191700f303fe58d3819c23da7c65b432f3107648cc5",
+            "stderr_sha256": "30aa4020f4e853774eab04f8b4abd1529d447e441a5ac230a017ddeb7b10bfb2"
+          }
+        ],
+        "mobile_inputs": 103,
+        "mobile_changed": [],
+        "global_environment_modified": false,
+        "live_wallet_smoke_test": "not run"
+      },
+      "files_sha256": {
+        "pub-get.stdout.txt": "c32a23e6763caed76d4c6191700f303fe58d3819c23da7c65b432f3107648cc5",
+        "steps.json": "22ce6bd9339ad894fee129b3980e3411a9b2e12f24ecff0e12923eb08cfda632",
+        "pub-get.stderr.txt": "30aa4020f4e853774eab04f8b4abd1529d447e441a5ac230a017ddeb7b10bfb2",
+        "pub-get.invocation.json": "715f68cd1c36a9e5d0fe53726bffa09a8b899cc83a3a30c3f5e1b517f00d8f2d",
+        "result.json": "38e6e4f34db516e14e4c215691a6bd817fa8b3294994ff178afa3e4be9df5b92"
+      }
+    }
+  ],
+  "helper_sha256": {
+    "extract.py": "ccee829a72ce276692083e209831f2d8bda7d3ad27d9a4fcc69d6ec54a3f81f3",
+    "download.py": "f22e9ea72a9864559c0fcc3abad86b9c43cf12aef5596e7385262c7dcd8b944c",
+    "run_check.py": "050be8e0b03b237565eec61e89248f4b2409b15f510fdc30e8690ec8fbca96b3",
+    "resume.py": "252e2a35d87ebe7b01fb400883d7cb4decf1f7dce0db22bbcca32759297b7674"
+  },
+  "mobile_baseline": {
+    "path": "supabase/.temp/flutter-setup-helper/mobile-before.json",
+    "sha256": "878b68651a4cb346f51e08cebc5efacf952566a8f83f82e7a3b10768334cca74",
+    "files": 103,
+    "unchanged_after_version_and_failed_pub_get": true
+  },
+  "dependency_failure": {
+    "argv": [
+      "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/flutter",
+      "--suppress-analytics",
+      "pub",
+      "get",
+      "--enforce-lockfile"
+    ],
+    "exit": 65,
+    "stderr": "Unable to satisfy `pubspec.yaml` using `pubspec.lock`.\n\nTo update `pubspec.lock` run `flutter pub get` without\n`--enforce-lockfile`.\nFailed to update packages.\n",
+    "proposed_changes_only": {
+      "matcher": [
+        "0.12.19",
+        "0.12.18"
+      ],
+      "test_api": [
+        "0.7.10",
+        "0.7.8"
+      ]
+    },
+    "lockfile_modified": false,
+    "scope_limit": "Do not change pubspec/lock or replace existing SDK without explicit decision."
+  },
+  "wallet_tests": "not run; selected existing6-test fakegateway service suite only; live smoke not run",
+  "independent_verifier": "not run; functional prerequisite failed",
+  "native_review": "not run; partial setup is not approved",
+  "acceptance": "SDK integrity/extraction/version only. Required locked dependencies and mobile verification BLOCKED; wholeD1 incomplete.",
+  "next_decision": "Preserve lock and authorize nondestructiveSDKreplacement with researchedofficialmatchingpin (recommended), authorize exactlytwo proposed lock changes, orretainblocked."
+}
