@@ -1,0 +1,44 @@
+{
+  "metadataCommits": [
+    {
+      "commit": "3b56cee9126ce206c1ed9b2c30189d84b91a0cf6",
+      "paths": [
+        "odd/tasks/d1-refund-client-v1.md",
+        "odd/evidence/d1-refund-client-v1-independent.json",
+        "odd/evidence/d1-refund-client-v1-assessments.json",
+        "odd/evidence/d1-refund-client-v1-scope.json"
+      ],
+      "authoredDiffLines": 137
+    },
+    {
+      "commit": "7f4141934e6ea52db0478e62c3242eb6adedebfe",
+      "paths": [
+        "odd/evidence/d1-refund-client-v1-commits-operations-01.json"
+      ],
+      "authoredDiffLines": 339
+    },
+    {
+      "commit": "ce3686690f9bc4fc1b373e1ef64347f384a393b8",
+      "paths": [
+        "odd/evidence/d1-refund-client-v1-commits-operations-02.json",
+        "odd/evidence/d1-refund-client-v1-commits.json",
+        "odd/evidence/d1-refund-client-v1-static.json",
+        "odd/evidence/d1-refund-client-v1-t1.json",
+        "odd/evidence/d1-refund-client-v1-t2.json",
+        "odd/evidence/d1-refund-client-v1-t3.json",
+        "odd/evidence/d1-refund-client-v1-t4.json"
+      ],
+      "authoredDiffLines": 300
+    }
+  ],
+  "sourceCommits": [
+    "682d57f4a96d66bf6de77cb56d8aedfb7f13fe45",
+    "347e7561f4de380bcd969bacac4340216a3d2d50",
+    "99343d097f9748cd5e31443f8ff5da8546505cd5"
+  ],
+  "functionalTestsExecuted": 0,
+  "functionalAcceptance": "deferred, not accepted",
+  "nativeReviewApproval": false,
+  "operationCapturePartition": "lossless; all exits/stdout/stderr retained",
+  "sourceMutationAfterIndependentReview": false
+}
