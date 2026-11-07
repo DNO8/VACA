@@ -57,7 +57,7 @@ class RefundStatus {
     final deadline = body['deadline'];
     RefundValidation.require(
       deadline is String &&
-          RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$')
+          RegExp(r'^\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(\.\d{1,9})?([Zz]|\+00:00)$')
               .hasMatch(deadline),
     );
     final deadlineText = deadline! as String;
@@ -66,7 +66,7 @@ class RefundStatus {
       parsed != null &&
           parsed.isUtc &&
           parsed.toIso8601String().substring(0, 19) ==
-              deadlineText.substring(0, 19),
+              deadlineText.substring(0, 19).toUpperCase(),
     );
     final donation = RefundValidation.object(body['donation'], const [
       'paymentOperationId',
@@ -116,8 +116,9 @@ class RefundStatus {
       'remainingPrincipalAmount',
     ]);
     for (final amount in settlement.values) {
-      if (amount != null)
+      if (amount != null) {
         RefundValidation.require(RefundValidation.amount(amount) <= gross);
+      }
     }
     if (state == 'settled') {
       RefundValidation.require(
