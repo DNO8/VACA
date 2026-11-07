@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "state": "verification_blocked",
+  "state": "complete_narrow_T1",
   "feature": "d1-beneficiary-claim-projection",
   "baseline": "a45e2ece83b0d275f8e85db7d47275b2e05e2781",
   "tracking_commit": "e28d6bccecf12b08aa9711a0119a6c9669fd39aa",
-  "behavior_commit": null,
+  "behavior_commit": "8c4ea784cad6b9fb7b135b85a726556ee1061503",
   "candidate": {
     "supabase/functions/d1-custody/beneficiary-claim-projection.ts": {
       "lines": 90,
@@ -12,9 +12,9 @@
       "sha256": "55f95bbc9e484c82a2c7e26c625473fbc850fd8d543ce58c3db3f71d0bfa84c3"
     },
     "supabase/tests/unit/beneficiary-claim-projection.test.ts": {
-      "lines": 143,
-      "bytes": 12654,
-      "sha256": "f205cb6fbd25b703f6e864f9334a482376b9c90b209bdc0831093d07868acf5a"
+      "lines": 159,
+      "bytes": 13634,
+      "sha256": "fa216da63a355d590da01742c48cc7cd03f00dd6430d81c0ccbd12e1dcc8f82a"
     },
     "supabase/docs/d1-beneficiary-claim-projection.md": {
       "lines": 24,
@@ -177,23 +177,131 @@
           "sha256": "649acfcf1ed4600575f323f453b4acd60aa5438cc9e0e603a5a3eac85afc232d"
         }
       }
+    },
+    "d1-claim-projection-coverage-exgv5zb8": {
+      "result": {
+        "exit": 0,
+        "seconds": 2.3724882020032965,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 82,
+        "stdout_bytes": 880,
+        "stderr_bytes": 108
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 772,
+          "sha256": "fac51ede3c56ceadf51661b036b088630bafb1d8b552faf95f5fc2b7a4b1fa8c"
+        },
+        "result.json": {
+          "bytes": 173,
+          "sha256": "e0b409f4d3c65889851a50bd47d098d5943efeae67029133030cd27d32aa429d"
+        },
+        "stdout.txt": {
+          "bytes": 880,
+          "sha256": "949c256a6d6d16a89687eaebe13657bf2b9f4f1330385d29af7e72ba2ef03827"
+        },
+        "stderr.txt": {
+          "bytes": 108,
+          "sha256": "3ddff42497c62a76d503f23031f25348148c05139fe31531da6457d788617d0d"
+        },
+        "before.json": {
+          "bytes": 10194,
+          "sha256": "ebd98bad020a275e9602313d9eeffdcddb1d9390c0ead6d13cdeae446622ba5f"
+        },
+        "after.json": {
+          "bytes": 10194,
+          "sha256": "ebd98bad020a275e9602313d9eeffdcddb1d9390c0ead6d13cdeae446622ba5f"
+        }
+      }
     }
   },
-  "independent_adjudicator": "mw5s6dp1-h-e32q",
+  "independent_adjudicator": "mw5u857l-i-k61u (continuation of mw5s6dp1-h-e32q)",
   "independent_runtime_executor": "parent, separately prepared readonly snapshot; not child-executed",
-  "adjudication": "BLOCKED; no reproduced implementation defect",
+  "adjudication": "ADMIT; both missing examples demonstrated with positive controls; no implementation defect",
   "verdicts": {
-    "S1": "UNPROVEN within T1; not whole-D1 acceptance",
-    "S2": "PASS preservation only, no executed refund",
-    "S3": "PASS unchanged accounting/no fee authorization",
-    "S4": "PASS unknown fail-closed/no release authorization",
-    "S5": "PASS local chronology/no signing capability"
+    "S1": "PASS within narrow preservation-only T1, not whole-D1 acceptance",
+    "S2": "PASS within narrow preservation-only T1, not whole-D1 acceptance",
+    "S3": "PASS within narrow preservation-only T1, not whole-D1 acceptance",
+    "S4": "PASS within narrow preservation-only T1, not whole-D1 acceptance",
+    "S5": "PASS within narrow preservation-only T1, not whole-D1 acceptance"
   },
-  "missing_proof": [
-    "selected wrong-operation-type rejection despite valid claim elsewhere in transaction",
-    "otherwise-valid same-ledger claim with contradictory issuance-ledger hash"
-  ],
-  "next_decision": "Authorize one bounded two-example coverage-correction batch, or keep unit unaccepted. No further verification performed.",
-  "native_review": "No native approval/lineage/consent claimed; unfinished behavior not assessed or delivered.",
-  "delivery": "No behavior commit, push, deployment, signing, funds movement, original-root or shared-helper mutation. Guide ignored; exact force-add needed only at eventual authorized delivery."
+  "missing_proof": [],
+  "next_decision": "None for this completed unit. Trusted retrieval, financial gate/refund/settlement/backend/client integration remain separate unfinished D1 work.",
+  "native_review": "Exact behavior-range ASSESS returned reviewDue false / under_budget. No native review approval, lineage or consent claimed.",
+  "delivery": "Behavior committed locally in isolated clone; exact force-add included guide. No push, deployment, signing, funds movement, original-root or shared-helper mutation.",
+  "previous_verification": {
+    "state": "verification_blocked",
+    "candidate": {
+      "supabase/functions/d1-custody/beneficiary-claim-projection.ts": {
+        "lines": 90,
+        "bytes": 6525,
+        "sha256": "55f95bbc9e484c82a2c7e26c625473fbc850fd8d543ce58c3db3f71d0bfa84c3"
+      },
+      "supabase/tests/unit/beneficiary-claim-projection.test.ts": {
+        "lines": 159,
+        "bytes": 13634,
+        "sha256": "fa216da63a355d590da01742c48cc7cd03f00dd6430d81c0ccbd12e1dcc8f82a"
+      },
+      "supabase/docs/d1-beneficiary-claim-projection.md": {
+        "lines": 24,
+        "bytes": 1627,
+        "sha256": "e7fd52625580b480efdd5941e4f893d84886514a4e9749d4ee24f6f7dc043f5c"
+      }
+    },
+    "adjudication": "BLOCKED; no reproduced implementation defect",
+    "verdicts": {
+      "S1": "UNPROVEN within T1; not whole-D1 acceptance",
+      "S2": "PASS preservation only, no executed refund",
+      "S3": "PASS unchanged accounting/no fee authorization",
+      "S4": "PASS unknown fail-closed/no release authorization",
+      "S5": "PASS local chronology/no signing capability"
+    },
+    "missing_proof": [
+      "selected wrong-operation-type rejection despite valid claim elsewhere in transaction",
+      "otherwise-valid same-ledger claim with contradictory issuance-ledger hash"
+    ],
+    "next_decision": "Authorize one bounded two-example coverage-correction batch, or keep unit unaccepted. No further verification performed."
+  },
+  "scope": "Pure positive projection only. Trusted-reader provenance prerequisite; not chain consensus or financial authorization.",
+  "native_assessment": {
+    "operation": "assess",
+    "schema": "gentle-pi.review-assessment-plan/v1",
+    "risk": "high",
+    "nativeRisk": "medium",
+    "agentEscalation": {
+      "item": 2,
+      "label": "security",
+      "reason": "Positive-claim identity and chronology guards may feed future financial accounting; independent verification already admitted this exact unchanged module and updated public tests.",
+      "applied": true
+    },
+    "reasons": [
+      {
+        "code": "executable_change",
+        "path": "supabase/functions/d1-custody/beneficiary-claim-projection.ts"
+      }
+    ],
+    "changedPaths": 3,
+    "changedLines": 273,
+    "candidate": {
+      "kind": "base-diff",
+      "baseRef": "9fc993bd1456f58cb409fcabaaa574d0b385a381",
+      "consumed": false
+    },
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "writerProfile": "large",
+    "writerProfileSource": "runtime",
+    "plan": {
+      "writerSelfVerification": true,
+      "structuralReadbackOnly": false,
+      "independentVerifier": true,
+      "reason": "receipt-driven development is on and the native review outcome for this candidate is unknown; the native review is an additional outside view that never replaces verification, so the risk-gated path applies exactly as receipt-driven development off, and an agent escalation names a Task Size high-risk item: the writer self-verifies and a separate independent verifier runs."
+    },
+    "workspace_root": "/home/danilo/projects/vaca-d1-t5b-proof"
+  }
 }
