@@ -11,6 +11,8 @@ class StellarWalletService {
   static const _secretKey = 'stellar.testnet.secret-seed';
   final SecureStorage _storage;
   final StellarWalletGateway _gateway;
+  Future<Result<StellarWalletSnapshot>>? _creating;
+  final _preparing = <String, Future<Result<StellarWalletSnapshot>>>{};
 
   Future<Result<StellarWalletSnapshot?>> load() async {
     final stored = await _storage.read(_secretKey);
@@ -30,7 +32,13 @@ class StellarWalletService {
     }
   }
 
-  Future<Result<StellarWalletSnapshot>> create() async {
+  /// Shares an in-flight creation only within this service instance.
+  Future<Result<StellarWalletSnapshot>> create() =>
+      _creating ??= _createWallet().whenComplete(() {
+        _creating = null;
+      });
+
+  Future<Result<StellarWalletSnapshot>> _createWallet() async {
     final stored = await _storage.read(_secretKey);
     if (stored case Failure(error: final error)) return Failure(error);
     var secret = stored.valueOrNull;
@@ -50,7 +58,7 @@ class StellarWalletService {
         );
       }
     }
-    return _prepareForUsdc(secret);
+    return _prepareOnce(secret);
   }
 
   Future<Result<StellarWalletSnapshot>> fund() async {
@@ -65,8 +73,17 @@ class StellarWalletService {
         ),
       );
     }
-    return _prepareForUsdc(secret);
+    return _prepareOnce(secret);
   }
+
+  // fund() must read storage before joining: missing is not permission to create.
+  Future<Result<StellarWalletSnapshot>> _prepareOnce(String secret) =>
+      _preparing.putIfAbsent(
+        secret,
+        () => _prepareForUsdc(secret).whenComplete(() {
+          _preparing.remove(secret);
+        }),
+      );
 
   Future<Result<StellarWalletSnapshot>> _prepareForUsdc(String secret) async {
     try {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vaca_app/core/result/result.dart';
 import 'package:vaca_app/core/security/secure_storage.dart';
@@ -7,12 +9,18 @@ import 'package:vaca_app/features/wallet/domain/stellar_wallet_service.dart';
 
 class _WalletStorage implements SecureStorage {
   final values = <String, String>{};
+  int writes = 0;
+  Completer<void>? writeGate;
+  Completer<void>? writeStarted;
 
   @override
   Future<Result<String?>> read(String key) async => Success(values[key]);
 
   @override
   Future<Result<void>> write(String key, String value) async {
+    writes++;
+    if (!(writeStarted?.isCompleted ?? true)) writeStarted!.complete();
+    await writeGate?.future;
     values[key] = value;
     return const Success(null);
   }
@@ -37,12 +45,22 @@ class _WalletGateway implements StellarWalletGateway {
   final claimedBalanceIds = <String>[];
   final fundedAccountIds = <String>[];
   final trustlineSecrets = <String>[];
+  int credentialCreations = 0;
+  int snapshots = 0;
+  Completer<void>? snapshotGate;
+  Completer<void>? snapshotStarted;
+  bool failSnapshot = false;
   bool funded = true;
   bool usdcTrustlineReady = true;
 
   @override
-  StellarWalletCredentials createCredentials() =>
-      const StellarWalletCredentials(accountId: 'GACCOUNT', secretSeed: 'S');
+  StellarWalletCredentials createCredentials() {
+    credentialCreations++;
+    return StellarWalletCredentials(
+      accountId: 'GACCOUNT',
+      secretSeed: credentialCreations == 1 ? 'S' : 'S$credentialCreations',
+    );
+  }
 
   @override
   StellarWalletCredentials credentialsFromSecret(String secretSeed) =>
@@ -75,6 +93,10 @@ class _WalletGateway implements StellarWalletGateway {
   @override
   Future<StellarWalletSnapshot> snapshot(String secretSeed) async {
     snapshotSecret = secretSeed;
+    snapshots++;
+    if (!(snapshotStarted?.isCompleted ?? true)) snapshotStarted!.complete();
+    await snapshotGate?.future;
+    if (failSnapshot) throw StateError('snapshot unavailable');
     return StellarWalletSnapshot(
       accountId: 'GACCOUNT',
       balance: funded ? '12.0000000' : '0.0000000',
@@ -86,6 +108,132 @@ class _WalletGateway implements StellarWalletGateway {
 }
 
 void main() {
+  const seedKey = 'stellar.testnet.secret-seed';
+
+  test('overlapping create calls preserve one new credential and preparation',
+      () async {
+    final storage = _WalletStorage()
+      ..writeGate = Completer<void>()
+      ..writeStarted = Completer<void>();
+    final gateway = _WalletGateway()
+      ..funded = false
+      ..usdcTrustlineReady = false;
+    final service = StellarWalletService(storage, gateway);
+    final first = service.create();
+    final second = service.create();
+    await storage.writeStarted!.future;
+    await Future<void>.value();
+    storage.writeGate!.complete();
+    final results = await Future.wait([first, second]);
+
+    expect(results.every((r) => r.isSuccess), isTrue);
+    expect(gateway.credentialCreations, 1);
+    expect(storage.writes, 1);
+    expect(storage.values, {seedKey: 'S'});
+    expect(gateway.fundedAccountIds, ['GACCOUNT']);
+    expect(gateway.trustlineSecrets, ['S']);
+    expect(gateway.snapshots, 2);
+    expect(gateway.claimedBalanceIds, isEmpty);
+  });
+
+  for (final order in ['create/fund', 'fund/create', 'fund/fund']) {
+    test('$order shares preparation only after a stored seed is read', () async {
+      final storage = _WalletStorage()..values[seedKey] = 'S';
+      final gateway = _WalletGateway()
+        ..funded = false
+        ..snapshotGate = Completer<void>()
+        ..snapshotStarted = Completer<void>();
+      final service = StellarWalletService(storage, gateway);
+      final first = order.startsWith('create') ? service.create() : service.fund();
+      await gateway.snapshotStarted!.future;
+      final second = order.endsWith('create') ? service.create() : service.fund();
+      await Future<void>.value();
+      gateway.snapshotGate!.complete();
+      final results = await Future.wait([first, second]);
+
+      expect(results.every((r) => r.isSuccess), isTrue);
+      expect(gateway.credentialCreations, 0);
+      expect(storage.writes, 0);
+      expect(storage.values, {seedKey: 'S'});
+      expect(gateway.fundedAccountIds, ['GACCOUNT']);
+      expect(gateway.trustlineSecrets, ['S']);
+      expect(gateway.snapshots, 2);
+      expect(gateway.claimedBalanceIds, isEmpty);
+    });
+  }
+
+  for (final absentSeed in [null, '']) {
+    test('fund rejects $absentSeed seed while create has not saved it', () async {
+      final storage = _WalletStorage()
+        ..writeGate = Completer<void>()
+        ..writeStarted = Completer<void>();
+      if (absentSeed != null) storage.values[seedKey] = absentSeed;
+      final gateway = _WalletGateway()..funded = false;
+      final service = StellarWalletService(storage, gateway);
+      final creating = service.create();
+      await storage.writeStarted!.future;
+      final rejected = await service.fund();
+
+      expect(rejected.errorOrNull?.code, 'stellar_wallet_missing');
+      expect(rejected.errorOrNull?.message, 'Primero crea una wallet testnet.');
+      expect(gateway.credentialCreations, 1);
+      expect(storage.writes, 1);
+      expect(storage.values, absentSeed == null ? isEmpty : {seedKey: ''});
+      expect(gateway.snapshots, 0);
+      expect(gateway.fundedAccountIds, isEmpty);
+      expect(gateway.trustlineSecrets, isEmpty);
+      expect(gateway.claimedBalanceIds, isEmpty);
+      storage.writeGate!.complete();
+      expect((await creating).isSuccess, isTrue);
+      expect(storage.values, {seedKey: 'S'});
+      expect(gateway.fundedAccountIds, ['GACCOUNT']);
+      expect(gateway.trustlineSecrets, ['S']);
+    });
+  }
+
+  for (final operation in ['create', 'fund']) {
+    test('$operation shares failure, then allows only explicit later retry',
+        () async {
+      final storage = _WalletStorage()..values[seedKey] = 'S';
+      final gateway = _WalletGateway()
+        ..funded = false
+        ..failSnapshot = true
+        ..snapshotGate = Completer<void>()
+        ..snapshotStarted = Completer<void>();
+      final service = StellarWalletService(storage, gateway);
+      final run = operation == 'create' ? service.create : service.fund;
+      final first = run();
+      await gateway.snapshotStarted!.future;
+      final second = run();
+      await Future<void>.value();
+      gateway.snapshotGate!.complete();
+      final results = await Future.wait([first, second]);
+
+      expect(
+        results.map((r) => r.errorOrNull?.code),
+        ['stellar_usdc_setup', 'stellar_usdc_setup'],
+      );
+      expect(results.map((r) => r.errorOrNull?.message), [
+        'No se pudo preparar la wallet para USDC testnet.',
+        'No se pudo preparar la wallet para USDC testnet.',
+      ]);
+      expect(gateway.snapshots, 1);
+      expect(gateway.credentialCreations, 0);
+      expect(storage.writes, 0);
+      expect(storage.values, {seedKey: 'S'});
+      expect(gateway.fundedAccountIds, isEmpty);
+      expect(gateway.trustlineSecrets, isEmpty);
+      expect(gateway.claimedBalanceIds, isEmpty);
+      gateway.failSnapshot = false;
+      expect((await run()).isSuccess, isTrue);
+      expect(gateway.snapshots, 3);
+      expect(gateway.fundedAccountIds, ['GACCOUNT']);
+      expect(gateway.trustlineSecrets, ['S']);
+      expect(storage.values, {seedKey: 'S'});
+      expect(storage.writes, 0);
+    });
+  }
+
   test('gateway creates a real Stellar keypair', () {
     final created = StellarSdkWalletGateway().createCredentials();
 
