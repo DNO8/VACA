@@ -1,0 +1,212 @@
+{
+  "schema": 1,
+  "state": "scoped_local_unit_complete",
+  "baseline": "2726872d37f1fd474aa0b245a661ee1fdb3a951d",
+  "behavior_commit": "4370d4ba68faac05da5f0b1e8f81b151eabe8d75",
+  "authored_diff_lines": 306,
+  "candidate": {
+    "supabase/functions/d1-custody/issuance-command.ts": {
+      "sha256": "dd3847dec684af7de8649a3ddb55337db49c2efbcfef68c53deadaf66fe32a69",
+      "bytes": 4809
+    },
+    "supabase/functions/d1-custody/handler.ts": {
+      "sha256": "eb2c373e038c82626f71cd979718b2803c1a54fb42acb7fa0867b32fdc5b1ca1",
+      "bytes": 9028
+    },
+    "supabase/functions/d1-custody/issuance-status-http.ts": {
+      "sha256": "542fa33b6293cb5066db94f71a88dd79e467f84118b5027847ca7c1b2e680497",
+      "bytes": 7083
+    },
+    "supabase/tests/unit/issuance-status-http.test.ts": {
+      "sha256": "e2c935ddd4786f0bdb485f3d7cfd351c85cde1e1c2c968ded265767b199164ea",
+      "bytes": 14616
+    },
+    "supabase/docs/d1-issuance-status.md": {
+      "sha256": "158ca19ca80e2b809dc55ca79e5e2bd1e67148c96ec792736b46a6c1b7d76383",
+      "bytes": 3035
+    }
+  },
+  "captures": {
+    "d1-issuance-status-red-x8y3azke": {
+      "result": {
+        "exit": 1,
+        "seconds": 2.184369812021032,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 84,
+        "stdout_bytes": 4912,
+        "stderr_bytes": 119
+      },
+      "artifacts": {
+        "after.json": {
+          "bytes": 10476,
+          "sha256": "8a15179cdba8409bed960218afdbcbea4f7c4af9efe33ab85245817d15a52b9a"
+        },
+        "before.json": {
+          "bytes": 10476,
+          "sha256": "8a15179cdba8409bed960218afdbcbea4f7c4af9efe33ab85245817d15a52b9a"
+        },
+        "invocation.json": {
+          "bytes": 573,
+          "sha256": "3f60868bd4f83eca7429ed964e198164771fe85aadd13e58b003aa3482aee52d"
+        },
+        "result.json": {
+          "bytes": 174,
+          "sha256": "7ec0f8303e56808b40a5f28fc7004da84bd3e886a2cca7abe1c2f6b8db52cb4f"
+        },
+        "stderr.txt": {
+          "bytes": 119,
+          "sha256": "68540750b2a141e2a89d16c5adf242656853b1378ff133859258fe875174560d"
+        },
+        "stdout.txt": {
+          "bytes": 4912,
+          "sha256": "7f10959840835fd184f2d888609ed254749bbc28122e913739bdffb0e8b39c73"
+        }
+      }
+    },
+    "d1-issuance-status-green-ywem42si": {
+      "result": {
+        "exit": 0,
+        "seconds": 12.459183149039745,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 86,
+        "stdout_bytes": 7014,
+        "stderr_bytes": 767
+      },
+      "artifacts": {
+        "after.json": {
+          "bytes": 10712,
+          "sha256": "9285fc07829d80587dfd71ec94ba4af832f3d6f8f3d253a59e2d241cc221fd5e"
+        },
+        "before.json": {
+          "bytes": 10712,
+          "sha256": "9285fc07829d80587dfd71ec94ba4af832f3d6f8f3d253a59e2d241cc221fd5e"
+        },
+        "invocation.json": {
+          "bytes": 1212,
+          "sha256": "73e4f5c1cc605e6e071b4b56826609881ab4438ff13579497c7c5d91a5b3c131"
+        },
+        "result.json": {
+          "bytes": 175,
+          "sha256": "e5aeb2990991875cfc53d04e64b26ab9c354032f94ccd68ba1f9810ad4af594c"
+        },
+        "stderr.txt": {
+          "bytes": 767,
+          "sha256": "533ff35ff3eccd31e20bbee5d0ecba0e7cfbce226c6f2ceaebfe3429e9365759"
+        },
+        "stdout.txt": {
+          "bytes": 7014,
+          "sha256": "d855200bcc40604e655e47a5ae5cf957224bb760cfb3fcc3ee0c6d7b1d8568dc"
+        }
+      }
+    },
+    "d1-issuance-status-differential-1njc759a": {
+      "result": {
+        "exit": 0,
+        "seconds": 0.7636210900382139,
+        "runs": {
+          "base": {
+            "exit": 0,
+            "seconds": 0.27645415399456397,
+            "timed_out": false
+          },
+          "current": {
+            "exit": 0,
+            "seconds": 0.28247053298400715,
+            "timed_out": false
+          }
+        },
+        "stdout_stderr_exit_equal": true,
+        "live_inputs_unchanged": true,
+        "copies_unchanged": true,
+        "absent_additive_base_paths": [
+          {
+            "path": "supabase/docs/d1-issuance-status.md",
+            "exit": 128,
+            "stderr": "fatal: path 'supabase/docs/d1-issuance-status.md' exists on disk, but not in '2726872d37f1fd474aa0b245a661ee1fdb3a951d'\n"
+          },
+          {
+            "path": "supabase/functions/d1-custody/issuance-status-http.ts",
+            "exit": 128,
+            "stderr": "fatal: path 'supabase/functions/d1-custody/issuance-status-http.ts' exists on disk, but not in '2726872d37f1fd474aa0b245a661ee1fdb3a951d'\n"
+          },
+          {
+            "path": "supabase/tests/unit/issuance-status-http.test.ts",
+            "exit": 128,
+            "stderr": "fatal: path 'supabase/tests/unit/issuance-status-http.test.ts' exists on disk, but not in '2726872d37f1fd474aa0b245a661ee1fdb3a951d'\n"
+          }
+        ],
+        "live_files": 86
+      },
+      "artifacts": {
+        "after.json": {
+          "bytes": 32937,
+          "sha256": "d6ff0a444c52d42b5bc80914f45ca603523e16aa04a31ed00673ae4d98f62ced"
+        },
+        "base.invocation.json": {
+          "bytes": 755,
+          "sha256": "1098823e2da021d48c01dc07148f3547e6e527d06a186fab09227812380c3b19"
+        },
+        "before.json": {
+          "bytes": 32937,
+          "sha256": "d6ff0a444c52d42b5bc80914f45ca603523e16aa04a31ed00673ae4d98f62ced"
+        },
+        "current.invocation.json": {
+          "bytes": 764,
+          "sha256": "53b871d61c7c5ed833c67ba067347df7517080380a7b337832caa2cb3f83a264"
+        },
+        "result.json": {
+          "bytes": 1162,
+          "sha256": "c443dde37d41da82bbc519ae814f384e8b88de5e74684dbc33550f37389e4a25"
+        },
+        "base.stderr.txt": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "base.stdout.txt": {
+          "bytes": 843,
+          "sha256": "51f99ff882b9094977513d4a867d74fda8ea0bd5b78cd0b7f7d33d8e753cffd2"
+        },
+        "current.stderr.txt": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "current.stdout.txt": {
+          "bytes": 843,
+          "sha256": "51f99ff882b9094977513d4a867d74fda8ea0bd5b78cd0b7f7d33d8e753cffd2"
+        }
+      }
+    }
+  },
+  "independent": {
+    "task": "mw5xdnlc-m-23er",
+    "verdict": "ADMIT",
+    "specs": "S1–S5 scoped met/noninterference",
+    "method": "read-only source and parent-runtime-evidence adjudication; NOT child runtime",
+    "import_closure": 32,
+    "baseline_mapped_files": 83,
+    "report": "odd/evidence/d1-issuance-status-adjudication.md",
+    "report_sha256": "587207f16198b22ac08a4854f8d40b285383936c4353a5042eff4ac7854dc50a"
+  },
+  "native_assessment": {
+    "nativeRisk": "unassessable",
+    "risk": "high",
+    "escalation_item": 2,
+    "candidate": null,
+    "failure": "untracked files require an explicit declaration",
+    "reviewDue": "not returned",
+    "nativeReviewOutcome": "unknown",
+    "writerProfileSource": "runtime",
+    "plan": {
+      "writerSelfVerification": true,
+      "independentVerifier": true,
+      "fulfilled": true
+    },
+    "approval": false,
+    "retry": false
+  },
+  "limits": "Local optional status only. No production entrypoint changes, network, real DB/signing/provider/funds/SQL/deploy/peer-root reads or import. Native assessment unavailable is NOT not-due or approval. Existing55-test focused suite only; no wholeD1 acceptance."
+}
