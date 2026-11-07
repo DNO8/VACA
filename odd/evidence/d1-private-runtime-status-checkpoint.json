@@ -1,0 +1,230 @@
+{
+  "status": "Parent checks complete; source uncommitted, independent security verification/assessment pending",
+  "base": "b21dd441ab6098405b5543f6d7fc325fc300adfa",
+  "payloadHashes": {
+    "supabase/functions/d1-custody/runtime.ts": "2c130a3c62818d34925fd19c00d5c2de244af25ee3a59471f919c098c899c068",
+    "supabase/tests/unit/custody-runtime.test.ts": "ca5f1b23ec987d117f370be211bc09bca95a59675acb3b5bee8c10dff8b1776a",
+    "supabase/docs/d1-private-runtime-status.md": "a7198e8d163fb5e59f2a5f7433ee5fe1609f5782f84ff55f2d81982605ed4128"
+  },
+  "captures": [
+    {
+      "path": "supabase/.temp/d1-runtime-status-check-hnxcwi4f",
+      "result": {
+        "exit": 0,
+        "elapsedSeconds": 0.051287674985360354,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-runtime-status-check-hnxcwi4f"
+      },
+      "captureFiles": {
+        "invocation.json": "ed85188bf80e65a872a57470bf4ef3b313084b0489a4ddbd4893f8f8ec39e1ac",
+        "before.json": "1d0298b1f00cfcc59b1e87349d64811d38f0ac1813a2bf98e537f3959f1c2f29",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "result.json": "4595989d124ecd7373452202c4ace53e4d9377355a7281e7efb0a33c75ce57f5",
+        "after.json": "1d0298b1f00cfcc59b1e87349d64811d38f0ac1813a2bf98e537f3959f1c2f29"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-runtime-status-differential-hicqk3wt",
+      "result": {
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-runtime-status-differential-hicqk3wt",
+        "baseRef": "b21dd441ab6098405b5543f6d7fc325fc300adfa",
+        "results": {
+          "base": {
+            "exit": 1,
+            "elapsedSeconds": 0.19202646799385548
+          },
+          "current": {
+            "exit": 1,
+            "elapsedSeconds": 0.19063025200739503
+          }
+        },
+        "same": {
+          "stdout": true,
+          "stderr": false
+        },
+        "inputCount": 165,
+        "unchanged": true,
+        "baseFileHashes": {
+          "supabase/functions/d1-custody/adapters.ts": "33246160579c8c3c164063799ef554aae59e9833639b113fd579bef3e80c9362",
+          "supabase/functions/d1-custody/beneficiary-claim-history-reader.ts": "7a6bb15c8c88879e78a878a5fb7feb37a5d221545c84049849ace66b32c6b2ff",
+          "supabase/functions/d1-custody/beneficiary-claim-projection.ts": "55f95bbc9e484c82a2c7e26c625473fbc850fd8d543ce58c3db3f71d0bfa84c3",
+          "supabase/functions/d1-custody/discovery-ingestion.ts": "43a0430c80962e1eb63d4a6837b9a77e3cb499839fc6effd98c28edc73b088ba",
+          "supabase/functions/d1-custody/discovery-source.ts": "4f8594af4692888697bd4ab6f83d8860edd31cdbe27a9b1cc75454b8da21b076",
+          "supabase/functions/d1-custody/discovery.ts": "3dc5640800337c4db662931d73d1ded04a103763c43d87a911136ea9e716d45b",
+          "supabase/functions/d1-custody/handler.ts": "eb2c373e038c82626f71cd979718b2803c1a54fb42acb7fa0867b32fdc5b1ca1",
+          "supabase/functions/d1-custody/index.ts": "d412660da8d4de75ed566b52e9bb6a0a4b002e88973f149e28f82c72c100f180",
+          "supabase/functions/d1-custody/initial-authorized-signer.ts": "c1ae31ba2550dcd56d898994a3ea329a585f6169553a341cf4c527dc509461af",
+          "supabase/functions/d1-custody/initial-financial-authorization.ts": "2e58e9d25ac8e04ac58363ce40d5e56409b375cae08c340aded1f138cc1c9d4a",
+          "supabase/functions/d1-custody/initial-financial-snapshot.ts": "0345810c2e579a28ce7da22b0a9c14f5bd69a86531effe03997067b4bc8a2f6c",
+          "supabase/functions/d1-custody/initial-issuance-outcome-journal.ts": "6f406d17deec93fb2095ab929c584a1727118e4446ed1c6505f6e9283e121c32",
+          "supabase/functions/d1-custody/initial-issuance-outcome.ts": "dfad2865820911590767b5ffc0295c4660ce0faf7b76deb201431662afff9d00",
+          "supabase/functions/d1-custody/initial-issuance-submission.ts": "2494a86fde7e48895806cd0d80a56096315ec2ef695484c90efc29d96a1ed151",
+          "supabase/functions/d1-custody/initial-submission-authorization.ts": "e0fce240b7d0c1d64f9651ee840430bec6ceee0ee762f5828bfcd3e5af56f1ce",
+          "supabase/functions/d1-custody/issuance-accounting-context.ts": "1bee9accf64fac1feeacd72cd9b988b8de80f43c3a9a92bfb2b32cc476259ea1",
+          "supabase/functions/d1-custody/issuance-command.ts": "dd3847dec684af7de8649a3ddb55337db49c2efbcfef68c53deadaf66fe32a69",
+          "supabase/functions/d1-custody/issuance-coordinator.ts": "4ff01ddfd09e49a480e1e65f44f97ffc98fe90e72619eb1d0023e4bcb6e2849c",
+          "supabase/functions/d1-custody/issuance-encumbrances.ts": "fd1049227192ee54152ac7eebfd26cb27995af279ee160ae7ab92954bceafb32",
+          "supabase/functions/d1-custody/issuance-fee-commitment.ts": "cb1866a9ef297965459459833200ad44fab5db5ac83af1944bf95c05ae2f2c0e",
+          "supabase/functions/d1-custody/issuance-http.ts": "d9210073636b5cd5cd13e2fb8ac674715c35535576ef114fed15dec5fbdab5c8",
+          "supabase/functions/d1-custody/issuance-plan.ts": "34538cc8cf59da567f4c83ca59492fc044e87f8e65cc36f469e31d094b466e20",
+          "supabase/functions/d1-custody/issuance-reconciliation-http.ts": "ca25f0118be541b7cd81e502ba3fc54c923940cf8b8350a231600783694ecfb6",
+          "supabase/functions/d1-custody/issuance-status-http.ts": "542fa33b6293cb5066db94f71a88dd79e467f84118b5027847ca7c1b2e680497",
+          "supabase/functions/d1-custody/operating-budget.ts": "32a5e16d6c0cfd0774c7955a454984a9debeb68fe7df473d03ec3b885de86bdb",
+          "supabase/functions/d1-custody/operating-credit-journal.ts": "d62bfe388c59e7de406d91113fe7f9ff5640aec35ec731e15133585a448c62da",
+          "supabase/functions/d1-custody/operating-credit-reader.ts": "e7e666bb8e8e11479abeee93a23f99aa7954cae651f30497f0a0dbd9eb4c40fd",
+          "supabase/functions/d1-custody/operating-credit.ts": "50fcb58e19b9af7c98552273b7c9c6985104f8f1a62c06b9d623eebf12452212",
+          "supabase/functions/d1-custody/original-obligations.ts": "951bab83e4379718ca85f575c0b8a1b1d5cdaf1133c8dba465c7d256aeed5095",
+          "supabase/functions/d1-custody/pool-creation-eligibility.ts": "75a34b0686b5305362720806c5eb9d596f8341e3877a0ef21dd46af9e1d0d371",
+          "supabase/functions/d1-custody/recovery-refund-plan.ts": "a8d112ba63857dfb03fb4bb0e8a346b6dbd1533d1fe0856960d712a446761653",
+          "supabase/functions/d1-custody/refund-candidate-journal.ts": "8ad8742249851ae74c3f285c9ee58555da394255abde834c1e8e126c0371d58d",
+          "supabase/functions/d1-custody/runtime.ts": "aa09d54d2f9fab27b85c01902e186f07c5eaa5deedf4cea6929420c03378eda3",
+          "supabase/functions/d1-custody/signed-transaction-journal.ts": "aaccc46f185915ea5b9fe96bab2c2f493d52be18ab231ab6effbbb0bb0c1698e",
+          "supabase/functions/d1-custody/transaction-history-reader.ts": "5d777999245c20f6203652331f3d1f53c03957c2bfb39eab9a2bd470da82d31a",
+          "supabase/functions/d1-custody/transaction-ingestion.ts": "cf7b2be7354680625ec4571d44ad139149b611ac7de14fadb7bed573ee8e55cd",
+          "supabase/functions/d1-custody/transaction-observation.ts": "789cf6ddadec997c4b36d61cf04d8581616d14b28a377dff552b172a47c2602c",
+          "supabase/functions/d1-custody/unsigned-transaction.ts": "c782c01b598bceed55d10fe57aacd97844bcc3fd42f25bee2bbb5d3a889d259a"
+        },
+        "probeSha256": "94c10d9a05f931018278b0406a54738391832a5bd90198f6607342cc989507cd"
+      },
+      "captureFiles": {
+        "current.stderr.txt": "30e654fddf3128f0c85e8a6eab08110bd48dc256c9579a20e1534a448cc1bdf1",
+        "base.stderr.txt": "c3bd7711df1f278cadd4af638e6f6fe8c018ffb589bbbb7b4c756bc21bdaff0e",
+        "base.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "before.json": "cb3c36c67f377bc975affa0023fa45130793b49a7c833adc33d7ecb7cd8ee6ab",
+        "base.invocation.json": "35b02f99d1aff9935228ccb778d80b9b7cc353cb67cd229ab4d789c6db85295a",
+        "result.json": "763529c8050df75933f2c3bc4925e20a028b9d977d6ff7e989d9082d7f9eccd6",
+        "current.invocation.json": "c512c14a64944bba8381c17b0b7a82ce3e7ffda4d79e30e47b7bd26a6804704e",
+        "current.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "probe.ts": "94c10d9a05f931018278b0406a54738391832a5bd90198f6607342cc989507cd",
+        "after.json": "cb3c36c67f377bc975affa0023fa45130793b49a7c833adc33d7ecb7cd8ee6ab"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-runtime-status-green-2uznlmby",
+      "result": {
+        "exit": 0,
+        "elapsedSeconds": 2.2544258710113354,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-runtime-status-green-2uznlmby"
+      },
+      "captureFiles": {
+        "invocation.json": "945cf66cc9f1a884edb672188958336ab65fe7077414f084d6343ec0a09d4733",
+        "before.json": "1d0298b1f00cfcc59b1e87349d64811d38f0ac1813a2bf98e537f3959f1c2f29",
+        "stderr.txt": "b020700bc317428e33e2fadf94b3e5479ed42897ebbe9da1255506e401ce2301",
+        "stdout.txt": "7d32defbcb013826b2f685b7681cbe485b989dfcaf7bb3a4172c5db9045e0a69",
+        "result.json": "abf3921dfd743f672608d197765c33c64087ec7b802eda890825621d81118afe",
+        "after.json": "1d0298b1f00cfcc59b1e87349d64811d38f0ac1813a2bf98e537f3959f1c2f29"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-runtime-status-red-db1j8vw4",
+      "result": {
+        "exit": 1,
+        "elapsedSeconds": 1.8703534529777244,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-runtime-status-red-db1j8vw4"
+      },
+      "captureFiles": {
+        "invocation.json": "4586cc044112bcda05eaac0706e631874e16d1521b76bf5f9b024548089e70a5",
+        "before.json": "372382506f5ac6675cfda414df4b9ac0e77e351d2dc48dfae6cd7e54f2182d44",
+        "stderr.txt": "236154871f2d189868d94a810afc40ab738955205c66c7b2187a6145ab599d2f",
+        "stdout.txt": "fc946ec2decea417f6ca9a30f2f58e25cc6ed8705fd9626325609fc596ccfea4",
+        "result.json": "d2523c03e409833615c26fbc23e7cd2458ed2f1da2d3e15fab059fab17250b24",
+        "after.json": "372382506f5ac6675cfda414df4b9ac0e77e351d2dc48dfae6cd7e54f2182d44"
+      }
+    }
+  ],
+  "observed": {
+    "RED": "job37exit1/0pass3fail8filtered/1.870353s; production unchanged",
+    "GREEN": "job38exit0/11pass0fail/2.254426s",
+    "check": "serialexit0/0.051288s",
+    "differential": "job39failedbefore route execution: dynamic import read denied in bothbase/current; NOT equivalence/regression evidence",
+    "authorizedDifferential": "job40failedbefore route execution: runtime.ts loads but handler.ts read denied in both trees; NOT equivalence/regression evidence.",
+    "staticDifferential": "job41base/currentexit0,stdout/stderrexactequal,165inputsunchanged;4existingrouteszeroeffects;noadditionalread/networkflags."
+  },
+  "requiredDecision": "Previous proof hold resolved by explicit user authorization and successful static-import comparison; no further comparator runs required.",
+  "notRun": [
+    "native assessment",
+    "independent security verifier",
+    "source commit",
+    "complete private provider/runtime activation",
+    "client integration",
+    "both end-to-end journeys"
+  ],
+  "scope": "Partialitem2statuscomposition only; no peerfinancialprovenance/freshCB/accountassembler,D3,index.ts,livekeys/funds/network/SQL/deploy/cross-rootchanges.",
+  "authorizedCorrection": {
+    "path": "supabase/.temp/d1-runtime-status-differential-hicqk3wt/authorized-correction",
+    "result": {
+      "results": {
+        "base": {
+          "exit": 1,
+          "elapsedSeconds": 0.5118872409802862
+        },
+        "current": {
+          "exit": 1,
+          "elapsedSeconds": 0.20526429696474224
+        }
+      },
+      "same": {
+        "stdout": true,
+        "stderr": false
+      },
+      "unchanged": true,
+      "inputCount": 165,
+      "probeSha256": "94c10d9a05f931018278b0406a54738391832a5bd90198f6607342cc989507cd",
+      "readPaths": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-runtime-status-differential-hicqk3wt/base/supabase/functions/d1-custody/runtime.ts",
+        "/home/danilo/projects/vaca-d1-t5b-proof/supabase/functions/d1-custody/runtime.ts"
+      ],
+      "humanAuthorization": "authorize_one_path_scoped_private_runtime_differential"
+    },
+    "captureFiles": {
+      "current.stderr.txt": "71f2a6b345acc155e05276d474fc96786f82b526177963e7a5e7b49a1d866583",
+      "base.stderr.txt": "75389555a58e7168aeb6054376ed2eeb2f32b0a142a8b28133f8e37cdcd71b46",
+      "base.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "before.json": "cb3c36c67f377bc975affa0023fa45130793b49a7c833adc33d7ecb7cd8ee6ab",
+      "base.invocation.json": "d6d3203c2931a331a05492e4e425f5b25cf546e45ed5e0e1d8c0b223b1357d1d",
+      "result.json": "257a7990ff1fed34744c95080627e94564963c1f4f31b211767d74df3862cc18",
+      "current.invocation.json": "8d0637346de56863e5fd8a52a61d0e18707761eed9a34baf66205e0672252051",
+      "current.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after.json": "cb3c36c67f377bc975affa0023fa45130793b49a7c833adc33d7ecb7cd8ee6ab"
+    }
+  },
+  "staticComparison": {
+    "path": "supabase/.temp/d1-runtime-status-differential-hicqk3wt/static-comparison",
+    "result": {
+      "results": {
+        "base": {
+          "exit": 0,
+          "elapsedSeconds": 0.31169652100652456,
+          "probeSha256": "19c9d41a43310c271cdad62ac9b9965005dd05c4c2421c81023599e42c524123"
+        },
+        "current": {
+          "exit": 0,
+          "elapsedSeconds": 0.24562249198788777,
+          "probeSha256": "bdf1fc1f42facb513030d3f241c179b9c757bfe577e1ace51bdfaf46943876d7"
+        }
+      },
+      "same": {
+        "stdout": true,
+        "stderr": true
+      },
+      "unchanged": true,
+      "inputCount": 165,
+      "originalProbeSha256": "94c10d9a05f931018278b0406a54738391832a5bd90198f6607342cc989507cd",
+      "bodyChange": "only dynamic module import replaced by static import of exact respective runtime.ts",
+      "humanAuthorization": "dale con eso / one static-import comparison"
+    },
+    "captureFiles": {
+      "base.probe.ts": "19c9d41a43310c271cdad62ac9b9965005dd05c4c2421c81023599e42c524123",
+      "current.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current.probe.ts": "bdf1fc1f42facb513030d3f241c179b9c757bfe577e1ace51bdfaf46943876d7",
+      "base.stdout.txt": "8a6ae7de3616d8c7aa049156f477489f3132d41f7a39adf558c8ea10df1535d2",
+      "before.json": "cb3c36c67f377bc975affa0023fa45130793b49a7c833adc33d7ecb7cd8ee6ab",
+      "base.invocation.json": "0e98fe6c9f0a11981dc1c714b2904de64b2211efe53da36197591dbb65e121ff",
+      "result.json": "b4c0d653cc838e8333008ed0ea4271bc8b9b108388d63838ba9edb4c905ddaba",
+      "current.invocation.json": "d7e9e0bef7410133b7c42e825a0fb9c9f5714052ae067e3204a2cefc72b11428",
+      "current.stdout.txt": "8a6ae7de3616d8c7aa049156f477489f3132d41f7a39adf558c8ea10df1535d2",
+      "after.json": "cb3c36c67f377bc975affa0023fa45130793b49a7c833adc33d7ecb7cd8ee6ab"
+    }
+  }
+}
