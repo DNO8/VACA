@@ -1,0 +1,17 @@
+# D1 personal-wallet preparation coordination
+One same-service-instance preparation unit in the owned proof clone; not financial refund execution or whole-D1 acceptance.
+Baseline 1cca808707b9b4ed8a7a2d7a49689b4c809d3b56; no D3 coordinator, backend, live keys, funds, network or deployment changes.
+
+## Specs
+S1. User selected: "Implementar y verificar" — "Reproducir la carrera con pruebas, corregir solo create()/fund() y verificar los contratos existentes, sin tocar el helper compartido ni D3."
+S2. Accepted boundary: "fund() sin wallet debe seguir devolviendo stellar_wallet_missing, sin crear credenciales ni fondear, aunque haya un create() en curso."
+S3. Accepted boundary: "Esto no resolverá la concurrencia entre instancias o procesos."
+
+## Tasks
+T1 | S1-S3 | parent inline RED/GREEN; coordinate create calls and same-secret create/fund preparation outside unchanged _prepareForUsdc; preserve missing-wallet and explicit-retry behavior; focused existing regressions and static check; independent concurrency verification | in_progress | commit pending | Risk: item4 (concurrent key creation/preparation).
+
+## Log
+L1. User: "dale veamos eso"; focused clarification selected implement_wallet_preparation_coordination / "Implementar y verificar" / "Reproducir la carrera con pruebas, corregir solo create()/fund() y verificar los contratos existentes, sin tocar el helper compartido ni D3."
+L2. D3 owner17d8441ebf913b83b2fb43505113a50c confirms no reservation/implementation of create/fund single-flight, only offline claimScope added there. fund absence must retain missing-wallet failure even during create. Shared _prepareForUsdc also serves legacy claimAll; leave it untouched. Preserve D3 offline claimScope and per-balance path; no crossroot read/import authority. This clone has no claimScope; do not invent/import it.
+L3. Public deterministic tests use existing wallet-service fixture extended with controlled Futures/counters; no real SDK network or timers. Runtime commands serial80s+5s, no timeout retry. Retain RED/GREEN/check exact argv/env/stdout/stderr/exit and hashes; no SDK setup/T5b/closed proof replay. Functional failure may receive one bounded correction, unavailable proof stops. Existing six wallet service regressions retained; no shared helper/API change, so no legacy claimAll differential required if its source/helpers remain byte-identical.
+L4. Actual parentRED42 exit1/7.925075s:8pass6fail, six real duplicate credential/preparation failures; missing-wallet null/empty and six old regressions pass. Production baseline retained duringRED. Minimal service-only create future and same-secret preparation map added; _prepareForUsdc and all subsequent existing method bodies byte-identical to base. GREEN43 exit0/7.170127s:26pass0fail (8new+6existingservice+12applicable snapshot regressions),421inputhashes stable. Serialanalysis43 exit1/27.832198s only require_trailing_commas at test213; preserved, corrected one comma/layout only. Reconstructed GREEN test hash matches exactly when that sole correction is reversed, production unchanged sinceGREEN. Correctedanalysis44 exit0/25.787712s/noissues; no functional replay. Captures under supabase/.temp/d1-wallet-preparation-{red-u0cgt531,green-jgquqa44,analyze-ny8xcylg,analyze-193kxerx};80+5/env/argv/stdout/stderr/exit preserved. Exact assessment, independent concurrency admission and packaging remain pending, notDONE.

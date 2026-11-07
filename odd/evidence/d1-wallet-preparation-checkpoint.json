@@ -1,0 +1,74 @@
+{
+  "sourceBase": "1cca808707b9b4ed8a7a2d7a49689b4c809d3b56",
+  "payload": {
+    "vaca_app/lib/features/wallet/domain/stellar_wallet_service.dart": "1c6800bd2cd43cbfdfc3a35bfef23ec765ec3104b2d0b3bfeef1e74a2e654f7b",
+    "vaca_app/test/stellar_wallet_service_test.dart": "21beb7092df8d2071c0bc40b037389cb0a58bcbc19c0ecf522f1c31dc857ac8b",
+    "vaca_app/docs/d1-wallet-preparation.md": "8a15c25221faa81bb618e9c5565a20a393445e32875728a31e26dd228cadb1dc"
+  },
+  "captures": {
+    "red-u0cgt531": {
+      "result": {
+        "exit": 1,
+        "elapsedSeconds": 7.9250754849636,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-preparation-red-u0cgt531"
+      },
+      "inputs": 421,
+      "files": {
+        "supabase/.temp/d1-wallet-preparation-red-u0cgt531/after.json": "eb04ee9815c0c8bec3765974e29d98be8ef4aae8b784af0999ed26feff9f889c",
+        "supabase/.temp/d1-wallet-preparation-red-u0cgt531/before.json": "eb04ee9815c0c8bec3765974e29d98be8ef4aae8b784af0999ed26feff9f889c",
+        "supabase/.temp/d1-wallet-preparation-red-u0cgt531/invocation.json": "0c8fe98c026cc09993f6f5e7acd08a155bc2da1102459ce1f11188d62648cb35",
+        "supabase/.temp/d1-wallet-preparation-red-u0cgt531/result.json": "a3d6f0a81b74f448351041475fa1fcdc33fb3d2c30b19a1af53331ebf60cf6d9",
+        "supabase/.temp/d1-wallet-preparation-red-u0cgt531/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "supabase/.temp/d1-wallet-preparation-red-u0cgt531/stdout.txt": "daa4bc15849ee13a62ff7bf18e2b93cedcc1af3023a87c15897f11d583a0c69c"
+      }
+    },
+    "green-jgquqa44": {
+      "result": {
+        "exit": 0,
+        "elapsedSeconds": 7.170126533950679,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-preparation-green-jgquqa44"
+      },
+      "inputs": 421,
+      "files": {
+        "supabase/.temp/d1-wallet-preparation-green-jgquqa44/after.json": "bea441dce628948776b97abcf0b8b1bbd590d1ebd7453cab72ee10fff696a4fd",
+        "supabase/.temp/d1-wallet-preparation-green-jgquqa44/before.json": "bea441dce628948776b97abcf0b8b1bbd590d1ebd7453cab72ee10fff696a4fd",
+        "supabase/.temp/d1-wallet-preparation-green-jgquqa44/invocation.json": "1944bf5e9c179b5105dd6d4a71ff367141b7229b045e45e2e98c16ecc1fa9b4b",
+        "supabase/.temp/d1-wallet-preparation-green-jgquqa44/result.json": "a5c3ba2098ab4eacc7f3a40445d5e7886436b7b1797c34398db07c5927c4492c",
+        "supabase/.temp/d1-wallet-preparation-green-jgquqa44/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "supabase/.temp/d1-wallet-preparation-green-jgquqa44/stdout.txt": "f43643075d4420694b93df6cde1ec565f38969682ae18ef4a0da21abdc071f5e"
+      }
+    },
+    "analyze-ny8xcylg": {
+      "result": {
+        "exit": 1,
+        "elapsedSeconds": 27.832198115007486,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg"
+      },
+      "inputs": 421,
+      "files": {
+        "supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg/after.json": "bea441dce628948776b97abcf0b8b1bbd590d1ebd7453cab72ee10fff696a4fd",
+        "supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg/before.json": "bea441dce628948776b97abcf0b8b1bbd590d1ebd7453cab72ee10fff696a4fd",
+        "supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg/invocation.json": "6b7a12032bb3504eb8bf22eaa9f9c5e0a45babe87604a795a4428c87f54fadb9",
+        "supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg/result.json": "0b8e8fa97e5f79086cf7b0632095694d136dabb53d95eb4cdf5366682bd66297",
+        "supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg/stderr.txt": "96a9ef3645ff8980c71089733dc88234d75d6769b20b2bd54bb46e91f39b0019",
+        "supabase/.temp/d1-wallet-preparation-analyze-ny8xcylg/stdout.txt": "dea772445e695241e95efb6299bd04d536960453309a89f7890305c230b00d3a"
+      }
+    },
+    "analyze-193kxerx": {
+      "result": {
+        "exit": 0,
+        "elapsedSeconds": 25.78771171096014,
+        "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-wallet-preparation-analyze-193kxerx"
+      },
+      "inputs": 421,
+      "files": {
+        "supabase/.temp/d1-wallet-preparation-analyze-193kxerx/after.json": "aaf4d4768d2c02859bc37953b98ac8c8e0cfe8584837ba8d0c58e26edfddff14",
+        "supabase/.temp/d1-wallet-preparation-analyze-193kxerx/before.json": "aaf4d4768d2c02859bc37953b98ac8c8e0cfe8584837ba8d0c58e26edfddff14",
+        "supabase/.temp/d1-wallet-preparation-analyze-193kxerx/invocation.json": "6b7a12032bb3504eb8bf22eaa9f9c5e0a45babe87604a795a4428c87f54fadb9",
+        "supabase/.temp/d1-wallet-preparation-analyze-193kxerx/result.json": "2f94fedfb0185e9c8b7498844bd12d0caaa6f9c4d60a7a2a434cdc1438b631e9",
+        "supabase/.temp/d1-wallet-preparation-analyze-193kxerx/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "supabase/.temp/d1-wallet-preparation-analyze-193kxerx/stdout.txt": "3bc2909043b8565f6aa3562106c46526068940e5259c698e6519e1615dd0873d"
+      }
+    }
+  }
+}
