@@ -1,6 +1,51 @@
 import 'dart:typed_data';
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:vaca_app/core/result/result.dart';
+import 'package:vaca_app/core/security/secure_storage.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:vaca_app/features/refund/domain/refund_scope.dart';
+
+class RefundMemoryStorage extends SecureStorage {
+  final values = <String, String>{};
+  final events = <String>[];
+  bool rejectWrite = false;
+  bool rejectRead = false;
+  RefundMemoryStorage() {
+    values['stellar.testnet.secret-seed'] = refundTestWallet.secretSeed;
+  }
+  @override
+  Future<Result<String?>> read(String key) async {
+    if (rejectRead) return const Failure(VacaError(code: 'test_read'));
+    return Success(values[key]);
+  }
+
+  @override
+  Future<Result<void>> write(String key, String value) async {
+    events.add('write:start');
+    if (rejectWrite) return const Failure(VacaError(code: 'test_write'));
+    values[key] = value;
+    events.add('write:ack');
+    return const Success(null);
+  }
+}
+
+class RefundTestAdapter implements HttpClientAdapter {
+  RefundTestAdapter(this.respond);
+  final Future<ResponseBody> Function(RequestOptions) respond;
+  @override
+  Future<ResponseBody> fetch(RequestOptions options,
+          Stream<Uint8List>? requestStream, Future<void>? cancelFuture) =>
+      respond(options);
+  @override
+  void close({bool force = false}) {}
+}
+
+ResponseBody refundTestResponse(String state, {int code = 200}) =>
+    ResponseBody.fromString(jsonEncode(refundFixture(state)), code, headers: {
+      'content-type': ['application/json'],
+      'cache-control': ['no-store']
+    });
 
 // Synthetic deterministic test-only identity, never a configured pool/wallet.
 final refundTestWallet =
