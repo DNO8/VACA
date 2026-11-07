@@ -1,0 +1,45 @@
+{
+  "primaryCommit": "0838858dfc1c20a46f1b8c6879814ebf2068bbd8",
+  "primaryScope": [
+    "vaca_app/lib/features/vaquita/presentation/vaquita_screen.dart",
+    "vaca_app/test/vaquita_claim_lookup_test.dart",
+    "vaca_app/docs/d1-vaquita-claim-lookup.md"
+  ],
+  "authoredDiffLines": 351,
+  "independentTask": "mw62pck0-r-yief",
+  "independentVerdict": "ADMIT scoped S1-S3; static plus read-only adjudication of parent runtime, no child execution",
+  "finalWidgetTests": {
+    "pass": 6,
+    "fail": 0,
+    "seconds": 4.432269449986052
+  },
+  "existingButtonTests": {
+    "pass": 2,
+    "fail": 0,
+    "fromEarlierEightCaseRun": true
+  },
+  "finalFocusedAnalysis": {
+    "exit": 0,
+    "seconds": 15.809578165004496
+  },
+  "nativeReview": {
+    "reviewDue": false,
+    "reason": "under_budget",
+    "outcome": "unknown",
+    "approved": false,
+    "started": false
+  },
+  "risk": "item4: overlapping asynchronous lookup/retry state; independent plan fulfilled",
+  "deliveryStrategy": "This exact351-line three-path commit is the work-unit candidate. Accumulated feature branch is not a review/PR candidate; no push, PR or deployment authorized. Passive closure is separate.",
+  "failedChecksRetained": [
+    "job28 missing SQLite SONAME loader, not RED",
+    "job29 actual RED plus teardown ordering failures",
+    "job31 analysis exit1 with16 trailing-comma infos"
+  ],
+  "skipped": [
+    "full app/suite/build",
+    "live smoke/network/funds/SQL/deploy",
+    "SDK setup/pubget and closed wallet proof"
+  ],
+  "wholeD1Complete": false
+}

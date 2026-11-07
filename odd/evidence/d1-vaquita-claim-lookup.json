@@ -1,0 +1,196 @@
+{
+  "base": "74f6164a3227cc5511a4747748cdd37665e73ab7",
+  "trackingCommit": "c58b63b",
+  "method": "Parent-executed public-screen widget tests with fake providers and in-memory database; independent read-only adjudication pending. Not child runtime or immutable filesystem.",
+  "captures": [
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-analyze-8tgr4fg6",
+      "exit": 1,
+      "elapsedSeconds": 16.59624713397352,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-analyze-8tgr4fg6",
+      "inputCount": 418,
+      "unchanged": true,
+      "files": {
+        "after.json": "b6d6f01bc527eb369e8ac99d9660de5336f05be6fcac37e1a7d27077013f53a0",
+        "before.json": "b6d6f01bc527eb369e8ac99d9660de5336f05be6fcac37e1a7d27077013f53a0",
+        "invocation.json": "738c1de99941bb2e55cef654e2bbc253c796bc6bf1725f7ce6f69f9cc70ee6b5",
+        "result.json": "b0dfbc920f73bf3f515295b7e5f238e6ef9a439f6b6588fa6b8c99f26ce24827",
+        "stderr.txt": "ae1a00cc3e7a57e6853a5449d4c4511e73bb0b365fc97edf83adebe90c8d2f94",
+        "stdout.txt": "16f4d3121193b6d55ddf7569d0d1e39f4bbca19e485980ba0524d74c2b7be344"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-analyze-pa5p_huo",
+      "exit": 0,
+      "elapsedSeconds": 15.809578165004496,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-analyze-pa5p_huo",
+      "inputCount": 419,
+      "unchanged": true,
+      "files": {
+        "after.json": "d545831f758f0dbe1407abb3ea4995bb2c6e6cc1e776b91ae882f82bb0539b2b",
+        "before.json": "d545831f758f0dbe1407abb3ea4995bb2c6e6cc1e776b91ae882f82bb0539b2b",
+        "invocation.json": "738c1de99941bb2e55cef654e2bbc253c796bc6bf1725f7ce6f69f9cc70ee6b5",
+        "result.json": "8ce54c94c23468c70375443f85ccf8aaf0b3b6e861547d62bee893b0e503dfa6",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "30c10960f93dafc04b056223a57e5440cdeb378f399af0f0814f33d0b5ec1e96"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-behavioral-red-hiakpgdo",
+      "exit": 1,
+      "elapsedSeconds": 4.011071752000134,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-behavioral-red-hiakpgdo",
+      "inputCount": 418,
+      "unchanged": true,
+      "files": {
+        "after.json": "3c4a9e84be6b0880a04f38527cdac5455d0ec9502a015bf6b8a5df0882a91af4",
+        "before.json": "3c4a9e84be6b0880a04f38527cdac5455d0ec9502a015bf6b8a5df0882a91af4",
+        "invocation.json": "ac7595ed39686a677303fbb5c39f1972eb26d1260391c4d042cc0d9e4bd84b7e",
+        "result.json": "578455c7b7b4eef752632ebf43c7083a40d67ab4afb4d097df4ee3d054206658",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "0619477e015bb710bdfb785fb6c4dde580cc4659c91e3aaa4294427e5b3e4bcc"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-final-green-jfg8wih0",
+      "exit": 0,
+      "elapsedSeconds": 4.432269449986052,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-final-green-jfg8wih0",
+      "inputCount": 419,
+      "unchanged": true,
+      "files": {
+        "after.json": "d545831f758f0dbe1407abb3ea4995bb2c6e6cc1e776b91ae882f82bb0539b2b",
+        "before.json": "d545831f758f0dbe1407abb3ea4995bb2c6e6cc1e776b91ae882f82bb0539b2b",
+        "invocation.json": "ac7595ed39686a677303fbb5c39f1972eb26d1260391c4d042cc0d9e4bd84b7e",
+        "result.json": "c356c4f740c3a89b6337eeb864bf978acbfa15d9a14ab1a38a489a07ed6f2352",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "6932e308de3852740e0ca51edf6a8ce69870a1abd0b9bbd1390624c316a8557c"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-format-source-2uaxfzgl",
+      "exit": 0,
+      "elapsedSeconds": 0.10226522601442412,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-format-source-2uaxfzgl",
+      "inputCount": 419,
+      "unchanged": false,
+      "files": {
+        "after.json": "d545831f758f0dbe1407abb3ea4995bb2c6e6cc1e776b91ae882f82bb0539b2b",
+        "before.json": "7d2abb27098bec8e4d453416fb80840b66e325050058081b2204eda40e762ddc",
+        "invocation.json": "5510edaf5336043419a57f2766d6af00bfff114e24f491eb1b2b85c7a1acd4f3",
+        "result.json": "8928511ce7a011b0d12af6d2563df5a275bf2765315ad4e62babe43e30455e21",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "0772c46b2635736acd77e871e883ad58cd40ca8c5c50ed9addd14c9243d9c12b"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-format-source-5acb45dg",
+      "exit": 0,
+      "elapsedSeconds": 0.09500330296577886,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-format-source-5acb45dg",
+      "inputCount": 418,
+      "unchanged": false,
+      "files": {
+        "after.json": "b6d6f01bc527eb369e8ac99d9660de5336f05be6fcac37e1a7d27077013f53a0",
+        "before.json": "f095735ef245fa80d38b3cb93dba3706cc97ca4930fe743cb2f9db347820c9fe",
+        "invocation.json": "5510edaf5336043419a57f2766d6af00bfff114e24f491eb1b2b85c7a1acd4f3",
+        "result.json": "6e38071855dd515d948a4fa7a27d1ea2a5985f87c497a652209c23053f75e7d0",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "0772c46b2635736acd77e871e883ad58cd40ca8c5c50ed9addd14c9243d9c12b"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-format-test-ydyqhych",
+      "exit": 0,
+      "elapsedSeconds": 0.12063226598547772,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-format-test-ydyqhych",
+      "inputCount": 418,
+      "unchanged": false,
+      "files": {
+        "after.json": "08997031df9c618df5ee32aa4f1a7e196877f6c803efefe51c0ae501f72f00e8",
+        "before.json": "8a384cc2166ad6ac1ed131454d075eb74742216e471edef36dc18a4bfec8ebae",
+        "invocation.json": "eb971281559d44f5c153fc3fa83303edc1c57d56096f289a5cf1d5090b12aa3d",
+        "result.json": "e174e68920e6f8a9d243b460e067a2d3f411f3c4219cb61ccb0f0a48d2796423",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "f90baa80823e123cfeeee03a6cc44f29a7089185c6e88d4927370dc44f621548"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-green-aofncwao",
+      "exit": 0,
+      "elapsedSeconds": 4.439730354992207,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-green-aofncwao",
+      "inputCount": 418,
+      "unchanged": true,
+      "files": {
+        "after.json": "b6d6f01bc527eb369e8ac99d9660de5336f05be6fcac37e1a7d27077013f53a0",
+        "before.json": "b6d6f01bc527eb369e8ac99d9660de5336f05be6fcac37e1a7d27077013f53a0",
+        "invocation.json": "0b9f6ec31ccf6b5d9e45abdeda53db5ded8f906e3313cd456615a0b02afb0eaf",
+        "result.json": "fe06a56ab0e1e539ce6339efde1012e3e6d052a338c62ad149ca84dbcbe0c13a",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "1985b0de869c6411688d554a906f5cac8a6c4e67a10e926bc8e7f0740e7d1c8c"
+      }
+    },
+    {
+      "path": "supabase/.temp/d1-vaquita-lookup-red-eaynj6d5",
+      "exit": 1,
+      "elapsedSeconds": 5.21586804301478,
+      "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-vaquita-lookup-red-eaynj6d5",
+      "inputCount": 418,
+      "unchanged": true,
+      "files": {
+        "after.json": "08997031df9c618df5ee32aa4f1a7e196877f6c803efefe51c0ae501f72f00e8",
+        "before.json": "08997031df9c618df5ee32aa4f1a7e196877f6c803efefe51c0ae501f72f00e8",
+        "invocation.json": "ac7595ed39686a677303fbb5c39f1972eb26d1260391c4d042cc0d9e4bd84b7e",
+        "result.json": "28858fa75b21f8480fe58a4665c9a6c3d92b79ab36d90b542539d3126b881865",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.txt": "b8da14ac468a8ece2acc2692956ba089e676d87008da0eda6c6a456ffec5d0a9"
+      }
+    }
+  ],
+  "finalInputCount": 419,
+  "protectedBaseMobileFiles": 416,
+  "finalPayload": {
+    "vaca_app/lib/features/vaquita/presentation/vaquita_screen.dart": "437cc3886d3e858ab8029c88eb3dcc7d82dd6997535f57be53124401164a8359",
+    "vaca_app/test/vaquita_claim_lookup_test.dart": "ddd60deac5117eac5b1f8e71a9a13b4a6d9d9b91d47d26722d89fca271163047",
+    "vaca_app/docs/d1-vaquita-claim-lookup.md": "790ea87a5dedd43e394dbf05b78c779c9945a5bdb2d28d37b49452173135dfb2"
+  },
+  "assessment": {
+    "operation": "assess",
+    "risk": "high",
+    "nativeRisk": "medium",
+    "agentEscalation": {
+      "item": 4,
+      "label": "concurrency",
+      "reason": "The presentation change coordinates overlapping asynchronous claim lookups and prevents duplicate explicit retries; no financial execution or wallet contract is modified.",
+      "applied": true
+    },
+    "changedPaths": 3,
+    "changedLines": 351,
+    "candidate": {
+      "kind": "current-changes",
+      "consumed": false
+    },
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "writerProfile": "large",
+    "writerProfileSource": "runtime",
+    "plan": {
+      "writerSelfVerification": true,
+      "structuralReadbackOnly": false,
+      "independentVerifier": true
+    },
+    "note": "Selected native response fields; this is not native approval."
+  },
+  "limits": [
+    "First loader failure is not RED.",
+    "Behavioral RED also had cleanup failures; not a clean behavioral-only run.",
+    "First analysis exited1 with16 trailing-comma infos; corrected formatting, final analysis exited0.",
+    "Final six widget tests ran after lint-only source/test correction. Earlier eight-case result includes two unchanged button checks, not rerun.",
+    "Full app/build/live smoke/SDK setup/pub-get/network/funds/SQL/deploy not run.",
+    "No shared CLI/parser/helper differential applies: no shared public command or option changed."
+  ]
+}
