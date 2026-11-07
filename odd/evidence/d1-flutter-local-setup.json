@@ -1,9 +1,10 @@
 {
   "schema": 1,
-  "state": "blocked_locked_dependency_graph",
+  "state": "blocked_replacement_download_timeout",
   "authorization": [
     "Authorize project-local Flutter setup",
-    "Authorize one bounded resume"
+    "Authorize one bounded resume",
+    "Preserve lockfile; replace local SDK (recommended)"
   ],
   "original_failures": "job16 compilefailure beforeI/O; job17 downloadtimeout124 remainfailed; see d1-flutter-local-setup-failed-download.json",
   "source_checkpoint": "eec0b5a54e6b879a9457955d77a47dacc157dd33",
@@ -161,6 +162,77 @@
   "wallet_tests": "not run; selected existing6-test fakegateway service suite only; live smoke not run",
   "independent_verifier": "not run; functional prerequisite failed",
   "native_review": "not run; partial setup is not approved",
-  "acceptance": "SDK integrity/extraction/version only. Required locked dependencies and mobile verification BLOCKED; wholeD1 incomplete.",
-  "next_decision": "Preserve lock and authorize nondestructiveSDKreplacement with researchedofficialmatchingpin (recommended), authorize exactlytwo proposed lock changes, orretainblocked."
+  "acceptance": "3.41.0 integrity/extraction/version only; FAILED lockedget.3.41.9sourcepins match but download TIMEOUT/NO integrityverdict; no replacement or mobileproof. WholeD1 incomplete.",
+  "next_decision": "ONE explicitly authorized3.41.9resume into separatecopy under unchanged80+5/fullSHA-before-extract; orretainblocked. OriginalSDK/lock/captures preserved.",
+  "replacement_source_pin": {
+    "helper": "mw605hea-o-x9w6",
+    "parent_spotcheck_response": "mw607td8hgsbjm",
+    "pin": {
+      "manifest_url": "https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json",
+      "manifest_sha256": "c32e4070a5a1ee5025e8dfc205326ccf50af3833db71462f1a47cbb54fd75cda",
+      "base_url": "https://storage.googleapis.com/flutter_infra_release/releases",
+      "release": {
+        "hash": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+        "channel": "stable",
+        "version": "3.41.9",
+        "dart_sdk_version": "3.11.5",
+        "dart_sdk_arch": "x64",
+        "release_date": "2026-04-30T17:19:56.166707Z",
+        "archive": "stable/linux/flutter_linux_3.41.9-stable.tar.xz",
+        "sha256": "cf2631dde02570733921a530f47a96abe896b5e334682d2743c29530ea88bb2e"
+      }
+    },
+    "matches_existing_runtime_sdk_graph": {
+      "characters": "1.4.1",
+      "collection": "1.19.1",
+      "material_color_utilities": "0.13.0",
+      "meta": "1.17.0",
+      "vector_math": "2.2.0",
+      "test_api": "0.7.10",
+      "matcher": "0.12.19",
+      "path": "1.9.1",
+      "fake_async": "1.3.3",
+      "clock": "1.1.2",
+      "stack_trace": "1.12.1",
+      "leak_tracker_flutter_testing": "3.0.10",
+      "stream_channel": "2.1.4"
+    },
+    "limits": "Sourcepin-compatible candidate ONLY. Not fullresolver; flutter_localizations absent/outofscope. Official3.44.0 rejected on pins."
+  },
+  "replacement_download": {
+    "job": "job-22",
+    "outer_exit": 124,
+    "execution_seconds": 80,
+    "kill_grace_seconds": 5,
+    "capture": "supabase/.temp/flutter-setup-replacement-download-7yg2er90",
+    "unverified_archive_bytes": 1340436480,
+    "steps": [
+      {
+        "name": "manifest",
+        "exit": 0,
+        "seconds": 0.3560800949926488,
+        "bytes": 272052,
+        "timed_out": false
+      }
+    ],
+    "archive_child_exit": "unknown; outer terminated before result record",
+    "integrity_verified": false,
+    "replacement_performed": false,
+    "files_sha256": {
+      "archive.invocation.json": "955bb9a45dcd60e9c71ea6d45804f4c70fd6d2c36e952e462fa1a0ef0fcfb004",
+      "archive.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pin.json": "e681b9e456b76a99f962ca538e5d830b70a85bf939234d20d7832b77f31b000c",
+      "manifest.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "manifest.invocation.json": "fcacddcc958b19944778a7e23410f136e0accc2c4802441000f597fc0c7a98ec",
+      "steps.json": "796efe66a4cf4853f324f887ab1cac85f2770af9fc7d1c06a288832410ec8958",
+      "archive.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "releases_linux.json": "c32e4070a5a1ee5025e8dfc205326ccf50af3833db71462f1a47cbb54fd75cda",
+      "manifest.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "prepared_replacement_helper_sha256": {
+    "download_replacement.py": "de537243eafdea2390146fbbbc2b3d5eb2c9a3f41e523e33eaccd0fcb5911473",
+    "extract_replacement.py": "af07a0cbe2c2cdd2177e4e69501aa93a5253295840399a9e7f05c41064e2a139",
+    "run_replacement_check.py": "bfb62e825974acb5529bda26333ec3091b31c493a69ad5b0574b3afe4756edc8"
+  }
 }
