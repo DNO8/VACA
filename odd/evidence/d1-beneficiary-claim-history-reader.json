@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "feature": "d1-beneficiary-claim-history-reader",
-  "state": "functional_proof_failed",
+  "state": "scoped_local_unit_complete",
   "baseline": "a08d921b3348bf4c4636574b4131de4825bba4d5",
-  "behavior_commit": null,
+  "behavior_commit": "31dd90e3f9ac8638286834d0d3c7c98d661d9c8b",
   "candidate": {
     "supabase/functions/d1-custody/beneficiary-claim-history-reader.ts": {
       "lines": 104,
@@ -11,9 +11,9 @@
       "sha256": "7a6bb15c8c88879e78a878a5fb7feb37a5d221545c84049849ace66b32c6b2ff"
     },
     "supabase/tests/unit/beneficiary-claim-history-reader.test.ts": {
-      "lines": 131,
-      "bytes": 12860,
-      "sha256": "cb26f52a471aac29723ef711160b75897c06579d16f7393c30abaa9275ffeec2"
+      "lines": 135,
+      "bytes": 13282,
+      "sha256": "3af63da13c417df536854509eac70573ff6639df850a83e07b3f873e78bb1db3"
     },
     "supabase/docs/d1-beneficiary-claim-history-reader.md": {
       "lines": 25,
@@ -135,12 +135,75 @@
           "sha256": "eb4304142ebf967f06d6f1277c5bf3eb2496803fe32d0309fc11e57c48cd24f1"
         }
       }
+    },
+    "d1-claim-history-positive-oqgkz9vl": {
+      "result": {
+        "exit": 0,
+        "seconds": 1.9520840090117417,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 83,
+        "stdout_bytes": 280,
+        "stderr_bytes": 112
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 953,
+          "sha256": "051bd1cfa3331c5318be61f4f8e80bd7e31965fb36cf93cb97cc32dbd0149c57"
+        },
+        "result.json": {
+          "bytes": 174,
+          "sha256": "b105aa1e7ff356913c7e8b40d7389beb47ad8a39a0b3ee16688fa734b3feaa02"
+        },
+        "stdout.txt": {
+          "bytes": 280,
+          "sha256": "b473b03efc64efb776974199d2be31ee8a1c2db904dce034f212d7e50cc421da"
+        },
+        "stderr.txt": {
+          "bytes": 112,
+          "sha256": "e92721d40239ee453f38d73c09f42514b1f5334627934ece4f8a665874438c41"
+        },
+        "before.json": {
+          "bytes": 10354,
+          "sha256": "3f82511fb85171711d85dc71a9ed3a3cf3fd5e5e48520681380a501951263e4a"
+        },
+        "after.json": {
+          "bytes": 10354,
+          "sha256": "3f82511fb85171711d85dc71a9ed3a3cf3fd5e5e48520681380a501951263e4a"
+        }
+      }
     }
   },
-  "observed": "First GREEN attempt exit1/11passed1failed; positive collection assertion at new test82 failed. No timeout. Other4new groups and7connected projection tests passed.",
-  "diagnosis": "Read-only fixture25\u201344 includes an additional native donation in issued mode; CIE99\u2013109 preserves all donations. New singleton collection assertion is too narrow. Actual runtime array diff not captured; no assertion of unseen values or later unreached branches.",
-  "next_decision": "Authorize ONLY stronger selected-donation/full-basis preservation assertion and ONE filtered positive-case run, same80+5 bounds, then independent readonly adjudication; or leave unaccepted.",
-  "independent_verification": "Not run; functional proof failed. No extra runtime or source correction after failure.",
-  "native_review": "Not assessed or started; unfinished candidate has no native approval/lineage/consent.",
-  "scope": "No real network/allow-net, SQL, provider, signing, funds, deployment, originalRoot or shared-helper changes. Behavior uncommitted; guide ignored. Passed timeout/helper tests not rerun."
+  "observed": "Preserved failedGREEN11pass1fail; human-authorized assertion-only correction and filteredpositive1pass0fail4filtered in1.952084009s. All four positive loop branches executed. No passed-suite replay.",
+  "diagnosis": "Read-only fixture25–44 includes an additional native donation in issued mode; CIE99–109 preserves all donations. New singleton collection assertion is too narrow. Actual runtime array diff not captured; no assertion of unseen values or later unreached branches.",
+  "next_decision": null,
+  "independent_verification": {
+    "task": "mw5wp6n2-k-5jsm",
+    "verdict": "ADMIT",
+    "specs": "S1–S5 scoped met/preservation",
+    "method": "read-only source and parent-runtime-evidence adjudication, NOT child runtime",
+    "report": "odd/evidence/d1-beneficiary-claim-history-adjudication.json",
+    "report_sha256": "4dd046ebb2b302b9a465f62044e59c74c08d231db04af99bdb0d7b8e45d92d8f",
+    "baseline_inputs": 80,
+    "import_closure": 34
+  },
+  "native_review": {
+    "nativeRisk": "medium",
+    "risk": "high",
+    "escalation_item": 2,
+    "baseRef": "a4a12a900ee28d60f914127b825db56f333e2320",
+    "committedOnly": true,
+    "changedPaths": 3,
+    "changedLines": 264,
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "candidate_consumed": false,
+    "outcome": "unknown",
+    "writer_self_verification": true,
+    "independent_verifier": true,
+    "plan_fulfilled": true,
+    "approval": false
+  },
+  "scope": "Complete local additive reader only. No live network/allow-net, SQL, signing, funds, deploy, originalRoot/shared helper edits, financial authority or whole-D1 completion."
 }
