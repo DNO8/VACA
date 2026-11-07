@@ -1,0 +1,199 @@
+{
+  "schema": 1,
+  "state": "verification_blocked",
+  "feature": "d1-beneficiary-claim-projection",
+  "baseline": "a45e2ece83b0d275f8e85db7d47275b2e05e2781",
+  "tracking_commit": "e28d6bccecf12b08aa9711a0119a6c9669fd39aa",
+  "behavior_commit": null,
+  "candidate": {
+    "supabase/functions/d1-custody/beneficiary-claim-projection.ts": {
+      "lines": 90,
+      "bytes": 6525,
+      "sha256": "55f95bbc9e484c82a2c7e26c625473fbc850fd8d543ce58c3db3f71d0bfa84c3"
+    },
+    "supabase/tests/unit/beneficiary-claim-projection.test.ts": {
+      "lines": 143,
+      "bytes": 12654,
+      "sha256": "f205cb6fbd25b703f6e864f9334a482376b9c90b209bdc0831093d07868acf5a"
+    },
+    "supabase/docs/d1-beneficiary-claim-projection.md": {
+      "lines": 24,
+      "bytes": 1627,
+      "sha256": "e7fd52625580b480efdd5941e4f893d84886514a4e9749d4ee24f6f7dc043f5c"
+    }
+  },
+  "captures": {
+    "d1-claim-projection-red-2i2e7ti_": {
+      "result": {
+        "exit": 1,
+        "seconds": 1.421444742998574,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "stdout_bytes": 0,
+        "stderr_bytes": 2094
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 567,
+          "sha256": "d408a74a877e2f43da31969f632a5f89fa6941fd222281ab58eba21b63e740d3"
+        },
+        "result.json": {
+          "bytes": 156,
+          "sha256": "8c6f0b272901080350829cd7bea07bf6068f5b5aff909ec0165de73e2b4396ca"
+        },
+        "stdout.txt": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr.txt": {
+          "bytes": 2094,
+          "sha256": "57e957d0bf4d3668389a2188c8805d8bb6a580cb034eb126e3954ddf4f4e3e79"
+        },
+        "before.json": {
+          "bytes": 9954,
+          "sha256": "d95d633a11decce402201a69c5145c1784cc19115896776354712bb189843ea4"
+        },
+        "after.json": {
+          "bytes": 9954,
+          "sha256": "d95d633a11decce402201a69c5145c1784cc19115896776354712bb189843ea4"
+        }
+      }
+    },
+    "d1-claim-projection-typed-red-ic3ab7tu": {
+      "result": {
+        "exit": 1,
+        "seconds": 1.4793602569843642,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "stdout_bytes": 4083,
+        "stderr_bytes": 127
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 696,
+          "sha256": "994f9976de1ebf85782642d41ff3016b4db5646e619d6a476fc7d72689d79474"
+        },
+        "result.json": {
+          "bytes": 159,
+          "sha256": "bf47e0fd510927fb62cf2ce0a5486cb8721349c1318a46ccd00365a2a917c41e"
+        },
+        "stdout.txt": {
+          "bytes": 4083,
+          "sha256": "be22cbdd3170b45e7622e546f16f00a8b3abb9bf6973224b92d9f453114a4209"
+        },
+        "stderr.txt": {
+          "bytes": 127,
+          "sha256": "830a788be2376eb048d710644d6e3889fb3a19cd2a812b046ab5115b35b58f6a"
+        },
+        "before.json": {
+          "bytes": 9954,
+          "sha256": "840ae239c62904896889bb6c7acd0e31a03d8465dff6652c16556317a3e777f6"
+        },
+        "after.json": {
+          "bytes": 9954,
+          "sha256": "840ae239c62904896889bb6c7acd0e31a03d8465dff6652c16556317a3e777f6"
+        }
+      }
+    },
+    "d1-claim-projection-green-mjhxjhdn": {
+      "result": {
+        "exit": 0,
+        "seconds": 3.997921939007938,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "stdout_bytes": 2135,
+        "stderr_bytes": 312
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 809,
+          "sha256": "116308fcf56d0aa01038374c481306b7c92660356125f9658427e2e3b385e2ef"
+        },
+        "result.json": {
+          "bytes": 158,
+          "sha256": "4d8fd8533273a8ebe7fdfd9de6789eea883dfdfda7ae5c8cc2725c2c1f038e27"
+        },
+        "stdout.txt": {
+          "bytes": 2135,
+          "sha256": "e1bc4263311a6324d7e065af7d52691e01568d73147566961df46e1558485682"
+        },
+        "stderr.txt": {
+          "bytes": 312,
+          "sha256": "b877d044608a5dae70a8ee7b507242a86118aee2c2be9833e3e2c1377e4b0fac"
+        },
+        "before.json": {
+          "bytes": 10076,
+          "sha256": "72eb70c8e0c2406356f7329dfd0d905bb582decd0fbf0f15a7c97164a2b11535"
+        },
+        "after.json": {
+          "bytes": 10076,
+          "sha256": "72eb70c8e0c2406356f7329dfd0d905bb582decd0fbf0f15a7c97164a2b11535"
+        }
+      }
+    },
+    "d1-claim-projection-independent-7vqcgc24": {
+      "result": {
+        "exit": 0,
+        "seconds": 2.7628818940138444,
+        "timed_out": false,
+        "count": 1,
+        "source_unchanged": true,
+        "snapshot_unchanged": true,
+        "files": 83,
+        "stdout_bytes": 794,
+        "stderr_bytes": 171,
+        "executor": "parent"
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 839,
+          "sha256": "af19622a42f3e49e681753e1724af64a7ffe8aab2b264e7debdbd98285049ba8"
+        },
+        "result.json": {
+          "bytes": 227,
+          "sha256": "b0b66d47160215119c226451abf2ef1488ad92717d19ff0ac5538053784eefd3"
+        },
+        "stdout.txt": {
+          "bytes": 794,
+          "sha256": "adde07324711ad8a327e957c089d9d8f2746d884e77f5140ba32288e3e40623d"
+        },
+        "stderr.txt": {
+          "bytes": 171,
+          "sha256": "136e1b2231c4df4e281adef09744878327d32a790f7e89cb676190d5aec3817e"
+        },
+        "after.json": {
+          "bytes": 20992,
+          "sha256": "4ae201eafee4b46695099dcd8d54f69d52f2a790cd9a3dcf292ec94d105a4226"
+        },
+        "manifest.json": {
+          "bytes": 13584,
+          "sha256": "7740130653423a1f59bf5f672f0d3091b1ad6706d140c9c40894b454e0139a85"
+        },
+        "preparation.json": {
+          "bytes": 423,
+          "sha256": "649acfcf1ed4600575f323f453b4acd60aa5438cc9e0e603a5a3eac85afc232d"
+        }
+      }
+    }
+  },
+  "independent_adjudicator": "mw5s6dp1-h-e32q",
+  "independent_runtime_executor": "parent, separately prepared readonly snapshot; not child-executed",
+  "adjudication": "BLOCKED; no reproduced implementation defect",
+  "verdicts": {
+    "S1": "UNPROVEN within T1; not whole-D1 acceptance",
+    "S2": "PASS preservation only, no executed refund",
+    "S3": "PASS unchanged accounting/no fee authorization",
+    "S4": "PASS unknown fail-closed/no release authorization",
+    "S5": "PASS local chronology/no signing capability"
+  },
+  "missing_proof": [
+    "selected wrong-operation-type rejection despite valid claim elsewhere in transaction",
+    "otherwise-valid same-ledger claim with contradictory issuance-ledger hash"
+  ],
+  "next_decision": "Authorize one bounded two-example coverage-correction batch, or keep unit unaccepted. No further verification performed.",
+  "native_review": "No native approval/lineage/consent claimed; unfinished behavior not assessed or delivered.",
+  "delivery": "No behavior commit, push, deployment, signing, funds movement, original-root or shared-helper mutation. Guide ignored; exact force-add needed only at eventual authorized delivery."
+}
