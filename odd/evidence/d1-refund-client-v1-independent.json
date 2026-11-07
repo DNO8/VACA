@@ -1,0 +1,41 @@
+{
+  "taskId": "mw6pvdgp-z-sha1",
+  "agent": "gentle-ai-verify",
+  "repositoryRoot": "/home/danilo/projects/vaca-d1-t5b-proof",
+  "permission": "Fresh direct interactive allow_one_refund_static_verifier_owned_clone; one read-only static task only",
+  "kind": "Independent static verification, NOT native RDD review or financial acceptance",
+  "result": "No concrete candidate-caused contract, security, or concurrency blocker identified in the bounded source inspection",
+  "perSpecification": {
+    "S1": "Consistent within client-only scope; whole-D1 is NOT satisfied",
+    "S2": "Source-consistent exact proof and routes; actual SDK signature/preimage, wallet/storage, timestamp boundaries and wire execution deferred",
+    "S3": "Source-consistent exact immutable DTO, bounds and original donation/deadline correlation; parser/copy/recovery execution deferred",
+    "S4": "Source-consistent eight state tuples and complete gross settlement; contradictory-body and accounting scenarios deferred, no authoritative financial acceptance",
+    "S5": "Source-consistent acknowledged durable reservation, consumed once before signing/network, serialized same-isolate consumers and status-only after record; actual async/storage/lost-response execution deferred; NOT cross-isolate/device CAS",
+    "S6": "Source-consistent HTTPS/no redirects/no-store/bounds/error/status mapping/sanitization; HTTP matrix/cancellation/stream limits/diagnostic leakage execution deferred",
+    "S7": "Met for static evidence labeling; all functional mocks UNEXECUTED, 80 style infos retained, no RED/GREEN/native approval/backend-operation claim"
+  },
+  "reportedEvidence": {
+    "wholeFeatureRead": "Specs, Tasks and Log L1-L13",
+    "capturedSourceHashesMatched": 9,
+    "committedSourceBytesMatched": 9,
+    "scopedGitDiff": "11 added feature paths only",
+    "allowedEvidenceJsonFilesRead": 8,
+    "gitStatusBeforeAfter": "Identical existing modified tracker and eight untracked evidence files",
+    "commandsRerunFromEvidence": false,
+    "applicationSdkTestsAnalyzerFormatterSigningNetworkExecuted": false,
+    "filesOrScratchDirectoriesWritten": false
+  },
+  "blockers": [],
+  "externalDependencies": [
+    "Server-side durable idempotence before Horizon submission",
+    "Accepted lifecycle/financial authority and integration handoff"
+  ],
+  "deferredProofGaps": [
+    "All functional mocks remain unexecuted",
+    "Malformed nested values and numeric boundaries",
+    "Missing cache headers and complete HTTP-state combinations",
+    "Journal readback ambiguity and actual concurrency schedules",
+    "Mounted integration, real ledger inclusion, both full D1 journeys and financial acceptance"
+  ],
+  "limits": "No observed runtime failure or pass follows from static consistency. No whole-D1, financial, native review, delivery, import, activation or publication approval is implied. Parent-captured analyzer exit0 with 80 style infos is not clean analysis."
+}

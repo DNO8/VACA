@@ -1,0 +1,33 @@
+{
+  "head": "99343d097f9748cd5e31443f8ff5da8546505cd5",
+  "baseline": "f30257826528e316476f4484a1bbdce58d26f8cd",
+  "unchangedBaselineTrackedPaths": 637,
+  "existingPathsChanged": [],
+  "changedPaths": [
+    "odd/tasks/d1-refund-client-v1.md",
+    "vaca_app/docs/d1-refund-client.md",
+    "vaca_app/lib/features/refund/data/refund_client.dart",
+    "vaca_app/lib/features/refund/data/refund_http_client.dart",
+    "vaca_app/lib/features/refund/data/refund_submission_journal.dart",
+    "vaca_app/lib/features/refund/data/refund_wallet_signer.dart",
+    "vaca_app/lib/features/refund/domain/refund_scope.dart",
+    "vaca_app/lib/features/refund/domain/refund_status.dart",
+    "vaca_app/test/refund_client_test.dart",
+    "vaca_app/test/refund_status_test.dart",
+    "vaca_app/test/refund_test_fixtures.dart"
+  ],
+  "pendingEvidence": [
+    "odd/evidence/d1-refund-client-v1-commits.json",
+    "odd/evidence/d1-refund-client-v1-static.json",
+    "odd/evidence/d1-refund-client-v1-t1.json",
+    "odd/evidence/d1-refund-client-v1-t2.json",
+    "odd/evidence/d1-refund-client-v1-t3.json",
+    "odd/evidence/d1-refund-client-v1-t4.json"
+  ],
+  "staticSourceHashesAndCommittedBytesMatched": 9,
+  "staticAnalyzerExit": 0,
+  "styleInfoNotices": 80,
+  "functionalTestsExecuted": 0,
+  "indexEmpty": true,
+  "scopeAndByteChecks": "PASS; structural only, not functional verification"
+}

@@ -1,0 +1,44 @@
+{
+  "basis": "Faithful summaries of three observed gentle_review ASSESS outputs; NOT a native review receipt or approval",
+  "sharedObservedFields": {
+    "risk": "high",
+    "nativeRisk": "unassessable",
+    "reason": "native assess non-zero: untracked files require an explicit declaration",
+    "changedPaths": 0,
+    "changedLines": 0,
+    "candidate": null,
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "writerProfile": "large",
+    "writerProfileSource": "runtime",
+    "reviewDuePresent": false,
+    "plan": {
+      "writerSelfVerification": true,
+      "structuralReadbackOnly": false,
+      "independentVerifier": true
+    }
+  },
+  "workUnits": [
+    {
+      "commit": "682d57f4a96d66bf6de77cb56d8aedfb7f13fe45",
+      "baseRef": "f30257826528e316476f4484a1bbdce58d26f8cd",
+      "committedOnly": true,
+      "escalateItem": 2
+    },
+    {
+      "commit": "347e7561f4de380bcd969bacac4340216a3d2d50",
+      "baseRef": "1300dbf03d4b898c54c07705a802f3353f59b508",
+      "committedOnly": true,
+      "escalateItem": 2
+    },
+    {
+      "commit": "99343d097f9748cd5e31443f8ff5da8546505cd5",
+      "baseRef": "347e7561f4de380bcd969bacac4340216a3d2d50",
+      "committedOnly": true,
+      "escalateItem": 4
+    }
+  ],
+  "independentVerifier": "not run; awaiting direct target-scoped consent",
+  "functionalTests": "deferred; not executed"
+}
