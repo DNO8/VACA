@@ -1,0 +1,67 @@
+{
+  "sourceBase": "1cca808707b9b4ed8a7a2d7a49689b4c809d3b56",
+  "trackingCommit": "89c66a8a877591026b344d348dde61d027ce6025",
+  "behaviorCommit": "3120049702b5136e27ad91c99a89e9e2f4a07067",
+  "behaviorPaths": 3,
+  "behaviorChangedLines": 201,
+  "payload": {
+    "vaca_app/lib/features/wallet/domain/stellar_wallet_service.dart": "1c6800bd2cd43cbfdfc3a35bfef23ec765ec3104b2d0b3bfeef1e74a2e654f7b",
+    "vaca_app/test/stellar_wallet_service_test.dart": "21beb7092df8d2071c0bc40b037389cb0a58bcbc19c0ecf522f1c31dc857ac8b",
+    "vaca_app/docs/d1-wallet-preparation.md": "8a15c25221faa81bb618e9c5565a20a393445e32875728a31e26dd228cadb1dc"
+  },
+  "assessment": {
+    "risk": "high",
+    "nativeRisk": "medium",
+    "escalate": {
+      "item": 4,
+      "label": "concurrency"
+    },
+    "changedPaths": 3,
+    "changedLines": 201,
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "rddLine": "on",
+    "candidateConsumed": false,
+    "outcome": "unknown",
+    "independentVerifier": true
+  },
+  "independentTask": "mw67hx8j-w-izbe",
+  "verdict": "ADMIT/S1-S3 scoped same-instance preparation only",
+  "verification": {
+    "reviewInputHashes": 614,
+    "protectedAfterTaskUpdate": 613,
+    "captureFileHashes": 24,
+    "captureManifestInputs": 421,
+    "committedSourcePayloadHashes": 3,
+    "sharedHelperAndClaimsUnchanged": true,
+    "green": {
+      "exit": 0,
+      "tests": 26,
+      "elapsedSeconds": 7.170126533950679
+    },
+    "finalAnalysis": {
+      "exit": 0,
+      "elapsedSeconds": 25.78771171096014
+    }
+  },
+  "failuresRetained": [
+    "RED42 genuine6duplicate-effectfailures,8pass",
+    "analysis43 one missingtrailingcomma,exit1;correctedanalysis44exit0, nofunctionalreplay"
+  ],
+  "limits": [
+    "Independentread-only adjudication of parent execution, NOT childruntime orimmutablefilesystem.",
+    "PostGREEN testcomma/layout correction hash-reconstructed exactly; productionunchanged.",
+    "No nativeSTART/approval, livefunds/provider/SQL/build/deploy/crossroot operations.",
+    "No crossinstance/process/account/claim serialization guarantee, no D3 edits/import.",
+    "Financialtask31 and wholeD1 stillincomplete."
+  ],
+  "closurePaths": [
+    "odd/tasks/d1-wallet-preparation.md",
+    "odd/evidence/d1-wallet-preparation-adjudication.md",
+    "odd/evidence/d1-wallet-preparation-closure.json"
+  ],
+  "metadataHashesExcludingThisFile": {
+    "odd/tasks/d1-wallet-preparation.md": "276755a79d60f7d36d432742f9eed53a566b0c11fbc293ce43c5b45898d82f91",
+    "odd/evidence/d1-wallet-preparation-adjudication.md": "61afa152a834c3d4118ea614c29fb150453d15f8b0ebcfc7031fe5c3f61fab0b"
+  }
+}
