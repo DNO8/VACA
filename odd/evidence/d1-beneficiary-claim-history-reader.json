@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "feature": "d1-beneficiary-claim-history-reader",
+  "state": "functional_proof_failed",
+  "baseline": "a08d921b3348bf4c4636574b4131de4825bba4d5",
+  "behavior_commit": null,
+  "candidate": {
+    "supabase/functions/d1-custody/beneficiary-claim-history-reader.ts": {
+      "lines": 104,
+      "bytes": 8196,
+      "sha256": "7a6bb15c8c88879e78a878a5fb7feb37a5d221545c84049849ace66b32c6b2ff"
+    },
+    "supabase/tests/unit/beneficiary-claim-history-reader.test.ts": {
+      "lines": 131,
+      "bytes": 12860,
+      "sha256": "cb26f52a471aac29723ef711160b75897c06579d16f7393c30abaa9275ffeec2"
+    },
+    "supabase/docs/d1-beneficiary-claim-history-reader.md": {
+      "lines": 25,
+      "bytes": 1645,
+      "sha256": "fa369120bd0d2d0aed50e1646db24664e459441ec09787451ea0dea1c986b8be"
+    }
+  },
+  "captures": {
+    "d1-claim-history-red-6eno3o24": {
+      "result": {
+        "exit": 1,
+        "seconds": 1.6393536690156907,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 82,
+        "stdout_bytes": 0,
+        "stderr_bytes": 426
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 595,
+          "sha256": "565126f541bddfb90580f309acc17f75a0a9dec3ccfe7b44f14f689b42fca6fd"
+        },
+        "result.json": {
+          "bytes": 171,
+          "sha256": "52d23494b2010f65e0aea5a92f5406691d58a356e9b9ec6ea78d14b270ffbf75"
+        },
+        "stdout.txt": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr.txt": {
+          "bytes": 426,
+          "sha256": "5c370830ae083ab1bd166efb0cde7427636bd2e205c059e5ccdc8c827f154340"
+        },
+        "before.json": {
+          "bytes": 10227,
+          "sha256": "5301272122525936070ed8bcc2136123bed5e8ce7fced380088d43692ec60390"
+        },
+        "after.json": {
+          "bytes": 10227,
+          "sha256": "5301272122525936070ed8bcc2136123bed5e8ce7fced380088d43692ec60390"
+        }
+      }
+    },
+    "d1-claim-history-typed-red-wzix9e09": {
+      "result": {
+        "exit": 1,
+        "seconds": 1.95190561900381,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 82,
+        "stdout_bytes": 5050,
+        "stderr_bytes": 131
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 709,
+          "sha256": "d0aa6134ea3497300ba6c5df1dc82ae1245c1a398bf0b2b47953d8e30d27542e"
+        },
+        "result.json": {
+          "bytes": 172,
+          "sha256": "d617a3dc1f1c0ddd054da31309d657f576ddf37516e051436cf1e1e82a79ec25"
+        },
+        "stdout.txt": {
+          "bytes": 5050,
+          "sha256": "0571df8586deade4e78fce0b73c0139b78822f9ec233ce82a948e2d226c02924"
+        },
+        "stderr.txt": {
+          "bytes": 131,
+          "sha256": "4bfb85be13ef36e4672a904ade19e082397b69c542db5e8fefb29a51f7ea44e1"
+        },
+        "before.json": {
+          "bytes": 10227,
+          "sha256": "a740b87bec416e81e1fc5cbd8b6c1622a2c614d948e98882e0737d975183cdb0"
+        },
+        "after.json": {
+          "bytes": 10227,
+          "sha256": "a740b87bec416e81e1fc5cbd8b6c1622a2c614d948e98882e0737d975183cdb0"
+        }
+      }
+    },
+    "d1-claim-history-green-fl5t38qv": {
+      "result": {
+        "exit": 1,
+        "seconds": 23.672004034975544,
+        "timed_out": false,
+        "count": 1,
+        "inputs_unchanged": true,
+        "files": 83,
+        "stdout_bytes": 2467,
+        "stderr_bytes": 239
+      },
+      "artifacts": {
+        "invocation.json": {
+          "bytes": 808,
+          "sha256": "8ebc62b0928372f4c8a2d6bd98e3110d48f893e2b8ad3f133b295a484e949cbc"
+        },
+        "result.json": {
+          "bytes": 174,
+          "sha256": "f63305d1ad1c2eaa4b4e20a0e9fb15d48d4c9e33a36a1693a54136b4cf728d81"
+        },
+        "stdout.txt": {
+          "bytes": 2467,
+          "sha256": "1207ca4cbc7ffcea062d35301514c58fd7c1e6224fc61a6c3b2e0da7979d4029"
+        },
+        "stderr.txt": {
+          "bytes": 239,
+          "sha256": "d2e2b64d9cdee8681d56a3e462fda9e05914e83f86b115dece14af63f498690c"
+        },
+        "before.json": {
+          "bytes": 10353,
+          "sha256": "eb4304142ebf967f06d6f1277c5bf3eb2496803fe32d0309fc11e57c48cd24f1"
+        },
+        "after.json": {
+          "bytes": 10353,
+          "sha256": "eb4304142ebf967f06d6f1277c5bf3eb2496803fe32d0309fc11e57c48cd24f1"
+        }
+      }
+    }
+  },
+  "observed": "First GREEN attempt exit1/11passed1failed; positive collection assertion at new test82 failed. No timeout. Other4new groups and7connected projection tests passed.",
+  "diagnosis": "Read-only fixture25\u201344 includes an additional native donation in issued mode; CIE99\u2013109 preserves all donations. New singleton collection assertion is too narrow. Actual runtime array diff not captured; no assertion of unseen values or later unreached branches.",
+  "next_decision": "Authorize ONLY stronger selected-donation/full-basis preservation assertion and ONE filtered positive-case run, same80+5 bounds, then independent readonly adjudication; or leave unaccepted.",
+  "independent_verification": "Not run; functional proof failed. No extra runtime or source correction after failure.",
+  "native_review": "Not assessed or started; unfinished candidate has no native approval/lineage/consent.",
+  "scope": "No real network/allow-net, SQL, provider, signing, funds, deployment, originalRoot or shared-helper changes. Behavior uncommitted; guide ignored. Passed timeout/helper tests not rerun."
+}
