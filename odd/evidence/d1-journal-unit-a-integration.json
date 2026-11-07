@@ -79,5 +79,28 @@
       "bytes": 410,
       "sha256": "095a75fae28a771a4e19aa27329ce02615114b43c819a81724f68b030c2ecf72"
     }
-  }
+  },
+  "metadata_commit": "dea71a1bc4f404165339061c55e7ea3997aeafaa",
+  "behavior_commit": "30bab1f61742c4526fd86f17db05a9ca32f6dfb7",
+  "assessment": {
+    "nativeRisk": "medium",
+    "risk": "high",
+    "escalation_item": 2,
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "native_approval": false,
+    "independent_verifier_required": true
+  },
+  "independent_admission": {
+    "task": "mw5r3ufv-f-ateu",
+    "verdict": "ADMIT",
+    "scope": "Existing proof applicable to exact integration, S1-S4 within T1 only",
+    "runtime_graph_matched": 79,
+    "base_dependencies_matched": 76,
+    "proof_captures_matched": 7,
+    "functional_commands_executed": 0,
+    "missing_relative_imports": 0
+  },
+  "local_unit_complete": true,
+  "tracker_sha256": "ce8e0d8d984ceb87f0bcd4c9b3479ac037403bacab14ca1c255e5d97b5457e69"
 }
