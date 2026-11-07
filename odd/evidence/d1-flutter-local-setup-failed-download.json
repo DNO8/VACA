@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "state": "blocked_download_timeout",
+  "source_head": "555610eaaafaf5b0cd4c11406105e57278dfbcdb",
+  "human_authorization": "Authorize project-local Flutter setup",
+  "target": "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter",
+  "compile_failure": {
+    "job": "job-16",
+    "exit": 1,
+    "network_calls": 0,
+    "note": "SyntaxError before I/O; preserved harness log, corrected helper py_compile exit0"
+  },
+  "download": {
+    "job": "job-17",
+    "outer_exit": 124,
+    "execution_seconds": 80,
+    "kill_grace_seconds": 5,
+    "capture": "supabase/.temp/flutter-setup-download-dxb758sb",
+    "pin": {
+      "manifest_url": "https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json",
+      "manifest_sha256": "c32e4070a5a1ee5025e8dfc205326ccf50af3833db71462f1a47cbb54fd75cda",
+      "base_url": "https://storage.googleapis.com/flutter_infra_release/releases",
+      "release": {
+        "hash": "44a626f4f0027bc38a46dc68aed5964b05a83c18",
+        "channel": "stable",
+        "version": "3.41.0",
+        "dart_sdk_version": "3.11.0",
+        "dart_sdk_arch": "x64",
+        "release_date": "2026-02-11T19:14:07.483404Z",
+        "archive": "stable/linux/flutter_linux_3.41.0-stable.tar.xz",
+        "sha256": "368ae5b6993c51861324e704c42d61c4e290fba7213a88fd0e9fec15ded54599"
+      }
+    },
+    "partial_archive_bytes": 1281126400,
+    "archive_child_exit": "unknown; outer terminated before result record",
+    "integrity_verified": false,
+    "installed": false,
+    "artifacts": {
+      "archive.invocation.json": {
+        "bytes": 663,
+        "sha256": "7a31fbe4a70346b676d88b48c944ec16061ccd2fe612219a6d4fbea8f8df8bf5"
+      },
+      "archive.stdout.txt": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pin.json": {
+        "bytes": 660,
+        "sha256": "29e0098e212597e8ed46ca32ecf892d6a1df35586a72fecb065424848e710070"
+      },
+      "manifest.stderr.txt": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "manifest.invocation.json": {
+        "bytes": 610,
+        "sha256": "f143eb5b3192fa9acf6e9c6d7fdcd8815b3c8110b6e1a62f325e06da7c4ac2b5"
+      },
+      "steps.json": {
+        "bytes": 131,
+        "sha256": "a214e2ba909c8589f9e9cebe5bd70037d197f3e611cdb3d033d7f834cce1c778"
+      },
+      "archive.stderr.txt": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "releases_linux.json": {
+        "bytes": 272052,
+        "sha256": "c32e4070a5a1ee5025e8dfc205326ccf50af3833db71462f1a47cbb54fd75cda"
+      },
+      "manifest.stdout.txt": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "mobile_baseline": {
+    "files": 103,
+    "all_unchanged": true,
+    "lock_sha256": "4ee532669075efc4377f282591b0c0ba6aefef163b1b0945dd917741c6690020"
+  },
+  "sdk_execution": false,
+  "dependency_resolution": false,
+  "mobile_tests": "not run",
+  "independent_verifier": "not run; setup proof failed",
+  "next_decision": "ONE explicitly authorized resumed download into separate copy under unchanged80+5 and fullSHA-before-extract; or existing authorized SDK path; or retainblocked",
+  "limitations": "No new global PATH/profile/system package/funds/deploy/peer-root operation. Incomplete download is untrusted, never extract. .gitignore SDK exclusion remains uncommitted; backend reader/status units remain closed. WholeD1 incomplete."
+}
