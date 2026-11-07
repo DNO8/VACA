@@ -127,7 +127,7 @@ Deno.test("runtime default preserves config prepare and unmatched public respons
   const signature = wallet.sign(hash(Buffer.from("Stellar Signed Message:\n" + canonical))).toString("base64");
   const prepare = new Request("https://local.invalid/functions/v1/d1-custody/prepare", { method: "POST", body: JSON.stringify({ ...message, signature }) });
   for (const request of [new Request("https://local.invalid/functions/v1/d1-custody/config"), prepare,
-    new Request("https://local.invalid/missing"), h.request(), h.request("reconcile")]) {
+    new Request("https://local.invalid/missing"), h.request(), h.request("reconcile"), h.request("status")]) {
     const old = await createCustodyHandler(base)(request.clone()), current = await createCustodyRuntime(base)(request.clone());
     equal([current.status, [...current.headers], await current.text()], [old.status, [...old.headers], await old.text()]);
   }
@@ -184,6 +184,50 @@ Deno.test("runtime retains unknown attempts without post retry readback or owner
     h.clear(); const stored = h.stored(), counters = h.counters(); await pending(h);
     equal(h.stored(), stored); equal(h.counters(), counters); equal(h.trace.filter(n => n === claim || n === "POST"), []);
   }
+});
+Deno.test("runtime status mounts historical lookup without financial preparation or execution", async () => {
+  const h = setup(); h.hooks.financial = true; h.hooks.transport = true;
+  const before = h.stored(), counters = h.counters();
+  const runtime = h.runtime({ ...h.lifecycle, availabilityFetcher: h.availabilityFetcher });
+  equal([h.trace, h.calls, h.counters()], [[], [], counters]);
+  await response(await runtime(h.request("status")), 200,
+    { state: "outcome_not_recorded", verification: "unverified", requestId });
+  equal(h.stored(), before); equal(h.counters(), counters);
+  equal(h.calls.map(c => c.name), [outcomeLoad]); equal(h.f.h.calls, []);
+});
+Deno.test("runtime status returns the saved SDK outcome without signing sending or reconciling", async () => {
+  const h = setup(); await pending(h); const id = await h.observe(); h.clear();
+  const before = h.stored(), counters = h.counters(), input = h.signed.reservation.intent.preparation_input;
+  await response(await h.runtime()(h.request("status")), 200, {
+    state: "issuance_observed", verification: "persisted_sdk_observation", requestId,
+    transactionHash: h.signed.transaction_hash, donor: input.payment.donor, beneficiary: input.request.beneficiary,
+    asset: input.request.asset, amount: input.request.amount, paymentTransactionHash: input.payment.transaction_hash,
+    deadline: input.request.deadline, claimableBalanceId: id,
+  });
+  equal(h.stored(), before); equal(h.counters(), counters);
+  equal(h.calls.filter(c => !c.name.startsWith("d1_load_")), []);
+});
+Deno.test("runtime status preserves action-specific proofs and durable admin denial", async () => {
+  for (const [change, bad, code, status] of [
+    [{}, true, "invalid_signature", 401], [{ timestamp: 0 }, false, "stale_request", 401],
+    [{ namespace: requestId }, false, "invalid_request", 400], [{ payload: { amount: "1.0000000" } }, false, "invalid_request", 400],
+  ] as const) {
+    const h = setup(); await rejected(h, "status", status, code, change, bad);
+    equal([h.calls, h.f.h.calls, h.counters()], [[], [], [0, 0, 0, 0, 0, 0, 2]]);
+  }
+  const h = setup(); h.hooks.deny = true;
+  await rejected(h, "status", 403, "unauthorized_admin_wallet");
+  equal(h.calls.map(c => c.name), [outcomeLoad]); equal(h.f.h.calls, []);
+});
+Deno.test("runtime preserves explicit base status dependencies instead of replacing them with lifecycle defaults", async () => {
+  const h = setup(), before = h.stored(), counters = h.counters(); let overrideCalls = 0;
+  const status = { client: { rpc() {
+    overrideCalls++; return Promise.resolve({ data: null, error: { code: "42501", message: "unauthorized_admin_wallet" } });
+  } }, configuration: { namespace, pool, now: () => h.f.h.now } };
+  await response(await createCustodyRuntime({ ...h.base, status }, h.lifecycle)(h.request("status")),
+    403, { error: "unauthorized_admin_wallet" });
+  equal(overrideCalls, 1); equal([h.calls, h.f.h.calls], [[], []]);
+  equal(h.stored(), before); equal(h.counters(), counters);
 });
 Deno.test("runtime passes only explicit availability transport and absence never triggers submission or disposition", async () => {
   const h = setup(); await pending(h); await h.observe(); h.clear();

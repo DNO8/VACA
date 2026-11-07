@@ -19,6 +19,10 @@ export function createCustodyRuntime(
   const { client, configuration, fetcher, reconciliationSource, availabilityFetcher } = lifecycle;
   return createCustodyHandler({
     ...base,
+    status: base.status ?? {
+      client,
+      configuration: { namespace: configuration.namespace, pool: configuration.pool, now: configuration.now },
+    },
     issuance: { client, configuration, fetcher, availabilityFetcher },
     reconciliation: {
       client,
