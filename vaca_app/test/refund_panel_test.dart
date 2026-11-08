@@ -52,6 +52,49 @@ void _noRefund() =>
 
 void main() {
   testWidgets(
+      'original provenance and a reported attempt never imply settlement',
+      (tester) async {
+    final storage = RefundMemoryStorage();
+    final before = Map<String, String>.from(storage.values);
+    final actions = <String>[];
+    var state = 'pending';
+    final client =
+        _client(storage, actions, (_) async => refundTestResponse(state));
+    await tester.pumpWidget(_view(client, refundTestScope));
+    expect(find.byKey(const ValueKey('refund-original-donor')), findsNothing);
+    expect(
+        find.byKey(const ValueKey('refund-attempt-reference')), findsNothing);
+    await _tap(tester, 'refund-status');
+    expect(find.text('Donante original: ${refundTestWallet.accountId}'),
+        findsOneWidget);
+    expect(find.text('Operación de pago original: 1'), findsOneWidget);
+    expect(
+        find.text('Transacción de pago original: ${'a' * 64}'), findsOneWidget);
+    expect(find.text('Referencia del intento: ${'b' * 64}'), findsOneWidget);
+    expect(
+        find.text('Importe reportado del intento: 9.0000000'), findsOneWidget);
+    expect(
+        find.text(
+            'La referencia y el importe del intento no prueban liquidación.'),
+        findsOneWidget);
+    expect(find.text('Importe original: 10.0000000'), findsOneWidget);
+    expect(find.text('Estado: Pendiente'), findsOneWidget);
+    expect(find.text('Devuelto al donante: Desconocido'), findsOneWidget);
+    expect(find.text('Estado: Donación liquidada'), findsNothing);
+    _noRefund();
+    state = 'not_started';
+    await _tap(tester, 'refund-status');
+    expect(
+        find.byKey(const ValueKey('refund-attempt-reference')), findsNothing);
+    expect(find.text('Importe reportado del intento: 9.0000000'), findsNothing);
+    expect(find.text('Donante original: ${refundTestWallet.accountId}'),
+        findsOneWidget);
+    expect(find.text('Importe original: 10.0000000'), findsOneWidget);
+    expect(actions, ['refund_status', 'refund_status']);
+    expect(storage.values, before);
+    expect(storage.events, isEmpty);
+  });
+  testWidgets(
       'cold panel and a private failure expose status-only unknown hold',
       (tester) async {
     final storage = RefundMemoryStorage();

@@ -6,7 +6,7 @@ import '../data/refund_client.dart';
 import '../domain/refund_scope.dart';
 import '../refund_providers.dart';
 
-/// Unmounted administrative view. Only explicit gestures invoke the consumer.
+/// Administrative view. Only explicit gestures invoke the consumer.
 class RefundPanel extends ConsumerStatefulWidget {
   const RefundPanel({super.key, required this.scope});
   final RefundScope scope;
@@ -88,6 +88,7 @@ class _RefundPanelState extends ConsumerState<RefundPanel> {
     final status = _result?.status;
     final body = status?.toJson();
     final settlement = body?['settlement'] as Map<String, Object?>?;
+    final refund = body?['refund'] as Map<String, Object?>?;
     final asset = status?.donation['asset'] as Map<String, Object?>?;
     final actions = _result?.safeActions ?? const <RefundAction>[];
     final state = _failed ? 'unknown' : _result?.state;
@@ -111,11 +112,25 @@ class _RefundPanelState extends ConsumerState<RefundPanel> {
             const Text(
                 'No se pudo verificar el estado. Conservá la correlación original.'),
           if (status != null) ...[
+            SelectableText('Donante original: ${status.donation['donor']}',
+                key: const ValueKey('refund-original-donor')),
+            SelectableText(
+                'Operación de pago original: ${status.donation['paymentOperationId']}'),
+            SelectableText(
+                'Transacción de pago original: ${status.donation['paymentTransactionHash']}'),
             Text('Importe original: ${status.donation['grossAmount']}'),
             Text(
                 'Activo: ${asset?['type'] == 'native' ? 'XLM (nativo)' : '${asset?['code']} · ${asset?['issuer']}'}'),
             Text('Vencimiento original: ${status.deadline}'),
             Text('Verificación: ${body!['verification']}'),
+            if (refund != null) ...[
+              SelectableText(
+                  'Referencia del intento: ${refund['transactionHash']}',
+                  key: const ValueKey('refund-attempt-reference')),
+              Text('Importe reportado del intento: ${refund['amount']}'),
+              const Text(
+                  'La referencia y el importe del intento no prueban liquidación.'),
+            ],
             Text(
                 'Cobrado por beneficiario: ${settlement?['beneficiaryClaimedAmount'] ?? 'Desconocido'}'),
             Text(
