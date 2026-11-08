@@ -1,0 +1,54 @@
+{
+  "base": "ca20ed6256ddbc11786eecffd3df0733a7aa661f",
+  "scope": "Standalone panel T1/S1-S4, source/static only; no visual or functional test execution",
+  "permission": "allow_refund_panel_and_one_static_review",
+  "functionalTestsExecuted": 0,
+  "redGreenObserved": false,
+  "nativeApproval": false,
+  "runs": [
+    {
+      "name": "formatter",
+      "argv": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+        "format",
+        "lib/features/refund/presentation/refund_panel.dart",
+        "test/refund_panel_test.dart"
+      ],
+      "cwd": "/home/danilo/projects/vaca-d1-t5b-proof/vaca_app",
+      "exit": 0,
+      "seconds": 0.12394081702223048,
+      "stdout": "Formatted lib/features/refund/presentation/refund_panel.dart\nFormatted test/refund_panel_test.dart\nFormatted 2 files (2 changed) in 0.04 seconds.\n",
+      "stderr": ""
+    },
+    {
+      "name": "analyzer",
+      "argv": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+        "analyze",
+        "--format=machine",
+        "lib/features/refund/presentation/refund_panel.dart",
+        "test/refund_panel_test.dart"
+      ],
+      "cwd": "/home/danilo/projects/vaca-d1-t5b-proof/vaca_app",
+      "exit": 0,
+      "seconds": 22.13277033600025,
+      "stdout": "INFO|LINT|CURLY_BRACES_IN_FLOW_CONTROL_STRUCTURES|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|37|65|7|Statements in an if should be enclosed in a block.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|54|48|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|58|59|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|99|61|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|109|54|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|109|55|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|112|84|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|116|117|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|120|104|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|122|94|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|124|99|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|129|87|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|134|54|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|139|63|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|144|59|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|145|12|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/presentation/refund_panel.dart|146|10|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|18|48|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|41|65|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|41|66|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|41|67|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|41|68|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|61|75|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|66|23|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|107|79|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|126|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|129|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|129|8|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|154|58|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|165|31|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|176|64|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|178|19|1|Missing a required trailing comma.\nINFO|LINT|CURLY_BRACES_IN_FLOW_CONTROL_STRUCTURES|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_panel_test.dart|183|9|37|Statements in an if should be enclosed in a block.\n",
+      "stderr": ""
+    }
+  ],
+  "diagnostics": {
+    "ERROR": 0,
+    "WARNING": 0,
+    "INFO": 33
+  },
+  "files": {
+    "vaca_app/lib/features/refund/presentation/refund_panel.dart": {
+      "sha256": "b244fd60e6d71b76eae719b1c2f04ccda12590865c494357046aabbcb0d8a726",
+      "lines": 161
+    },
+    "vaca_app/test/refund_panel_test.dart": {
+      "sha256": "b8d0d095077ac73531d3c492845ac3f917001d42bbf84505a513d6684426a554",
+      "lines": 195
+    }
+  }
+}

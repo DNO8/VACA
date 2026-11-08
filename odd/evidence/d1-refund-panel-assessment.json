@@ -1,0 +1,34 @@
+{
+  "scope": "Source candidate c013d17c0c1bb01153db4e45c625565a8ec92ea5 over ca20ed6256ddbc11786eecffd3df0733a7aa661f; ONE assessment, no retry",
+  "input": {"baseRef":"ca20ed6256ddbc11786eecffd3df0733a7aa661f","committedOnly":true,"escalate":{"item":4,"reason":"Asynchronous panel scope changes must not dispatch old financial confirmations or display stale outcomes; independent static review is directly authorized."}},
+  "result": {
+    "operation": "assess",
+    "schema": "gentle-pi.review-assessment-plan/v1",
+    "risk": "high",
+    "nativeRisk": "unassessable",
+    "agentEscalation": {"item":4,"label":"concurrency","reason":"Asynchronous panel scope changes must not dispatch old financial confirmations or display stale outcomes; independent static review is directly authorized.","applied":true},
+    "reasons": [{"code":"non-zero","detail":"native review assess failed: Error: untracked files require an explicit declaration; run `gentle-ai review status --cwd <repo> --contract gentle-ai.review-integration[REDACTED PATH]"}],
+    "changedPaths": 0,
+    "changedLines": 0,
+    "candidate": null,
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "writerProfile": "large",
+    "writerProfileSource": "runtime",
+    "plan": {"writerSelfVerification":true,"structuralReadbackOnly":false,"independentVerifier":true,"reason":"receipt-driven development is on and the native review outcome for this candidate is unknown; the native review is an additional outside view that never replaces verification, so the risk-gated path applies exactly as receipt-driven development off, and an agent escalation names a Task Size high-risk item: the writer self-verifies and a separate independent verifier runs."},
+    "workspace_root": "/home/danilo/projects/vaca-d1-t5b-proof"
+  },
+  "interpretation": "Unavailable assessment, NOT approval. Provider gave no reviewDue/continuation; do not invent one or retry. Actual source slice is 382 added lines/4 paths, not zero; provider counts are unavailable. The already directly authorized ONE independent read-only static review follows named items2,4. No native START, authority, consent, acknowledgement or delivery inferred.",
+  "packagingFailure": {
+    "exit": 1,
+    "sourceCommitCreated": "c013d17c0c1bb01153db4e45c625565a8ec92ea5",
+    "stdout": "odd/tasks/d1-refund-panel.md                       |  19 ++\n vaca_app/docs/d1-refund-client.md                  |   7 +\n .../features/refund/presentation/refund_panel.dart | 161 +++++++++++++++++\n vaca_app/test/refund_panel_test.dart               | 195 +++++++++++++++++++++\n 4 files changed, 382 insertions(+)\n[feat/d1-t5b-proof c013d17] feat(refund): add a standalone explicit-action panel\n 4 files changed, 382 insertions(+)\n create mode 100644 odd/tasks/d1-refund-panel.md\n create mode 100644 vaca_app/lib/features/refund/presentation/refund_panel.dart\n create mode 100644 vaca_app/test/refund_panel_test.dart\nSource candidate: c013d17c0c1bb01153db4e45c625565a8ec92ea5\nAuthored source-unit diff lines: 382\n",
+    "stderr": "Traceback (most recent call last):\n  File \"<stdin>\", line 7, in <module>\nAssertionError\n",
+    "diagnosisExit": 0,
+    "diagnosisStdout": "--- exact pending scope ---\n?? odd/evidence/d1-refund-panel-static.json\n--- tracked unstaged ---\n--- staged ---\n--- current commit ---\nc013d17c0c1bb01153db4e45c625565a8ec92ea5\n",
+    "meaning": "Source commit succeeded; trailing clean-worktree assertion failed because the deliberately separate passive static capture was untracked. No tracked/staged drift. Record/commit the intended passive evidence; do not rerun source commit, formatter, analyzer or native assessment."
+  },
+  "functionalTestsExecuted": 0,
+  "nativeApproval": false
+}
