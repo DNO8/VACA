@@ -1,0 +1,66 @@
+{
+  "base": "a47a834b9642f3f453d85a7f1867e911650960a1",
+  "scope": "T6/global42 ambiguous JSON rejection; source/static candidate only",
+  "functionalTestsExecuted": 0,
+  "redGreenObserved": false,
+  "independentVerification": "not run; prior task-scoped consents consumed; no fresh direct independent-clone routing consent",
+  "nativeApproval": false,
+  "runs": [
+    {
+      "name": "formatter",
+      "argv": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+        "format",
+        "lib/features/refund/domain/refund_scope.dart",
+        "lib/features/refund/data/refund_http_client.dart",
+        "lib/features/refund/data/refund_submission_journal.dart",
+        "test/refund_client_test.dart"
+      ],
+      "cwd": "/home/danilo/projects/vaca-d1-t5b-proof/vaca_app",
+      "exit": 0,
+      "seconds": 0.10887507500592619,
+      "stdout": "Formatted lib/features/refund/domain/refund_scope.dart\nFormatted test/refund_client_test.dart\nFormatted 4 files (2 changed) in 0.05 seconds.\n",
+      "stderr": ""
+    },
+    {
+      "name": "analyzer",
+      "argv": [
+        "/home/danilo/projects/vaca-d1-t5b-proof/.tooling/flutter/bin/cache/dart-sdk/bin/dart",
+        "analyze",
+        "--format=machine",
+        "lib/features/refund/domain/refund_scope.dart",
+        "lib/features/refund/data/refund_http_client.dart",
+        "lib/features/refund/data/refund_submission_journal.dart",
+        "test/refund_client_test.dart"
+      ],
+      "cwd": "/home/danilo/projects/vaca-d1-t5b-proof/vaca_app",
+      "exit": 0,
+      "seconds": 10.05590779701015,
+      "stdout": "INFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/data/refund_http_client.dart|26|10|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/data/refund_http_client.dart|63|60|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/data/refund_submission_journal.dart|27|74|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/data/refund_submission_journal.dart|29|59|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/data/refund_submission_journal.dart|40|47|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/data/refund_submission_journal.dart|46|78|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/lib/features/refund/domain/refund_scope.dart|115|68|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|13|63|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|19|52|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|45|14|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|49|58|1|Missing a required trailing comma.\nINFO|LINT|CURLY_BRACES_IN_FLOW_CONTROL_STRUCTURES|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|52|9|151|Statements in an if should be enclosed in a block.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|55|13|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|55|14|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|57|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|62|5|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|89|75|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|91|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|106|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|106|8|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|110|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|110|8|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|117|77|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|120|9|1|Missing a required trailing comma.\nINFO|LINT|CURLY_BRACES_IN_FLOW_CONTROL_STRUCTURES|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|141|9|41|Statements in an if should be enclosed in a block.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|148|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|148|8|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|149|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|173|59|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|174|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|197|5|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|202|77|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|204|9|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|226|5|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|233|28|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|237|13|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|237|14|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|238|9|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|260|77|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|262|65|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|273|77|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|276|9|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|276|10|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|277|9|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|297|74|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|314|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|337|7|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|337|8|1|Missing a required trailing comma.\nINFO|LINT|REQUIRE_TRAILING_COMMAS|/home/danilo/projects/vaca-d1-t5b-proof/vaca_app/test/refund_client_test.dart|338|7|1|Missing a required trailing comma.\n",
+      "stderr": ""
+    }
+  ],
+  "files": {
+    "vaca_app/lib/features/refund/domain/refund_scope.dart": "5045d3a4bfd21665a5d60de875501e1ef4bc11e2369ac8e1de66794babbe9050",
+    "vaca_app/lib/features/refund/data/refund_http_client.dart": "b5b1e06abcfc6bf8158940ee694f7cb31baf50bc4bcfabb96860da56976211e2",
+    "vaca_app/lib/features/refund/data/refund_submission_journal.dart": "cdd21f7197dd9dccf0818d60a47bcb5f0a56da2048bbac5e005ef42c8126e06f",
+    "vaca_app/test/refund_client_test.dart": "c6fb898362ea1eaefdc9ef72adca246f2b55ede635e800821ed4c10452d09083"
+  },
+  "diagnostics": {
+    "ERROR": 0,
+    "WARNING": 0,
+    "INFO": 49
+  },
+  "reviewModeStatusAttempt": {
+    "argv": [
+      "gentle-ai",
+      "review",
+      "mode",
+      "status"
+    ],
+    "exit": 127,
+    "stdout": "",
+    "stderr": "/bin/bash: line 1: gentle-ai: command not found\n",
+    "retried": false
+  }
+}

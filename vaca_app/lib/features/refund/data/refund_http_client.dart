@@ -83,7 +83,7 @@ class RefundHttpClient {
         RefundValidation.require(bytes.length + chunk.length <= 16384);
         bytes.addAll(chunk);
       }
-      final decoded = jsonDecode(utf8.decode(bytes));
+      final decoded = RefundValidation.decodeJson(utf8.decode(bytes));
       final statusCode = response.statusCode;
       if (decoded is Map<String, Object?> &&
           decoded.length == 1 &&

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 /// Wire actions are deliberately different from their HTTP path suffixes.
@@ -58,6 +60,39 @@ class RefundValidation {
     final map = value! as Map<String, Object?>;
     require(map.length == keys.length && keys.every(map.containsKey));
     return map;
+  }
+
+  // Syntax is validated by the standard decoder. Scan the ORIGINAL tokens too:
+  // a decoded Map alone has already lost repeated member names.
+  static final _jsonTokens = RegExp(r'"(?:\\[\s\S]|[^"\\])*"|[{}\[\]:,]');
+
+  static Object? decodeJson(String source) {
+    try {
+      final decoded = jsonDecode(source);
+      final objects = <Set<String>?>[]; // null marks an array, not an object.
+      var previous = '';
+      for (final match in _jsonTokens.allMatches(source)) {
+        final token = match.group(0)!;
+        if (token == '{') {
+          objects.add(<String>{});
+        } else if (token == '[') {
+          objects.add(null);
+        } else if (token == '}' || token == ']') {
+          objects.removeLast();
+        } else if (token.startsWith('"') &&
+            objects.isNotEmpty &&
+            objects.last != null &&
+            (previous == '{' || previous == ',')) {
+          // Decode escapes so "state" and "\\u0073tate" are the SAME name.
+          require(objects.last!.add(jsonDecode(token) as String));
+        }
+        previous = token;
+      }
+      require(objects.isEmpty);
+      return decoded;
+    } catch (_) {
+      throw const RefundProtocolError();
+    }
   }
 
   static void uuid(Object? value) =>

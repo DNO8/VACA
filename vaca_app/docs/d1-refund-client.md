@@ -26,6 +26,8 @@ Consumer serialization is shared across instances in one Dart isolate. The journ
 ## State integrity
 Responses have exactly 13 keys and prescribed nested shapes, state/reason/verification/ordered-action tuples and HTTP codes. All replies require `Cache-Control: no-store`. The private transport has no interceptors, redirect following, refresh or retry hooks; response bytes are limited to 16 KiB and a command has a 10-second network cancellation deadline.
 
+HTTP replies and stored journal JSON reject duplicate member names in each object before admitting decoded values, including escaped aliases such as `state` and `\u0073tate`. Names repeated in different nested objects remain valid. An ambiguous reply yields an unknown hold, with no reservation or refund POST; an ambiguous journal retains its stored record and prevents any command. No raw JSON diagnostic is exposed.
+
 Amounts are canonical seven-decimal strings bounded by int64 stroops; payment operation IDs are positive uint64 strings. Original payment hash, donor, asset, gross and deadline cannot change after local reservation. An unverified refund object or transaction hash is not inclusion or settlement.
 
 Only `settled` is whole-donation terminal, with all accounting known, `gross = beneficiaryClaimed + donorRefunded` and remaining `0.0000000`. Claiming 1 of gross 10 leaves 9 protected; neither a reduced gross nor a partial accounting tuple can replace the original donation. Safe actions permit commands, not spending eligibility. Pending, unknown, blocked and failed inclusion never expose refund/retry/replan/release.
@@ -34,5 +36,7 @@ D3 beneficiary claims remain a separate per-balance Horizon/personal-signing flo
 
 ## Deferred verification
 `refund_status_test.dart` contains domain, exact proof and wire/one-use permit scenarios. `refund_client_test.dart` contains durable-write ordering, concurrent instances, lost response, reconstructed consumer, error/redirect/malformed-body holds, protected gross10/claim1, terminal claim1+refund9 and separately explicit reconciliation. Fixtures use synthetic deterministic identities and an in-memory transport/storage, never real keys or network.
+
+Additional unexecuted client cases cover root/nested/escaped duplicate names, preservation of a corrupt journal with zero commands, a legitimate repeated name across separate objects, and one valid escaped name. The new shared decoder changes current bytes; earlier independent static reports do not cover this addition.
 
 These cases are source, not observed test results. No complete beneficiary-before-expiry or donor-after-expiry journey, live ledger inclusion, financial safety acceptance, build, deployment or whole-D1 completion is claimed. Integrating into the app and actual backend activation remain separate authorized work after a pinned operational handoff and deferred verification.

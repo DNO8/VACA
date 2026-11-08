@@ -6,6 +6,7 @@ import 'package:vaca_app/features/refund/data/refund_http_client.dart';
 import 'package:vaca_app/features/refund/data/refund_submission_journal.dart';
 import 'package:vaca_app/features/refund/data/refund_wallet_signer.dart';
 import 'package:vaca_app/features/refund/domain/refund_scope.dart';
+import 'package:vaca_app/features/refund/domain/refund_status.dart';
 import 'refund_test_fixtures.dart';
 
 RefundHttpClient transport(
@@ -21,6 +22,7 @@ RefundClient consumer(RefundHttpClient http, RefundMemoryStorage storage) =>
     RefundClient(http: http, journal: RefundSubmissionJournal(storage));
 
 void main() {
+  strictJsonCases();
   test(
       'lost reply and concurrent instances retain one refund POST; reconstruction is status only',
       () async {
@@ -246,5 +248,100 @@ void main() {
       expect(storage.values, before);
       expect(storage.events, isEmpty);
     }
+  });
+}
+
+void strictJsonCases() {
+  test('duplicate root, nested and escaped names stay unknown without refund',
+      () async {
+    final original = jsonEncode(refundFixture('not_started'));
+    final bodies = [
+      original.replaceFirst(
+          '"state":"not_started"', '"state":"unknown","state":"not_started"'),
+      original.replaceFirst('"grossAmount":"10.0000000"',
+          '"grossAmount":"0.0000000","grossAmount":"10.0000000"'),
+      original.substring(0, original.length - 1) +
+          r',"\u0073tate":"not_started"}',
+    ];
+    for (final raw in bodies) {
+      expect(raw, isNot(original));
+      final storage = RefundMemoryStorage();
+      final before = Map<String, String>.from(storage.values);
+      final requests = <String>[];
+      final http = transport(storage, RefundTestAdapter((request) async {
+        requests.add(
+            (jsonDecode(request.data! as String) as Map)['action'] as String);
+        return ResponseBody.fromString(raw, 200, headers: {
+          'cache-control': ['no-store']
+        });
+      }));
+      addTearDown(http.close);
+      final result =
+          await consumer(http, storage).requestRefund(refundTestScope);
+      expect(result.state, 'unknown');
+      expect(result.status, isNull);
+      expect(result.isSettled, isFalse);
+      expect(result.errorCode, 'd1_refund_response_unverified');
+      expect(result.safeActions, isEmpty);
+      expect(requests, ['refund_status']);
+      expect(storage.values, before);
+      expect(storage.events, isEmpty);
+    }
+  });
+
+  test('duplicate journal names retain the record and prevent any command',
+      () async {
+    final storage = RefundMemoryStorage();
+    final journal = RefundSubmissionJournal(storage);
+    await journal.reserve(refundTestScope,
+        RefundStatus.parse(refundFixture('not_started'), refundTestScope));
+    // Distinct objects may legitimately have their own version member.
+    expect((await journal.load(refundTestScope))!.state, 'not_started');
+    final key = storage.values.keys
+        .singleWhere((key) => key.startsWith('d1.refund.v1.'));
+    final original = storage.values[key]!;
+    final ambiguous =
+        original.replaceFirst('"version":1', '"version":1,"version":1');
+    expect(ambiguous, isNot(original));
+    storage.values[key] =
+        ambiguous; // Inject a corrupt reply through the storage port.
+    final before = Map<String, String>.from(storage.values);
+    final events = List<String>.from(storage.events);
+    var calls = 0;
+    final http = transport(storage, RefundTestAdapter((request) async {
+      calls++;
+      return refundTestResponse('not_started');
+    }));
+    addTearDown(http.close);
+    final result = await consumer(http, storage).requestRefund(refundTestScope);
+    expect(result.state, 'unknown');
+    expect(result.status, isNull);
+    expect(result.safeActions, isEmpty);
+    expect(result.errorCode, 'd1_refund_journal_unavailable');
+    expect(calls, 0);
+    expect(storage.values, before);
+    expect(storage.events, events);
+  });
+
+  test('a single escaped member name remains valid without journal writes',
+      () async {
+    final raw = jsonEncode(refundFixture('not_due'))
+        .replaceFirst('"state":', r'"\u0073tate":');
+    expect(raw, contains(r'\u0073tate'));
+    final storage = RefundMemoryStorage();
+    var calls = 0;
+    final http = transport(storage, RefundTestAdapter((request) async {
+      calls++;
+      return ResponseBody.fromString(raw, 200, headers: {
+        'cache-control': ['no-store']
+      });
+    }));
+    addTearDown(http.close);
+    final result = await consumer(http, storage).status(refundTestScope);
+    expect(result.state, 'not_due');
+    expect(result.errorCode, isNull);
+    expect(result.safeActions, [RefundAction.status]);
+    expect(calls, 1);
+    expect(storage.events, isEmpty);
   });
 }

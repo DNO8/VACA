@@ -24,7 +24,7 @@ class RefundSubmissionJournal {
       if (raw == null) return null;
       RefundValidation.require(utf8.encode(raw).length <= 16384);
       final entry = RefundValidation.object(
-          jsonDecode(raw), const ['version', 'baseline']);
+          RefundValidation.decodeJson(raw), const ['version', 'baseline']);
       RefundValidation.require(
           entry['version'] is int && entry['version'] == 1);
       final baseline = RefundStatus.parse(entry['baseline'], scope);
