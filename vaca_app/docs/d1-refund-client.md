@@ -16,6 +16,15 @@ The scope is `TESTNET/namespace/pool/original issuance request ID`. Never genera
 
 Each proof signs SHA-256 of UTF-8(`Stellar Signed Message:\n` + compact sorted root JSON excluding signature), with a fresh Unix-second timestamp and the existing personal wallet. Wallet membership remains server authority; signing is not financial permission. Private exceptions and seeds are never returned or logged.
 
+## Passive provider composition
+`features/refund/refund_providers.dart` declares a feature-local Riverpod graph. It is NOT imported by existing core providers or screens and does not activate an endpoint or UI. `refundClientConfigurationProvider` reads the existing public `SUPABASE_URL` / `SUPABASE_ANON_KEY` build defines; missing, malformed or non-HTTPS configuration fails closed when constructing the HTTP client. Never provide a service-role credential.
+
+Reading `refundClientProvider` constructs the existing consumer, personal-wallet signer and refund journal with the same `secureStorageProvider`. Construction does not read keys, write records, sign or send commands. No existing wallet service or D3 coordinator is created by this graph. Commands still require explicit calls with the original scope.
+
+`refundHttpClientProvider` owns its HTTP client and closes it on provider/container disposal; it is deliberately not auto-disposed during an awaited explicit command. `refundHttpClientFactoryProvider` is an injectable construction seam for isolated adapters. A factory must return a fresh owned transport, not a shared transport belonging to another container. This graph does not own or clear secure storage. Configuration/factory overrides are trusted application composition, not financial authority.
+
+`refund_providers_test.dart` contains cold/default construction, instance reuse, owned-close and invalid-public-configuration cases using counting storage/adapters. These cases are UNEXECUTED. Source composition is not backend availability, screen integration, runtime verification or financial acceptance.
+
 ## Durable hold and recovery
 Before the first refund dispatch the refund-only journal acknowledges the write and reloads a validated original donation/deadline snapshot. Only then can it mint a final private-constructor local reservation. HTTP consumes that reservation before signing or network activity; it cannot be reused. This is a local dispatch guard, **not** backend financial authorization.
 
