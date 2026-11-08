@@ -1,0 +1,31 @@
+{
+  "kind": "Attributed independent static review summary, not a native approval receipt",
+  "taskId": "mw7od43e-11-5k80",
+  "permission": "Fresh direct one-task allow_one_refund_strict_json_static_review, recorded in feature L22 and memory603",
+  "root": "/home/danilo/projects/vaca-d1-t5b-proof",
+  "base": "a47a834b9642f3f453d85a7f1867e911650960a1",
+  "candidate": "ff6cd6d1ff95e4ccd4541ab3b2f8f4dda74f2e26",
+  "changedPaths": 7,
+  "additions": 208,
+  "deletions": 2,
+  "verdict": "No concrete candidate-caused blocker identified; T6 source/static only",
+  "specs": {
+    "S3": "met in T6 static scope: original-token/object-local decoded-name tracking rejects duplicates and escaped aliases without conflating objects/arrays/strings",
+    "S5": "met in T6 static scope: journal rejection precedes commands and preserves the record; HTTP rejection cannot reach reservation/refund",
+    "S6": "met in T6 static scope: admission precedes HTTP error/DTO interpretation; fixed sanitized errors; unknown hold/no DTO/no safe actions",
+    "S7": "met for source/evidence labeling; public scenarios and guide consistent, cases explicitly UNEXECUTED",
+    "S1_S2_S4": "not separately reassessed; outside narrow T6 change"
+  },
+  "wholeFeatureReadThrough": "L22",
+  "capturedHashesMatchCurrentAndCandidateBytes": 4,
+  "evidenceJsonParsed": 2,
+  "candidateToHeadApplicationSourceTestGuideUnchanged": true,
+  "prePostGitStatusEmpty": true,
+  "executed": "Only read-only file/Git/JSON/hash evidence operations; no tests, SDK, analyzer, formatter, signing, network, writes, scratch, source transfer, imports or activation",
+  "capturedAnalysisNotRerun": {"exit": 0, "seconds": 10.055907797, "errors": 0, "warnings": 0, "styleInfo": 49, "cleanAnalysis": false},
+  "nativeApproval": false,
+  "nativeState": "medium; security2 escalation high; reviewDue:false/under_budget; RDD on; outcome unknown; candidate unconsumed",
+  "functionalVerification": "Human-deferred; no tests executed, no RED/GREEN or passing-test evidence",
+  "optionalSnippet": "Reviewer included an unsolicited unexecuted array/string regression example; no blocker identified and no change or extra verification requested by the parent",
+  "acceptance": "SOURCE/STATIC ONLY; no functional, native, financial, operational or whole-D1 acceptance"
+}
