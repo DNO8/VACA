@@ -25,6 +25,13 @@ Reading `refundClientProvider` constructs the existing consumer, personal-wallet
 
 `refund_providers_test.dart` contains cold/default construction, instance reuse, owned-close and invalid-public-configuration cases using counting storage/adapters. These cases are UNEXECUTED. Source composition is not backend availability, screen integration, runtime verification or financial acceptance.
 
+## Standalone administrative panel
+`presentation/refund_panel.dart` provides `RefundPanel(scope: originalScope)`; no existing route/screen imports or mounts it. The host must supply the ORIGINAL issuance identity. The panel does not discover donations, generate request IDs, renew deadlines or infer admin membership. All membership/financial checks remain on the backend.
+
+Mounting or changing the scope sends nothing. The user explicitly consults status, reconciles only when the validated consumer permits it, or confirms an advertised first-refund intent. Refund goes through the existing consumer's fresh status/journal/one-use path, never raw transport. After an error only explicit status recovery is offered; a stored first-post hold suppresses refund even when a later DTO says not_started. Original gross/deadline and nullable accounting stay visible; only validated settled is labeled terminal. No deadline timer or release-by-absence exists.
+
+The panel captures its scope/generation across dialogs and commands. Scope changes clear old facts; old responses/confirmations cannot populate or dispatch from a new view, including A→B→A. UI busy feedback is NOT another financial coordinator or backend idempotence. Existing already-dispatched operations are not canceled/replanned. `refund_panel_test.dart` contains public widget/mock transport cases for these rules; all are UNEXECUTED, not visual/runtime or financial acceptance. Actual app integration still requires its own scope and the accepted backend handoff.
+
 ## Durable hold and recovery
 Before the first refund dispatch the refund-only journal acknowledges the write and reloads a validated original donation/deadline snapshot. Only then can it mint a final private-constructor local reservation. HTTP consumes that reservation before signing or network activity; it cannot be reused. This is a local dispatch guard, **not** backend financial authorization.
 
