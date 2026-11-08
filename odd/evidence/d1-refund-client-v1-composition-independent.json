@@ -1,0 +1,47 @@
+{
+  "kind": "Attributed independent static review and selected assessment summary; not a native approval receipt",
+  "taskId": "mw7tneux-12-7jws",
+  "permission": "Fresh direct allow_refund_local_composition_and_one_static_review, S8/L24 and memory604; one review consumed",
+  "base": "0ec3e280629bd3307316876f73486130916b3043",
+  "candidate": "08972ed5258bd19972cf08845351845c9dc5b559",
+  "changedPaths": 5,
+  "additions": 279,
+  "deletions": 0,
+  "verdict": "No concrete candidate-caused blocker identified; SOURCE/STATIC ONLY",
+  "specs": {
+    "S5": "met within T7 static scope: existing consumer/journal/signer share secure storage; no eager IO/signing/command or wallet/D3 coordinator",
+    "S6": "met within T7 static scope: public build defines, default fixed configuration failures, existing transport rules unchanged",
+    "S7": "met: three public provider case definitions remain UNEXECUTED; guide and evidence label limits",
+    "S8": "met within source/static scope: passive feature-local graph, plain provider lifetime and owned HTTP disposal, no core/UI/backend/dependency/environment/schema changes",
+    "S1_S2_S3_S4": "outside T7 reassessment"
+  },
+  "wholeFeatureReadThrough": "L26",
+  "verifiedHashes": {
+    "vaca_app/lib/features/refund/refund_providers.dart": "fa201e19595b29cbfe04354bc7db0e8d2f44936ab888bcc6495eaaf133f0cf98",
+    "vaca_app/test/refund_providers_test.dart": "f64cf7f94d0a4e7c1ff239526c23413b60a307001b47f05ae59c1c96cb4880b8"
+  },
+  "capturedHashesMatchCurrentAndCandidateBytes": 2,
+  "prePostGitStatusEmpty": true,
+  "evidenceJsonValid": true,
+  "reviewerExecuted": "Only permitted read-only file/Git/JSON/hash operations; no tests, SDK, analyzer, formatter, signing, network, writes, scratch, other-root access, source transfer/import or live activation",
+  "capturedAnalysisNotRerun": {"exit": 0, "seconds": 10.06894283497, "errors": 0, "warnings": 0, "styleInfo": 9, "cleanAnalysis": false},
+  "nativeAssessmentSummary": {
+    "risk": "high",
+    "nativeRisk": "medium",
+    "agentEscalationItem": 2,
+    "changedPaths": 5,
+    "changedLines": 279,
+    "writerSelfVerification": true,
+    "independentVerifier": true,
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "candidateConsumed": false,
+    "approval": false
+  },
+  "functionalTestsExecuted": 0,
+  "redGreenObserved": false,
+  "acceptance": "Source/static only. No app UI activation, backend availability, runtime, financial, operational or whole-D1 acceptance."
+}
