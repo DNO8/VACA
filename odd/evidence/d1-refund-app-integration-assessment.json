@@ -1,0 +1,27 @@
+{
+  "sourceCandidate": "8b8458e51ed15013b1ebfedb11604db2e0f62a1d",
+  "input": {"baseRef":"752511195591fec3e6c45396ca89d185d360a573","committedOnly":true},
+  "result": {
+    "operation":"assess",
+    "schema":"gentle-pi.review-assessment-plan/v1",
+    "risk":"medium",
+    "nativeRisk":"medium",
+    "reasons":[{"code":"executable_change","path":"vaca_app/lib/features/identity/presentation/identity_data_screen.dart"}],
+    "changedPaths":5,
+    "changedLines":291,
+    "candidate":{"kind":"base-diff","baseRef":"752511195591fec3e6c45396ca89d185d360a573","consumed":false},
+    "reviewDue":false,
+    "reviewDueReason":"under_budget",
+    "rddLine":"on",
+    "nativeReviewOutcome":"unknown",
+    "outcome_source":"unknown",
+    "writerProfile":"large",
+    "writerProfileSource":"runtime",
+    "plan":{"writerSelfVerification":true,"structuralReadbackOnly":false,"independentVerifier":false,"reason":"receipt-driven development is on and the native review outcome for this candidate is unknown; the native review is an additional outside view that never replaces verification, so the risk-gated path applies exactly as receipt-driven development off, and no Task Size high-risk item was escalated: the writer's self-verification stands and no separate verifier runs, whatever the native tier or the model that wrote the change."},
+    "workspace_root":"/home/danilo/projects/vaca-d1-t5b-proof"
+  },
+  "interpretation":"One successful assessment over the exact291line/5path source unit. Writer static verification stands, no independent verifier or native START required. Under-budget/unknown/unconsumed is NOT native approval or operational/financial acceptance. Functional/widget/browser cases remain explicitly deferred and UNEXECUTED.",
+  "risk":"none: exact new synchronous known-reference host reuses unchanged existing financial/security/async guards; existing Identity only adds import/entry/spacing, not shared-helper or old wallet/About behavior",
+  "functionalTestsExecuted":0,
+  "nativeApproval":false
+}
