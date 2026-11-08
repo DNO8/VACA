@@ -1,0 +1,28 @@
+{
+  "kind": "Attributed independent static verification summary, not a native review receipt",
+  "taskId": "mw7egxg0-10-ag6o",
+  "permission": "Fresh one-task allow_one_positive_gross_static_review in the exact owned clone",
+  "base": "855a3926420f989112f5f036f6cd5f76348ae41d",
+  "correction": "e36b1f68592b8c72d16fe3dea3e769ede0b802d7",
+  "verdict": "S3/reopenedT1 met for narrow positive-gross source correction; no concrete blocker identified",
+  "findings": [],
+  "sourceFacts": [
+    "Only original donation gross newly requires positive:true",
+    "Shared canonical seven-decimal/int64 helper unchanged",
+    "Settlement amounts remain nonnegative and permit zero",
+    "New gross-zero rejection and valid claimed10/refunded0 cases are UNEXECUTED"
+  ],
+  "verifiedHashes": {
+    "vaca_app/lib/features/refund/domain/refund_status.dart": "df919985d689fbb46773d459e43806ab5351df49652e52fc6eb407ed543ad024",
+    "vaca_app/test/refund_status_test.dart": "fd9cbe50fe3ce150546f7f82481533087ed6f935fabad1206c5fcc70d2a7d052"
+  },
+  "committedBytesMatched": 2,
+  "helperAndFixturesUnchanged": true,
+  "prePostGitStatusEmpty": true,
+  "mutationsOrScratchDirectories": false,
+  "testsSdkAnalyzerFormatterNetworkImportsActivationExecuted": false,
+  "capturedAnalyzerNotRerun": {"exit": 0, "seconds": 17.217072555, "errors": 0, "warnings": 0, "styleInfos": 28, "cleanAnalysis": false},
+  "nativeAssessment": {"nativeRisk": "medium", "agentEscalationItem": 2, "changedLines": 55, "reviewDue": false, "reviewDueReason": "under_budget", "consumed": false, "outcome": "unknown", "approval": false},
+  "runtimeProof": "human-deferred; zero tests executed, no RED/GREEN or passing-test claim",
+  "acceptance": "source/static only; no functional, native, financial, operational or whole-D1 acceptance"
+}
