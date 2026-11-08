@@ -1,0 +1,38 @@
+{
+  "assessedHead": "ff6cd6d1ff95e4ccd4541ab3b2f8f4dda74f2e26",
+  "assessmentOnlyNotApproval": true,
+  "providerResult": {
+    "operation": "assess",
+    "schema": "gentle-pi.review-assessment-plan/v1",
+    "risk": "high",
+    "nativeRisk": "medium",
+    "agentEscalation": {
+      "item": 2,
+      "label": "security",
+      "reason": "This candidate changes admission of untrusted financial response and durable-journal JSON before client execution decisions.",
+      "applied": true
+    },
+    "reasons": [{"code": "configuration_change", "path": "odd/evidence/d1-refund-client-v1-strict-json.json"}],
+    "changedPaths": 7,
+    "changedLines": 210,
+    "candidate": {"kind": "base-diff", "baseRef": "a47a834b9642f3f453d85a7f1867e911650960a1", "consumed": false},
+    "reviewDue": false,
+    "reviewDueReason": "under_budget",
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "outcome_source": "unknown",
+    "writerProfile": "large",
+    "writerProfileSource": "runtime",
+    "plan": {
+      "writerSelfVerification": true,
+      "structuralReadbackOnly": false,
+      "independentVerifier": true,
+      "reason": "receipt-driven development is on and the native review outcome for this candidate is unknown; the native review is an additional outside view that never replaces verification, so the risk-gated path applies exactly as receipt-driven development off, and an agent escalation names a Task Size high-risk item: the writer self-verifies and a separate independent verifier runs."
+    },
+    "workspace_root": "/home/danilo/projects/vaca-d1-t5b-proof"
+  },
+  "independentVerification": "Unavailable for this new candidate: both prior direct one-task independent-clone routing grants were consumed. No fresh direct grant was supplied; no task queued, alternate routing, source transfer, retry or self-grant.",
+  "functionalVerification": "Human-deferred; no tests executed or passed; no RED/GREEN claim.",
+  "reviewModeCli": "Failed exit127 command not found, not retried. The separate native assessment facade succeeded and reports rddLine:on.",
+  "acceptance": "Typed source candidate only; T6/global42 remains blocked on missing independent proof. No functional, native, financial, operational or whole-D1 acceptance."
+}
