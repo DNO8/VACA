@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import '../domain/refund_scope.dart';
 import '../domain/refund_status.dart';
 import 'refund_http_client.dart';
 import 'refund_submission_journal.dart';
+import 'refund_submission_gate.dart';
 
 /// Present validated facts or an unknown hold; never convert an error to zero.
 class RefundClientResult {
@@ -30,9 +29,6 @@ class RefundClient {
   final RefundHttpClient _http;
   final RefundSubmissionJournal _journal;
 
-  // Shared across instances IN THIS ISOLATE only, never a cross-device CAS.
-  static final _tails = <String, Future<void>>{};
-
   Future<RefundClientResult> status(RefundScope scope) =>
       _serialized(scope, () => _observe(scope, RefundAction.status));
 
@@ -46,6 +42,8 @@ class RefundClient {
         final baseline = await _journal.load(scope);
         if (baseline != null)
           return _observe(scope, RefundAction.status, baseline: baseline);
+        final held = await _journal.sharedHold(scope);
+        if (held != null) return _observe(scope, RefundAction.status);
         final fresh = await _http.send(scope, RefundAction.status);
         if (fresh.state != 'not_started')
           return RefundClientResult._(fresh, false, null);
@@ -61,30 +59,25 @@ class RefundClient {
     RefundStatus? baseline,
   }) async {
     final saved = baseline ?? await _journal.load(scope);
+    final held = await _journal.sharedHold(scope);
     final response = await _http.send(scope, action);
     RefundValidation.require(saved == null || saved.sameDonation(response));
-    return RefundClientResult._(response, saved != null, null);
+    RefundValidation.require(held == null || held.matchesOriginal(response.toJson()));
+    return RefundClientResult._(response, saved != null || held != null, null);
   }
 
   Future<RefundClientResult> _serialized(
     RefundScope scope,
     Future<RefundClientResult> Function() operation,
   ) async {
-    final prior = _tails[scope.identity] ?? Future<void>.value();
-    final finished = Completer<void>();
-    final tail = prior.then((_) => finished.future);
-    _tails[scope.identity] = tail;
-    await prior;
-    try {
-      return await operation();
-    } on RefundProtocolError catch (error) {
-      return RefundClientResult._(null, null, error.code);
-    } catch (_) {
-      return RefundClientResult._(null, null, 'd1_refund_local_unavailable');
-    } finally {
-      finished.complete();
-      if (identical(_tails[scope.identity], tail))
-        _tails.remove(scope.identity);
-    }
+    return RefundOperationQueue.run(scope, () async {
+      try {
+        return await operation();
+      } on RefundProtocolError catch (error) {
+        return RefundClientResult._(null, null, error.code);
+      } catch (_) {
+        return RefundClientResult._(null, null, 'd1_refund_local_unavailable');
+      }
+    });
   }
 }

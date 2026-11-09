@@ -6,6 +6,7 @@ import '../../../core/result/result.dart';
 import '../../../core/security/secure_storage.dart';
 import '../domain/refund_scope.dart';
 import '../domain/refund_status.dart';
+import 'refund_submission_gate.dart';
 
 /// A durable client-side hold, NOT backend idempotence or financial permission.
 class RefundSubmissionJournal {
@@ -21,7 +22,12 @@ class RefundSubmissionJournal {
       final result = await _storage.read(_key(scope));
       if (result is! Success<String?>) throw const RefundProtocolError();
       final raw = result.value;
-      if (raw == null) return null;
+      if (raw == null) {
+        final hold = await sharedHold(scope);
+        return hold?.lane == 'v1'
+            ? RefundStatus.parse(hold!.baseline, scope)
+            : null;
+      }
       RefundValidation.require(utf8.encode(raw).length <= 16384);
       final entry = RefundValidation.object(
           RefundValidation.decodeJson(raw), const ['version', 'baseline']);
@@ -35,7 +41,10 @@ class RefundSubmissionJournal {
     }
   }
 
-  /// Called under RefundClient's isolate-local serialization. No reset/delete.
+  Future<RefundSubmissionHold?> sharedHold(RefundScope scope) =>
+      RefundSubmissionGate(_storage).load(scope);
+
+  /// Called under the shared isolate-local queue. No reset/delete.
   Future<RefundLocalReservation> reserve(
       RefundScope scope, RefundStatus baseline) async {
     if (!_reserving.add(scope.identity)) {
@@ -45,6 +54,7 @@ class RefundSubmissionJournal {
       RefundValidation.require(
           baseline.state == 'not_started' && scope.matches(baseline.toJson()));
       RefundValidation.require(await load(scope) == null);
+      await RefundSubmissionGate(_storage).reserve(scope, 'v1', baseline.toJson());
       final encoded = jsonEncode({'version': 1, 'baseline': baseline.toJson()});
       final written = await _storage.write(_key(scope), encoded);
       if (written is! Success<void>) throw const RefundProtocolError();
