@@ -1,0 +1,69 @@
+{
+  "baseline": "1c2ad36be4d19e418ae2c3c07d97683e9560a882",
+  "tracking": "5b746eb7a34f12677eb8268768860725aff21fe1",
+  "unit_a": {
+    "commit": "c4411dce6c7b739278fd4a10eed13de91d1c355c",
+    "diff_lines": 363
+  },
+  "unit_b": {
+    "commit": "bde3c11b7df3e01982047a608755ba5c09a3b73f",
+    "diff_lines": 383
+  },
+  "static": {
+    "scope": "ONLY new source formatting/static analysis; functional cases UNEXECUTED",
+    "results": [
+      {
+        "label": "format",
+        "exit": 0,
+        "seconds": 0.08845239895163104
+      },
+      {
+        "label": "analyze",
+        "exit": 0,
+        "seconds": 14.782841479987837
+      }
+    ],
+    "hashes": {
+      "lib/features/refund/domain/refund_remainder_status.dart": "26aa5c86e872531130b624014a40df15a75d7dd8b7ffd91cfada4de58e430f81",
+      "test/refund_remainder_status_test.dart": "4017aecd5e31d36ae9c44b639a204f499e527f2375c7b877d1679ffe43c50d87",
+      "lib/features/refund/data/refund_remainder_status_client.dart": "04beaeebcf046ef417092c2beda1a6d652398a975c6b770d2e83718c2f29740a",
+      "test/refund_remainder_client_test.dart": "6ca2f77bfe0fa69cc93ad1d5be912b254850eb51ee8aabc4cc8284906424d467"
+    }
+  },
+  "analyzer_counts": {
+    "errors": 0,
+    "warnings": 0,
+    "info": 47
+  },
+  "functional_tests": "UNEXECUTED; explicitly deferred",
+  "proof_scope": "4/4current=captured=committed; existing tracked Dart source/tests unchanged",
+  "independent_review": {
+    "task": "mw9iaema-1c-kism",
+    "report": "odd/evidence/d1-refund-remainder-status-independent.md",
+    "verdict": "S1\u2013S6 met within static scope; no concrete candidate-caused blocker",
+    "hashes": "4/4current=captured=committed",
+    "pre_post_git_status": "identical",
+    "execution": "NONE; read-only source/git/hash checks only",
+    "functional_acceptance": false,
+    "native_approval": false
+  },
+  "native_assessment": {
+    "candidate_unit": "B only",
+    "risk": "high",
+    "nativeRisk": "unassessable",
+    "agentEscalationItem": 2,
+    "candidate": null,
+    "outcome": "unknown",
+    "independentVerifier": true,
+    "reviewDue": "not reported",
+    "approval": false,
+    "reason": "untracked files require an explicit declaration"
+  },
+  "limitations": [
+    "No v2 refund or reconcile method, journal write or UI/provider mount",
+    "No actual wallet reads/signing/HTTP, SQL, backend import, device, APK or operational acceptance",
+    "Existing7dirtytooling paths preserved and excluded"
+  ],
+  "independent_review_before_run": "NOT RUN; needs fresh exact-root read-only routing consent",
+  "parent_post_review_spot_check": "One sha256sum over4newfiles; all4match capture/reviewer/sourcecommits"
+}
