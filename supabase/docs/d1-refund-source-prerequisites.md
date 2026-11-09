@@ -9,8 +9,8 @@ It does not import the complete backend, mount routes or establish financial acc
 | Unit | Source contract |
 | --- | --- |
 | Pure arithmetic | `calculateRefundFeeEarmarkBudget` protects the full selected fee cap; `calculateRefundLiquidPrincipal` protects original principal and exclusions. Both are normalized calculations, not fresh evidence or spending authority. |
-| Additive APIs | The incorporation plan preserves the historical context/loader while adding same-observation history and candidate creation after validated absence. See the accounting and candidate guides. |
-| Saved-initial fixture | The incorporation plan extracts the delivered recovery scaffold without removing existing assertions. Its optional coverage is established before initial observations, never by rewriting saved evidence. |
+| Additive APIs | The incorporated APIs preserve the historical context/loader while adding same-observation history and candidate creation after validated absence. See the accounting and candidate guides. |
+| Saved-initial fixture | The incorporated fixture extracts the delivered recovery scaffold without removing existing assertions. Its optional coverage is established before initial observations, never by rewriting saved evidence. |
 
 The existing handler, `/status`, runtime, index, Flutter client, D3, migrations,
 dependency locks and environment remain unchanged. The delivered expanded SQL
