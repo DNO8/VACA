@@ -1,0 +1,73 @@
+{
+  "schema": "d1-refund-source-prerequisites/static-v1",
+  "baseline": "3f6b798234724c18608d1d604a0b2fc4e11a9bef",
+  "sourceHead": "5a6d35efcc65b96bf22866c933927135c0c98397",
+  "sourceCommits": [
+    "d1a58240bd0aa31868844696dcefb1c852e5259d",
+    "89c85204f200cbbc0f8f1cd3cb75d09c83387d2d",
+    "5a6d35efcc65b96bf22866c933927135c0c98397"
+  ],
+  "scope": "SOURCE INCORPORATED; INDEPENDENT STATIC VERIFICATION UNAVAILABLE; NO FUNCTIONAL/OPERATIONAL ACCEPTANCE",
+  "adoptedFrozenFileHashMatches": 6,
+  "directRelativeImportExistenceChecks": 34,
+  "protectedOriginalTrackedUnchanged": 689,
+  "preExistingDirtyUnchanged": 9,
+  "changedPaths": [
+    "odd/tasks/d1-refund-source-prerequisites.md",
+    "supabase/docs/d1-issuance-accounting-context.md",
+    "supabase/docs/d1-refund-candidate-journal.md",
+    "supabase/docs/d1-refund-source-prerequisites.md",
+    "supabase/functions/d1-custody/issuance-accounting-context.ts",
+    "supabase/functions/d1-custody/refund-candidate-journal.ts",
+    "supabase/functions/d1-custody/refund-fee-earmark-budget.ts",
+    "supabase/functions/d1-custody/refund-liquid-principal.ts",
+    "supabase/tests/fixtures/refund-initial.ts",
+    "supabase/tests/unit/issuance-accounting-context.test.ts",
+    "supabase/tests/unit/recovery-refund-plan.test.ts",
+    "supabase/tests/unit/refund-candidate-journal.test.ts",
+    "supabase/tests/unit/refund-source-arithmetic.test.ts"
+  ],
+  "capturedSha256": {
+    "supabase/docs/d1-issuance-accounting-context.md": "1d27ddfce6ef980b6722bf4bc712ba2ba6ace4f4c000e02e63db0ecc979ba42a",
+    "supabase/docs/d1-refund-candidate-journal.md": "3bb8551e800c8e1caab30b525ce146751f3f161a47f6f006551cd9e9035aa695",
+    "supabase/docs/d1-refund-source-prerequisites.md": "6b2a33f7692c2bb9ff9a11c5fef2ffc95f3c3bf1ad43f5354aae84a3001cbb9c",
+    "supabase/functions/d1-custody/issuance-accounting-context.ts": "8e857b2bdf00e0757409591bbb441701ab13270a0289d84ce82789129c91f196",
+    "supabase/functions/d1-custody/refund-candidate-journal.ts": "f5e8fe93356bfc67ad0c97865cbdd455619bf5efa03e00a45dfaa7f95e28f3f0",
+    "supabase/functions/d1-custody/refund-fee-earmark-budget.ts": "c517275da76f530dabe0a80036f4377533e256eecc253047b671fb5df5e03613",
+    "supabase/functions/d1-custody/refund-liquid-principal.ts": "6d88912615d4b030ff5c77fed2ff8701351c6a809ca54da222c401da88e36dae",
+    "supabase/tests/fixtures/refund-initial.ts": "aa1a06a73c4b4547e08d40078396a15f19f6d8d31245ca67ada8e288e8a4638d",
+    "supabase/tests/unit/issuance-accounting-context.test.ts": "417d914380382717bcc6196fd1e394e4c8b08d011e66a6bd2e586c38f084e052",
+    "supabase/tests/unit/recovery-refund-plan.test.ts": "62ba21c6882e91415dd19fbbe843943fb15885e9ec93df4bbbdcc1cccb3ab275",
+    "supabase/tests/unit/refund-candidate-journal.test.ts": "dacd40343d325f1cd36223625e674c8920b597f73827b0f853536de91f5c1403",
+    "supabase/tests/unit/refund-source-arithmetic.test.ts": "22a46e889c3ea2bd3de21866efc09cb2ef33e90348a11735fa88ab9121008708"
+  },
+  "workingEqualsCommittedForCaptured": true,
+  "newTestDefinitions": 12,
+  "functionalTests": "UNEXECUTED",
+  "typecheckSdkSql": "UNEXECUTED",
+  "differentialBehavior": "UNEXECUTED (explicit source-only grant)",
+  "nativeReview": {
+    "nativeRisk": "unassessable",
+    "candidate": null,
+    "outcome": "unknown",
+    "reason": "untracked declaration required",
+    "agentRiskItem": 3,
+    "independentStaticVerifier": {
+      "task": "mw9oxrlc-1g-z6qf",
+      "status": "unavailable",
+      "commandsExecuted": 0,
+      "filesRead": 0,
+      "filesWritten": 0,
+      "scratchCreated": false,
+      "specVerdicts": "S1\u2013S4 unverified",
+      "cause": "governing external system-temporary isolation conflicts with in-project-only copy scope"
+    }
+  },
+  "gitDiffCheck": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "verificationState": "blocked: independent static verifier preflight permission conflict",
+  "parentPostReviewSpotCheck": "not applicable: no reviewer probe was executed"
+}
