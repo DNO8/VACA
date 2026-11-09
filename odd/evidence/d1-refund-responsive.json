@@ -1,0 +1,63 @@
+{
+  "baseline": "57137f563f41d7915a193b2a6c65e6e3af3a6148",
+  "source_static_checks": {
+    "panel_financial_async_prefix_unchanged": true,
+    "state_labels_unchanged": true,
+    "scope_validation_lifetime_unchanged": true,
+    "all_original_literals_preserved": true,
+    "dependencies_and_lock_unchanged": true,
+    "only_owned_presentation_source_changed": true
+  },
+  "red": {
+    "phase": "red",
+    "exit": 1,
+    "seconds": 6.801048354012892,
+    "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-refund-responsive/red",
+    "scope": "new presentation-only file; no deferred protocol suite, network/device/financial actions"
+  },
+  "green": {
+    "phase": "green",
+    "exit": 0,
+    "seconds": 5.479514499020297,
+    "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-refund-responsive/green",
+    "scope": "new presentation-only file; no deferred protocol suite, network/device/financial actions"
+  },
+  "analysis_initial_cli_failure": {
+    "phase": "analyze",
+    "exit": 64,
+    "seconds": 0.026112358958926052,
+    "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-refund-responsive/analyze",
+    "scope": "new presentation-only file; no deferred protocol suite, network/device/financial actions"
+  },
+  "preview_http": 200,
+  "native_canvas": "unavailable: home-root mismatch",
+  "deferred_protocol_suites": "UNEXECUTED",
+  "apk_phone_live_financial_actions": false,
+  "analysis_corrected_first_execution": {
+    "phase": "analyze-cli-corrected",
+    "exit": 0,
+    "seconds": 16.274207776994444,
+    "capture": "/home/danilo/projects/vaca-d1-t5b-proof/supabase/.temp/d1-refund-responsive/analyze-cli-corrected",
+    "scope": "new presentation-only file; no deferred protocol suite, network/device/financial actions"
+  },
+  "analysis_counts": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 50
+  },
+  "native_assessment": {
+    "risk": "medium",
+    "nativeRisk": "unassessable",
+    "candidate": null,
+    "rddLine": "on",
+    "nativeReviewOutcome": "unknown",
+    "writerProfileSource": "runtime",
+    "writerSelfVerification": true,
+    "independentVerifier": false,
+    "reason": "Native assessment blocked by pre-existing untracked files requiring declaration; no reviewDue field supplied. No authority/approval inferred; scoped self-verification observed."
+  },
+  "spec_verdicts": {
+    "S1": "Implemented existing-theme hierarchy and responsive layout;3cold frame cases PASS, populated financial states/device and native canvas not verified",
+    "S2": "Only owned refund presentation/test/docs/design; financial/async prefix and scope validation unchanged"
+  }
+}

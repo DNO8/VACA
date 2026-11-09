@@ -93,44 +93,73 @@ class _RefundPanelState extends ConsumerState<RefundPanel> {
     final actions = _result?.safeActions ?? const <RefundAction>[];
     final state = _failed ? 'unknown' : _result?.state;
     return Card(
+      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text('Reembolso de la donación original',
-              style: Theme.of(context).textTheme.titleMedium),
-          const Text('STELLAR TESTNET · Sin valor monetario real'),
-          SelectableText('Namespace: ${widget.scope.namespace}'),
-          SelectableText('Pool: ${widget.scope.pool}'),
-          SelectableText('Solicitud original: ${widget.scope.requestId}'),
-          const SizedBox(height: AppSpacing.sm),
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.xs),
+          Text('STELLAR TESTNET · Sin valor monetario real',
+              style: Theme.of(context).textTheme.labelSmall),
+          const SizedBox(height: AppSpacing.md),
           Semantics(
               liveRegion: true,
-              child: Text(
-                  'Estado: ${_busy ? 'Consulta o solicitud en curso' : _labels[state] ?? 'Sin consultar'}',
-                  key: const ValueKey('refund-state'))),
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: Text(
+                    'Estado: ${_busy ? 'Consulta o solicitud en curso' : _labels[state] ?? 'Sin consultar'}',
+                    key: const ValueKey('refund-state')),
+              )),
+          const SizedBox(height: AppSpacing.md),
+          _reference('Namespace: ${widget.scope.namespace}'),
+          const SizedBox(height: AppSpacing.xs),
+          _reference('Pool: ${widget.scope.pool}'),
+          const SizedBox(height: AppSpacing.xs),
+          _reference('Solicitud original: ${widget.scope.requestId}'),
+          const SizedBox(height: AppSpacing.md),
           if (_failed)
             const Text(
                 'No se pudo verificar el estado. Conservá la correlación original.'),
           if (status != null) ...[
-            SelectableText('Donante original: ${status.donation['donor']}',
+            const Divider(height: AppSpacing.xxl),
+            Text('Donación original',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
+            _reference('Donante original: ${status.donation['donor']}',
                 key: const ValueKey('refund-original-donor')),
-            SelectableText(
+            const SizedBox(height: AppSpacing.xs),
+            _reference(
                 'Operación de pago original: ${status.donation['paymentOperationId']}'),
-            SelectableText(
+            const SizedBox(height: AppSpacing.xs),
+            _reference(
                 'Transacción de pago original: ${status.donation['paymentTransactionHash']}'),
+            const SizedBox(height: AppSpacing.sm),
             Text('Importe original: ${status.donation['grossAmount']}'),
             Text(
                 'Activo: ${asset?['type'] == 'native' ? 'XLM (nativo)' : '${asset?['code']} · ${asset?['issuer']}'}'),
             Text('Vencimiento original: ${status.deadline}'),
             Text('Verificación: ${body!['verification']}'),
             if (refund != null) ...[
-              SelectableText(
-                  'Referencia del intento: ${refund['transactionHash']}',
+              const Divider(height: AppSpacing.xxl),
+              Text('Intento reportado',
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.sm),
+              _reference('Referencia del intento: ${refund['transactionHash']}',
                   key: const ValueKey('refund-attempt-reference')),
               Text('Importe reportado del intento: ${refund['amount']}'),
               const Text(
                   'La referencia y el importe del intento no prueban liquidación.'),
             ],
+            const Divider(height: AppSpacing.xxl),
+            Text('Estado de liquidación',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
             Text(
                 'Cobrado por beneficiario: ${settlement?['beneficiaryClaimedAmount'] ?? 'Desconocido'}'),
             Text(
@@ -139,29 +168,42 @@ class _RefundPanelState extends ConsumerState<RefundPanel> {
                 'Principal pendiente: ${settlement?['remainingPrincipalAmount'] ?? 'Desconocido'}'),
             const Text('Comisiones fuera de estos importes.'),
           ],
-          if (state != 'settled')
+          if (state != 'settled') ...[
+            const SizedBox(height: AppSpacing.md),
             const Text(
                 'Un resultado desconocido o el vencimiento no habilitan otro intento.'),
-          Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.xs, children: [
+          ],
+          const SizedBox(height: AppSpacing.xl),
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             OutlinedButton(
                 key: const ValueKey('refund-status'),
                 onPressed: _busy ? null : () => _run(RefundAction.status),
                 child: const Text('Consultar estado')),
-            if (actions.contains(RefundAction.reconcile))
+            if (actions.contains(RefundAction.reconcile)) ...[
+              const SizedBox(height: AppSpacing.sm),
               OutlinedButton(
                   key: const ValueKey('refund-reconcile'),
                   onPressed: _busy ? null : () => _run(RefundAction.reconcile),
                   child: const Text('Reconciliar observación')),
-            if (state == 'not_started' && actions.contains(RefundAction.refund))
+            ],
+            if (state == 'not_started' &&
+                actions.contains(RefundAction.refund)) ...[
+              const SizedBox(height: AppSpacing.sm),
               FilledButton(
                   key: const ValueKey('refund-request'),
                   onPressed: _busy ? null : () => _run(RefundAction.refund),
                   child: const Text('Solicitar reembolso')),
+            ],
           ]),
         ]),
       ),
     );
   }
+
+  Widget _reference(String text, {Key? key}) => SelectableText(text,
+      key: key,
+      style: AppTypography.data
+          .copyWith(color: Theme.of(context).colorScheme.onSurface));
 }
 
 const _labels = <String, String>{

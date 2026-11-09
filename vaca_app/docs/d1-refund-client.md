@@ -59,6 +59,13 @@ Only `settled` is whole-donation terminal, with all accounting known, `gross = b
 
 D3 beneficiary claims remain a separate per-balance Horizon/personal-signing flow. Initial issuance `/status` is historical and is not any of these refund endpoints.
 
+## Responsive presentation
+The administrative screen follows the existing VACA light/dark theme, with a centered reading column (maximum760 logical pixels), safe-area scrolling, spaced reference fields and full-width actions. The public pool field can wrap; loaded technical references remain selectable and untruncated in the existing data typeface. Original, attempt and settlement information are separated visually; their meanings and visibility rules do not change. Text scaling is not clamped.
+
+`refund_responsive_layout_test.dart` is a separately scoped, EXECUTED presentation-only suite: three cold-layout checks at320px with200% text and260px keyboard inset,600px dark and1024px dark with200% text. It checks reading width, scroll/touch reachability, locked references and preservation when changing the view, with ZERO financial-client constructions. The test harness settles focus-driven scrolling before pointer checks. This does not execute the deferred protocol/widget scenarios listed below or verify populated backend states, financial actions, a real keyboard, native device fonts or APK behavior.
+
+Design sources/directions: `design/system.md` and `design/d1-refund-responsive/` at repository root. The guided-stack direction is implemented; the other two are alternatives. Native canvas lookup is unavailable in the home-root harness; a bounded loopback static preview is not a running Flutter application. See `odd/evidence/d1-refund-responsive.json` for exact failed RED, successful layout run and analysis outcomes.
+
 ## Deferred verification
 `refund_status_test.dart` contains domain, exact proof and wire/one-use permit scenarios. `refund_client_test.dart` contains durable-write ordering, concurrent instances, lost response, reconstructed consumer, error/redirect/malformed-body holds, protected gross10/claim1, terminal claim1+refund9 and separately explicit reconciliation. Fixtures use synthetic deterministic identities and an in-memory transport/storage, never real keys or network.
 
