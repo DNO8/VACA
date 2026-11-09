@@ -1,7 +1,7 @@
 # D1 refund client v1
 
 ## Status and integration boundary
-Client source is implemented against agreed contract `70db5386`, with feature-local providers and a local administrative app entry. An accepted operational backend handoff has not been delivered here. Functional tests, SDK execution and live acceptance are deferred; written cases are not passing-test evidence. Source navigation is not operational or financial acceptance.
+Client source is implemented against agreed contract `70db5386`, with feature-local providers and a local administrative app entry. An accepted operational backend handoff has not been delivered here. Protocol/financial suites, SDK execution and live acceptance remain deferred; their written cases are not passing-test evidence. Separately scoped cold responsive-layout checks are executed, as described below. Source navigation is not operational or financial acceptance.
 
 Only the existing personal wallet signs command proofs. The pool key, service-role key, XDR, financial authorization, durable server submission and terminal settlement stay on the backend. Existing wallet services, database schema and D3 coordinator are unchanged; Identity test tools adds only the separate administrative entry.
 

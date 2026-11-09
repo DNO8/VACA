@@ -8,9 +8,9 @@ S2. Scope selected: "Reembolsos D1 — recomendado"
 
 ## Tasks
 T1 | S1-S2 | done: mobile tokens and three self-contained directions checked structurally; guided stack chosen; native canvas unavailable | route: parent | commit: 5a762e2
-T2 | S1-S2 | done: themed hierarchy, centered reading width and adaptive reference/actions passed three cold-layout cases | route: parent | commit: pending
-T3 | S1-S2 | done:3/3 presentation cases and corrected first source analysis exit0;0 errors/warnings,50 style infos; initial CLI64 retained | route: parent | commit: pending
-T4 | S1-S2 | in_progress: package only owned presentation/test/docs/evidence and record assessment/commit | route: parent | commit: pending
+T2 | S1-S2 | done: themed hierarchy, centered reading width and adaptive reference/actions passed three cold-layout cases | route: parent | commit: 4fe6e2f3cbfb5b565f1ce0ac71a41799de1e7085
+T3 | S1-S2 | done:3/3 presentation cases and corrected first source analysis exit0;0 errors/warnings,50 style infos; initial CLI64 retained | route: parent | commit: 4fe6e2f3cbfb5b565f1ce0ac71a41799de1e7085
+T4 | S1-S2 | done: owned implementation/tests/docs/evidence packaged as390-line work unit; unrelated tooling/phone changes preserved | route: parent | commit: 4fe6e2f3cbfb5b565f1ce0ac71a41799de1e7085
 
 ## Log
 L1. Human request: "podrias mejorar el front del cliente , debe encajar con el estilo de la app, ir revisando cosas asi mientras esperas ? responsiveness"
@@ -24,3 +24,4 @@ L8. RED before presentation source change: exit1,1pass/2fail; wide form992px exc
 L9. Structural checks passed: financial/async panel prefix, state labels, scope/validation/lifetime methods and all original literals unchanged; dependency and lock bytes unchanged; only owned presentation source edited. Chosen HTML preview HTTP200 at http://127.0.0.1:41863/d1-refund-responsive/01-guided-stack.html (30-minute bounded server, not Flutter app/native canvas). New checks do not satisfy deferred protocol tests, populated financial states, APK/device/native keyboard/font or whole-D1 acceptance.
 L10. Corrected first source analysis exit0/15.2s:0 errors,0 warnings,50 informational style lints, not clean. Historical initial CLI64 retained; no repeated source analysis or old check. New presentation suite remains3/3 PASS. Risk: none (presentation-only scope; no shared theme/provider/parser/financial behavior changed). Native review assessment and delivery slice pending.
 L11. Native ASSESS riskmedium/nativeRiskunassessable/candidateNULL/outcomeunknown: pre-existing untracked files require declaration; no reviewDue field supplied. Plan writerSelfVerification=true/independentVerifier=false. No native approval or automatic lifecycle/assessment retry; scoped frame/static checks are the observed proof. Source work-unit is374 diff lines before this evidence addition, distinct from the109-line design slice.
+L12. Source work-unit4fe6e2f3cbfb5b565f1ce0ac71a41799de1e7085:326 additions+64 deletions=390 diff lines,6 owned paths. All scoped tasks complete on observed evidence; native canvas unavailable,50 styleINFO and initialCLI64 explicitly retained. Protocol suites remain deferred, populated-state/device/financial journeys not accepted. Final passive closure changes no Dart source or tests. Existing uncommitted .gitignore and7 Android/phone evidence/task paths excluded. No push/deploy or backend/D3 edit.
