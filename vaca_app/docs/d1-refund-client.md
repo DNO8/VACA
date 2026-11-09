@@ -66,6 +66,9 @@ The administrative screen follows the existing VACA light/dark theme, with a cen
 
 Design sources/directions: `design/system.md` and `design/d1-refund-responsive/` at repository root. The guided-stack direction is implemented; the other two are alternatives. Native canvas lookup is unavailable in the home-root harness; a bounded loopback static preview is not a running Flutter application. See `odd/evidence/d1-refund-responsive.json` for exact failed RED, successful layout run and analysis outcomes.
 
+## Additive v2 state model
+`domain/refund_remainder_status.dart` defines `RemainderStatus` and distinct `RemainderAction` values against the verified v2 contract (12265 bytes, SHA256 `6bcf25004b1ecddf5853bc2026ecec475550fbb694b31d520ee63171655af62a`). It reuses the original `RefundScope` and unchanged validation primitives, not the v1 parser or a relabeled v1 receipt. It requires version2, exact fields/state tuples, a null payment-lane claimable-balance ID, original positive gross and complete accounting before settled. Exports are detached; unknown accounting stays null. `refund_remainder_status_test.dart` contains UNEXECUTED source scenarios, not financial proof.
+
 ## Deferred verification
 `refund_status_test.dart` contains domain, exact proof and wire/one-use permit scenarios. `refund_client_test.dart` contains durable-write ordering, concurrent instances, lost response, reconstructed consumer, error/redirect/malformed-body holds, protected gross10/claim1, terminal claim1+refund9 and separately explicit reconciliation. Fixtures use synthetic deterministic identities and an in-memory transport/storage, never real keys or network.
 
