@@ -1,0 +1,28 @@
+{
+  "title": "D1 refund responsive presentation",
+  "brief": "Match the VACA mobile theme; improve reading hierarchy and responsive cold refund views without financial behavior changes.",
+  "feature": "odd/tasks/d1-refund-responsive.md",
+  "artboards": [
+    {
+      "file": "01-guided-stack.html",
+      "title": "Lectura guiada",
+      "tradeoff": "Chosen: clear stacked reference and status sections; more vertical scrolling.",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "02-technical-split.html",
+      "title": "Mesa técnica",
+      "tradeoff": "Side-by-side form and status on wide screens; denser administrative presentation.",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "03-progressive-reference.html",
+      "title": "Referencia compacta",
+      "tradeoff": "Secondary help can be folded; requires an extra gesture to read guidance.",
+      "width": 390,
+      "height": 844
+    }
+  ]
+}
