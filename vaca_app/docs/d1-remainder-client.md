@@ -14,9 +14,15 @@ A legacy record prevents a new v2 first POST without being modified. If the addi
 
 This is local coordination only, not a cross-process/device CAS, backend idempotence or financial authorization. Another installation and actual provider/SQL/settlement behavior remain backend concerns.
 
+## V2 transport
+
+`RemainderHttpClient` signs a fresh v2 personal-wallet proof for each explicit action and posts once to `/functions/v1/d1-custody/refund-remainder`, `refund-remainder-status` or `refund-remainder-reconcile`. It never relabels a v1 proof. A refund requires a final journal-issued one-use permit; it is consumed before signing, including when signing or transport subsequently fails.
+
+Requests are limited to 8192 bytes, responses to 16384 bytes, with a 10-second transport cancellation timer, JSON/no-store admission, duplicate-key rejection and exact DTO/error validation. Status admits 200; reconcile admits 202 for pending/unknown, otherwise 200; refund admits 202 for pending/unknown, 409 for not_due/blocked, otherwise 200, never not_started. Observed refund facts must match the permit's original baseline. No interceptor retries, redirect, polling, protocol fallback or automatic reconcile exists.
+
 ## Pending source units
 
-The following source units follow this shared-journal change: v2 one-shot signed command transport; durable first-submit/status/explicit reconciliation consumer; passive providers and the existing known-reference administrative screen. Their completion will be recorded in the feature task file and this guide. Nothing is enabled by importing the shared journal alone.
+The durable first-submit/status/explicit reconciliation consumer and passive providers/known-reference administrative commands follow this transport. Source completion is recorded in the feature task file. Importing transport or journals does not send any command.
 
 ## Existing boundaries
 
