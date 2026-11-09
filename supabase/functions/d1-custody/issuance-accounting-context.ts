@@ -57,6 +57,12 @@ function freeze<T>(v: T): T {
  * There is no provider, clock, signer, write, release or refund path.
  */
 export async function observeIssuanceAccountingContext(client: Client, configuration: Scope): Promise<IssuanceAccountingContext> {
+  return (await observeAccountingCore(client, configuration)).context;
+}
+
+async function observeAccountingCore(
+  client: Client, configuration: Scope,
+): Promise<{ context: IssuanceAccountingContext; history: Awaited<ReturnType<typeof readTransactionHistory>> }> {
   let denied = false;
   try {
     const input = copy(configuration);
@@ -124,12 +130,25 @@ export async function observeIssuanceAccountingContext(client: Client, configura
     // consistency evidence across reads, not a database-wide atomic snapshot.
     for (const { name, parameters, data } of stable.values()) check(same(await rpc(name, parameters), data));
     const observed = outcome.observed_outcome;
-    return freeze({ kind: "d1_issuance_accounting_context", revision: 1, accounting,
+    const context: IssuanceAccountingContext = freeze({ kind: "d1_issuance_accounting_context", revision: 1, accounting,
       included: { feeChargedStroops: observed.observation.feeChargedStroops, sequence: observed.observation.sequence, claimableBalanceId: observed.claimableBalanceId },
       confirmedPoolFeesSpentStroops: history.confirmedPoolFeesSpentStroops,
       held: { commitment: copy(commitment), activeOwner: copy(activeOwner) } });
+    return { context, history };
   } catch {
     if (denied) throw new CustodyError("unauthorized_admin_wallet", 403);
     throw unavailable();
   }
+}
+
+type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
+export interface IssuanceAccountingObservation {
+  readonly context: DeepReadonly<IssuanceAccountingContext>;
+  readonly history: DeepReadonly<Awaited<ReturnType<typeof readTransactionHistory>>>;
+}
+/** Actual accounting input provenance; not financial or execution authority. */
+export async function observeIssuanceAccountingWithHistory(
+  client: Client, configuration: Scope,
+): Promise<IssuanceAccountingObservation> {
+  return freeze(await observeAccountingCore(client, configuration));
 }

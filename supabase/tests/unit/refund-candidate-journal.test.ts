@@ -1,6 +1,6 @@
 import { Account, Asset, Keypair, Memo, Networks, Operation, Transaction, TransactionBuilder, xdr, hash as digest } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
-import { loadRecoveryRefundCandidate, type RefundCandidateReceipt } from "../../functions/d1-custody/refund-candidate-journal.ts";
+import { loadRecoveryRefundCandidate, ensureRecoveryRefundCandidate, type RefundCandidateReceipt } from "../../functions/d1-custody/refund-candidate-journal.ts";
 import { planRecoveryRefund } from "../../functions/d1-custody/recovery-refund-plan.ts";
 import { parseInitialIssuanceOutcome } from "../../functions/d1-custody/initial-issuance-outcome.ts";
 import { parseIncludedTransaction } from "../../functions/d1-custody/transaction-observation.ts";
@@ -191,5 +191,59 @@ Deno.test("refund history maps only exact returned current-admin denial to403 an
         { data: fault === "nonNullData" ? {} : null, error };
     };
     await rejects(h, fault === "denied" || fault === "readDenied"); equal(getters, 0);
+  }
+});
+
+// Additional source definitions only; no SDK/SQL execution is claimed here.
+Deno.test("candidate ensure preserves existing expired history without saving or replacing construction facts", async () => {
+  const h = await setup(), before = h.snapshot(), count = h.counters();
+  const result = await ensureRecoveryRefundCandidate(h.client, scope, { ...configuration, sourceSequence: "8", now: cutoff + 10000, validUntil: cutoff + 10060 });
+  equal(result, h.candidate); equal(Object.isFrozen(result), true); preserved(h, before, count);
+});
+Deno.test("candidate ensure constructs only after validated absence and requests one immutable save", async () => {
+  const h = await setup(); h.lookup.candidate = null; h.lookup.active_request_id = null;
+  const before = h.snapshot(), count = h.counters(), calls: string[] = [];
+  let saved: RefundCandidateReceipt | null = null, saves = 0;
+  const client = { async rpc(name: string, args: Record<string, unknown>): Promise<Reply> {
+    calls.push(name);
+    if (name !== "d1_record_refund_candidate") return h.client.rpc(name, args);
+    saves++;
+    equal(args, { p_request_id: requestId, p_authorized_by: admin, p_unsigned_xdr: h.plan.unsignedXdr, p_transaction_hash: h.plan.transactionHash });
+    saved = structuredClone(h.candidate); return { data: structuredClone(saved), error: null };
+  } };
+  const result = await ensureRecoveryRefundCandidate(client, scope, configuration);
+  equal(result, h.candidate); equal(saved, h.candidate); equal(saves, 1); equal(calls[0], "d1_load_refund_candidate");
+  equal(calls.at(-1), "d1_record_refund_candidate"); equal(calls.filter(n => n === "d1_load_refund_candidate").length, 1);
+  equal(Object.isFrozen(result), true); equal(h.snapshot(), before); equal(h.counters(), count);
+});
+Deno.test("candidate ensure never retries or reads back a potentially committed ambiguous save", async () => {
+  for (const fault of ["lost", "malformed", "thrown403", "denied"] as const) {
+    const h = await setup(); h.lookup.candidate = null; h.lookup.active_request_id = null;
+    const before = h.snapshot(), count = h.counters(), calls: string[] = [];
+    let saves = 0, saved: RefundCandidateReceipt | null = null;
+    const client = { async rpc(name: string, args: Record<string, unknown>): Promise<Reply> {
+      calls.push(name); if (name !== "d1_record_refund_candidate") return h.client.rpc(name, args);
+      saves++;
+      if (fault === "denied") return { data: null, error: { code: "42501", message: "unauthorized_admin_wallet" } };
+      saved = structuredClone(h.candidate);
+      if (fault === "lost") throw Error("reply lost after commit");
+      if (fault === "thrown403") throw new CustodyError("unauthorized_admin_wallet", 403);
+      return { data: {}, error: null };
+    } };
+    let error: unknown; try { await ensureRecoveryRefundCandidate(client, scope, configuration); } catch (e) { error = e; }
+    const code = fault === "denied" ? "unauthorized_admin_wallet" : "refund_candidate_unavailable";
+    equal(error instanceof CustodyError ? [error.code, error.status, error.message] : error, [code, fault === "denied" ? 403 : 503, code]);
+    equal(saves, 1); equal(saved, fault === "denied" ? null : h.candidate); equal(calls.at(-1), "d1_record_refund_candidate");
+    equal(calls.filter(n => n === "d1_load_refund_candidate").length, 1); equal(h.snapshot(), before); equal(h.counters(), count);
+  }
+});
+Deno.test("candidate ensure rejects malformed construction before reading or saving", async () => {
+  for (const getter of [false, true]) {
+    const h = await setup(), before = h.snapshot(), count = h.counters(); let reads = 0;
+    const cfg = { ...configuration, sourceSequence: getter ? "3" : "03" };
+    if (getter) Object.defineProperty(cfg, "now", { enumerable: true, get() { reads++; throw Error("getter must not run"); } });
+    let error: unknown; try { await ensureRecoveryRefundCandidate(h.client, scope, cfg); } catch (e) { error = e; }
+    equal(error instanceof CustodyError ? [error.code, error.status, error.message] : error, ["refund_candidate_unavailable", 503, "refund_candidate_unavailable"]);
+    equal([reads, h.trace.length], [0, 0]); equal(h.snapshot(), before); equal(h.counters(), count);
   }
 });

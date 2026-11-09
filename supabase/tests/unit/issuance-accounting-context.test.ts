@@ -1,6 +1,6 @@
 import { Keypair, TransactionBuilder, Transaction, Networks, Operation, Account, xdr, hash as digest } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
-import { observeIssuanceAccountingContext } from "../../functions/d1-custody/issuance-accounting-context.ts";
+import { observeIssuanceAccountingContext, observeIssuanceAccountingWithHistory } from "../../functions/d1-custody/issuance-accounting-context.ts";
 import { withInitialSubmissionAuthorization } from "../../functions/d1-custody/initial-submission-authorization.ts";
 import { recordInitialIssuanceOutcome } from "../../functions/d1-custody/initial-issuance-outcome-journal.ts";
 import { parseIncludedTransaction } from "../../functions/d1-custody/transaction-observation.ts";
@@ -135,4 +135,29 @@ Deno.test("accounting context expiry never releases owner or commitments and unm
   const r = await observe(h), last = h.f.h.records.at(-1)!;
   equal(r.accounting.unmatchedActivity, [{ operationIndex: 0, reason: "unexplained_pool_operation", transactionHash: last.transactionHash }]);
   equal(r.accounting.encumbrances.length, 1); equal(r.held.activeOwner.request_id, requestId);
+});
+
+// Additional source definitions only; not executed by the source incorporation.
+Deno.test("accounting provenance exposes frozen input history with the same legacy context and RPC trace", async () => {
+  const h = await setup(), before = h.snapshot(), counters = h.counters();
+  const result = await observeIssuanceAccountingWithHistory(h.client, scope), trace = [...h.trace];
+  equal(h.snapshot(), before); equal(h.counters(), counters);
+  equal(result.history.records, h.f.h.records); equal(result.context.confirmedPoolFeesSpentStroops, result.history.confirmedPoolFeesSpentStroops);
+  equal([Object.isFrozen(result), Object.isFrozen(result.context), Object.isFrozen(result.history), Object.isFrozen(result.history.records)], [true, true, true, true]);
+  h.trace.length = 0; const legacy = await observeIssuanceAccountingContext(h.client, scope);
+  equal(result.context, legacy); equal(h.trace, trace); equal(h.snapshot(), before); equal(h.counters(), counters);
+});
+Deno.test("accounting provenance keeps denial and missing-history failures read-only", async () => {
+  for (const denied of [false, true]) {
+    const h = await setup(), before = h.snapshot(), counters = h.counters();
+    h.hooks.reply = (name, reply) => {
+      if (denied) return { data: null, error: { code: "42501", message: "unauthorized_admin_wallet" } };
+      if (name === "d1_load_issuance_outcome") reply.data.outcome = null;
+      return reply;
+    };
+    let error: unknown; try { await observeIssuanceAccountingWithHistory(h.client, scope); } catch (e) { error = e; }
+    const code = denied ? "unauthorized_admin_wallet" : "issuance_accounting_unavailable";
+    equal(error instanceof CustodyError ? [error.code, error.status, error.message] : error, [code, denied ? 403 : 503, code]);
+    equal(h.snapshot(), before); equal(h.counters(), counters); equal(h.trace.every(n => n.startsWith("d1_load_") || n.startsWith("d1_list_")), true);
+  }
 });

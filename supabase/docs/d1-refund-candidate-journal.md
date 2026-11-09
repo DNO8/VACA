@@ -1,4 +1,4 @@
-# Read-only refund candidate history
+# Historical refund candidates and one-shot construction
 
 `loadRecoveryRefundCandidate(client, scope)` validates saved unsigned Testnet history.
 Scope contains exactly `namespace`, `pool`, `requestId`, and `authenticatedAdmin`.
@@ -21,5 +21,22 @@ Accepted SDK planning revalidates initial history, held fees, original donor gro
 and current observed ownership. Captured032 payloads are SDK-validated, but their
 `outcome_hash` is an opaque database identifier, not an SDK-recomputed JSONB digest.
 Original authorizer and expired maxTime survive unchanged. Reads are not an atomic
-fresh financial snapshot. No signing, funding, write, release or rearming occurs.
-UnitB/save coordination is not present; real034 integration proof remains pending.
+fresh financial snapshot. The historical loader does not sign, fund, write,
+release or rearm anything. Its implementation remains unchanged.
+
+## Ensure only after validated absence
+
+`ensureRecoveryRefundCandidate(client, scope, construction)` is an additive source
+API. It snapshots and validates scope/construction before the first await, then
+uses the historical loader. Existing validated history is returned without
+replacing original bytes, deadlines or authorizer with new construction facts.
+Only validated absence can enter the accepted planner and request one034 save.
+
+There is no retry or readback after that potentially committed save. A lost or
+malformed response is unavailable, not absence or permission to create again.
+Only exact returned database denial yields403; a helper-thrown403 is sanitized.
+An identical receipt owned by another legitimate actor can be returned without
+changing its immutable history. A receipt is not fresh eligibility or authority
+to sign or submit. Host wiring, fresh financial guards and real034 proof remain
+separate. New public API test definitions are present but **unexecuted**; this
+source incorporation invokes no RPC, SDK transaction or SQL.

@@ -1,7 +1,7 @@
 import { Keypair, Networks, Transaction, TransactionBuilder } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
 import { CustodyError } from "./handler.ts";
-import { planRecoveryRefund } from "./recovery-refund-plan.ts";
+import { planRecoveryRefund, type RecoveryRefundConfiguration } from "./recovery-refund-plan.ts";
 
 export type RefundCandidateClient = Parameters<typeof planRecoveryRefund>[0];
 export type RefundCandidateScope = Parameters<typeof planRecoveryRefund>[1];
@@ -57,6 +57,73 @@ function copy<T>(value: T): T {
   const text = JSON.stringify(value); check(new TextEncoder().encode(text).length <= 2097152);
   return JSON.parse(text);
 }
+/** Load immutable history first; only validated absence can construct and save once.
+ * A returned candidate is not fresh financial, signing or submission authority. */
+export async function ensureRecoveryRefundCandidate(
+  client: RefundCandidateClient, configuration: RefundCandidateScope, construction: RecoveryRefundConfiguration,
+): Promise<Readonly<RefundCandidateReceipt>> {
+  let denied = false;
+  try {
+    // Both snapshots and scalar checks precede the first asynchronous boundary.
+    const scope = copy(configuration), cfg = copy(construction);
+    check(exact(scope, "namespace,pool,requestId,authenticatedAdmin"));
+    check(exact(cfg, "sourceSequence,feePerOperationStroops,now,validUntil"));
+    const { namespace, pool, requestId, authenticatedAdmin } = scope;
+    const uuid = (v: unknown) => typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
+    check(uuid(namespace) && uuid(requestId)); Keypair.fromPublicKey(pool); Keypair.fromPublicKey(authenticatedAdmin);
+    check(typeof cfg.sourceSequence === "string" && /^[1-9][0-9]{0,18}$/.test(cfg.sourceSequence) && BigInt(cfg.sourceSequence) < 9223372036854775807n);
+    check(typeof cfg.feePerOperationStroops === "string" && /^[1-9][0-9]{0,9}$/.test(cfg.feePerOperationStroops) && BigInt(cfg.feePerOperationStroops) <= 4294967295n);
+    check(typeof cfg.now === "number" && Number.isSafeInteger(cfg.now) && cfg.now >= 0);
+    check(typeof cfg.validUntil === "number" && Number.isSafeInteger(cfg.validUntil) && cfg.validUntil > cfg.now);
+    const args = { p_request_id: requestId, p_authorized_by: authenticatedAdmin };
+    const rpc = async (name: string, parameters: DTO) => {
+      const reply = copy(await client.rpc(name, parameters));
+      check(exact(reply, "data,error"));
+      if (reply.error !== null) {
+        // Never promote a helper-thrown403 into database authentication evidence.
+        if (reply.data === null && exact(reply.error, "code,message") && reply.error.code === "42501" &&
+          reply.error.message === "unauthorized_admin_wallet") denied = true;
+        throw unavailable();
+      }
+      return reply.data;
+    };
+    let captured: unknown;
+    const readonly: RefundCandidateClient = { async rpc(name, parameters) {
+      check((name === "d1_load_refund_candidate" || reads.has(name)) && parameters.p_authorized_by === authenticatedAdmin);
+      if (Object.hasOwn(parameters, "p_request_id")) check(parameters.p_request_id === requestId);
+      if (Object.hasOwn(parameters, "p_namespace")) check(parameters.p_namespace === namespace);
+      const data = await rpc(name, parameters);
+      if (name === "d1_load_issuance_outcome") {
+        if (captured === undefined) captured = copy(data);
+        else check(same(captured, data));
+      }
+      return { data, error: null };
+    } };
+    const existing = await loadRecoveryRefundCandidate(readonly, scope);
+    if (existing !== null) return existing;
+    // The accepted planner alone validates historical economics and actual032 payload.
+    const plan = await planRecoveryRefund(readonly, scope, cfg);
+    check(object(captured) && object(captured.outcome));
+    check(plan.namespace === namespace && plan.requestId === requestId && plan.network === "TESTNET" && plan.source === pool);
+    const expected = {
+      kind: "d1_refund_candidate", revision: 1, request_id: requestId, namespace, network: "TESTNET", pool,
+      initial_transaction_hash: captured.outcome.transaction_hash, initial_outcome_hash: captured.outcome.outcome_hash,
+      source_sequence: plan.sourceSequence, transaction_sequence: plan.transactionSequence, deadline: plan.deadline,
+      unsigned_xdr: plan.unsignedXdr, transaction_hash: plan.transactionHash,
+    };
+    // No retry/readback after this potentially committed call, even if its reply is lost.
+    const saved = await rpc("d1_record_refund_candidate", { ...args, p_unsigned_xdr: plan.unsignedXdr, p_transaction_hash: plan.transactionHash });
+    check(exact(saved, "kind,revision,request_id,namespace,network,pool,authorized_by,initial_transaction_hash,initial_outcome_hash,source_sequence,transaction_sequence,deadline,unsigned_xdr,transaction_hash"));
+    check(typeof saved.authorized_by === "string"); Keypair.fromPublicKey(saved.authorized_by);
+    // Another legitimate concurrent actor may own identical immutable history.
+    for (const [key, value] of Object.entries(expected)) check(saved[key] === value);
+    return Object.freeze(copy(saved)) as unknown as Readonly<RefundCandidateReceipt>;
+  } catch {
+    if (denied) throw new CustodyError("unauthorized_admin_wallet", 403);
+    throw unavailable();
+  }
+}
+
 const reads = new Set(["d1_load_issuance_outcome", "d1_load_submission_attempt", "d1_load_signed_transaction", "d1_load_unsigned_transaction",
   "d1_load_initial_financial_observation", "d1_load_issuance_fee_commitments", "d1_load_active_issuance_sequence", "d1_load_transaction_history_state",
   "d1_list_transaction_records", "d1_load_discovery_state", "d1_load_operating_credit_state", "d1_list_operating_credits", "d1_load_operating_credit"]);

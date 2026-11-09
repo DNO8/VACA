@@ -4,6 +4,13 @@
 authenticatedAdmin })` joins persisted SDK evidence for one included issuance.
 It is backend-only accounting context, **not consensus, settlement or refund permission**.
 
+`observeIssuanceAccountingWithHistory(client, scope)` additionally returns
+`{ context, history }`, recursively frozen, using the exact history from the same
+validated accounting observation. It does not perform a second observation to
+recover provenance. The existing context-only API and its read-only guards remain.
+This additive API is locally incorporated source only; its new test definitions
+have not been executed, and it is not mounted in the host.
+
 ## Evidence required
 
 - Existing 032 outcome, revalidated through the accepted historical SDK gate

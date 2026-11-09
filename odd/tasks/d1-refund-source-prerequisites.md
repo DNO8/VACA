@@ -14,9 +14,9 @@ The user approved the following quoted proposal with the exact reply “dale con
 
 ## Tasks
 
-- T1 [done: SOURCE/STATIC] S1,S3,S4 — inline; two modules match frozen hashes, six test definitions UNEXECUTED, direct imports exist, 696 original tracked files/nine dirty paths unchanged; commit pending.
-- T2 [in_progress] S2,S3,S4 — inline; additive accounting/candidate APIs, old API preservation and focused test definitions/docs; commit pending. Risk: item 3 (shared accounting helper and historical candidate module).
-- T3 [pending] S3,S4 — inline; integrate the saved-initial fixture and recovery-test extraction without dropping existing assertions; document the bounded incorporation; commit pending.
+- T1 [done: SOURCE/STATIC] S1,S3,S4 — inline; two modules match frozen hashes, six test definitions UNEXECUTED, direct imports exist, 696 original tracked files/nine dirty paths unchanged; commit `d1a58240bd0aa31868844696dcefb1c852e5259d` (367 additions).
+- T2 [done: SOURCE/STATIC] S2,S3,S4 — inline; delivered API hashes match, old loader suffix/accounting core and old test bodies structurally preserved, six additional definitions UNEXECUTED; commit pending. Risk: item 3 (shared accounting helper and historical candidate module).
+- T3 [in_progress] S3,S4 — inline; integrate the saved-initial fixture and recovery-test extraction without dropping existing assertions; document the bounded incorporation; commit pending.
 - T4 [pending] S1–S4 — parent structural checks plus one risk-scoped independent static verifier; native assessment/review only through its offered route; local work-unit packaging; commit pending.
 
 ## Allowed edit surfaces
@@ -39,6 +39,8 @@ The user approved the following quoted proposal with the exact reply “dale con
 
 Forecast: approximately 800 authored diff lines, mostly previously delivered source and fixture movement, in focused local work-unit commits (roughly 300–400 lines each where cohesive), not a single accumulated feature-branch review. No publication/PR is requested. Do not compress source, omit assertions or import unrelated SQL cases to fit a budget. Native authority and consent are separate.
 
+Local slice boundaries: feature base `3f6b798234724c18608d1d604a0b2fc4e11a9bef` → arithmetic slice `d1a58240bd0aa31868844696dcefb1c852e5259d` (367 authored additions, Risk: none). The next shared-helper slice starts at that exact commit. The accumulated historical branch is not this candidate and is not resubmitted for review. Publication/PR shape remains unselected because no publication was requested.
+
 ## Log
 
 - L1 — Original user request, verbatim: “hay algo que puedas anvanzar en cuanto aintegracion enparalelo ?”
@@ -46,4 +48,5 @@ Forecast: approximately 800 authored diff lines, mostly previously delivered sou
 - L3 — Human authorization, verbatim: “dale con eso”. This authorizes this bounded own-clone incorporation, not the full 113-file backend packet, real host mounting, functional verification or the other session's grants.
 - L4 — Exploration: own Git common directory `.git`, feature branch and baseline confirmed. Nine pre-existing dirty paths (original seven plus two coordination trackers) preserved. `command -v gentle-ai` returned 1; no CLI was run or installed. Snapshot comparison diffs returned 1 as expected, not failures.
 - L5 — Scope resolution: incoming `refund-candidates.test.cjs` adds 389/deletes20 lines and depends on migrations034–047. This first source-prerequisite unit does not import those migrations or future suites; retain the owned034 test unchanged. Adopt only related pure/API test definitions and the saved-initial/recovery extraction. This is not the complete backend import or complete test merge.
-- L6 — T1 metadata check exit0: two snapshot hashes/direct imports match; 696 original tracked files and nine dirty paths unchanged; six new test definitions are UNEXECUTED; `git diff --check` exit0/empty stdout/stderr. The fixture `equal` uses JSON.stringify, so BigInt assertions use decimal strings. Native assessment returned medium/native unassessable, untracked-declaration error, candidate null/outcome unknown; no approval or review route inferred.
+- L7 — T2 metadata check exit0: both API files match delivered hashes; old loader suffix byte-identical; old accounting core identical after normalizing only its return wrapper; two old test bodies preserved, six new definitions UNEXECUTED. Exactly six allowed original files changed, 690 others and nine dirty paths unchanged; direct imports exist and diff check0/empty. Shared-helper risk item3 escalation produced high/native unassessable and requires one independent verifier at T4; candidate null/outcome unknown, no reviewDue/continuation supplied, no native approval. A failed documentation edit had no write and was corrected against an actual file read.
+- L6 — T1 metadata check exit0: two snapshot hashes/direct imports match; 696 original tracked files and nine dirty paths unchanged; six new test definitions are UNEXECUTED; `git diff --check` exit0/empty stdout/stderr. The fixture `equal` uses JSON.stringify, so BigInt assertions use decimal strings. Native assessment returned medium/native unassessable, untracked-declaration error, candidate null/outcome unknown; no approval or review route inferred. One committed-range assessment of the new367-line slice returned the same limitation, not approval. Initial `git add` exit1 identified the existing `supabase/.gitignore:2:*` documentation rule; an explicit force-add of only the authorized new guide preserved ignore files. No hooks path is configured; only sample hooks exist. Corrected local commit exit0, no SDK/tests invoked.
