@@ -26,9 +26,17 @@ Requests are limited to 8192 bytes, responses to 16384 bytes, with a 10-second t
 
 Errors stay unknown, never settled or zero. A recorded uncertain attempt permits explicit signed status or explicit observational reconciliation, not automatic retry. Repeated views retain the same original facts in memory; durable holds bind them after restart. Current observations must match both the provided prior DTO and stored original facts. Raw transport cannot mint a permit.
 
-## Pending source unit
+## Administrative integration
 
-Passive providers and known-reference administrative commands follow this consumer. Importing transport, journals or the consumer does not send any command. Actual backend/private-provider activation, app execution and operational acceptance remain separate.
+`remainderClientProvider` passively composes the consumer, shared storage journal and existing personal-wallet signer. It uses the existing public configuration provider, never a service-role key. `remainderHttpClientFactoryProvider` is an injectable construction seam; its factory must return a fresh owned client. `remainderHttpClientProvider` retains that transport for the container lifetime and closes it on disposal. Construction alone does not read a seed, persist a hold, sign or send a command.
+
+The existing known-reference `RefundAdminScreen` mounts `RefundRemainderPanel` alongside the v1 panel with the same original scope. Neither opening the screen, building either panel nor changing the reference triggers a command. The panels share the durable submission gate; showing both lanes is not permission to submit through both.
+
+The remainder panel offers explicit status, advertised first-refund intent with confirmation, and explicit observational reconciliation. It passes its retained original DTO into the consumer, captures scope/generation across asynchronous work and ignores obsolete view results. Changing the view clears presentation only, never durable storage or an already dispatched operation. Busy feedback is local UI state, not backend authorization or distributed exclusion.
+
+Original donor/payment references, original positive gross/deadline and nullable settlement facts remain visible. Unknown stays unknown, not zero or settled. After an uncertain recorded attempt, recovery is explicit observation/reconciliation rather than a second first POST. No automatic polling, lane switch, release, reset or new original identity is offered.
+
+These are authored source paths only: the provider graph, dialogs, populated widgets and financial journeys have not been executed or analyzed for this unit. Historical v1/passive-status/layout evidence does not validate the new integration. Actual backend/private-provider activation, app execution and operational acceptance remain separate. See [the v1 integration guide](d1-refund-client.md) for the unchanged wire contract and historical evidence boundaries.
 
 ## Existing boundaries
 

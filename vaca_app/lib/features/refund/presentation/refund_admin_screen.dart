@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../domain/refund_scope.dart';
 import 'refund_panel.dart';
+import 'refund_remainder_panel.dart';
 
 /// Navigation is not an admin-role grant. The backend verifies every proof.
 class RefundAdminEntry extends StatelessWidget {
@@ -159,6 +160,12 @@ class _RefundAdminScreenState extends State<RefundAdminScreen> {
                             'Consultá el estado para recuperar una solicitud pendiente.'),
                         const SizedBox(height: AppSpacing.md),
                         RefundPanel(scope: _scope!),
+                        const SizedBox(height: AppSpacing.md),
+                        const Text('La vía v1 y el remanente v2 comparten la referencia original. '
+                            'Un intento registrado impide otro primer envío entre ambas vías; '
+                            'no se cambia de vía automáticamente.'),
+                        const SizedBox(height: AppSpacing.md),
+                        RefundRemainderPanel(scope: _scope!),
                       ],
                     ]),
               ),
