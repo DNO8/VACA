@@ -20,9 +20,15 @@ This is local coordination only, not a cross-process/device CAS, backend idempot
 
 Requests are limited to 8192 bytes, responses to 16384 bytes, with a 10-second transport cancellation timer, JSON/no-store admission, duplicate-key rejection and exact DTO/error validation. Status admits 200; reconcile admits 202 for pending/unknown, otherwise 200; refund admits 202 for pending/unknown, 409 for not_due/blocked, otherwise 200, never not_started. Observed refund facts must match the permit's original baseline. No interceptor retries, redirect, polling, protocol fallback or automatic reconcile exists.
 
-## Pending source units
+## Explicit consumer and recovery
 
-The durable first-submit/status/explicit reconciliation consumer and passive providers/known-reference administrative commands follow this transport. Source completion is recorded in the feature task file. Importing transport or journals does not send any command.
+`RemainderClient` exposes `status`, `requestRefund`, and `reconcile`. Every operation uses the same original-scope isolate queue as v1. A first refund intent observes a fresh status, binds its original donation/deadline to previously observed facts, requires `not_started` plus the explicit server action, then persists the common hold and consumes its one-use permit. Any existing v1 or v2 hold turns another refund intent into a status-only observation; it never selects the other lane or issues a second refund POST.
+
+Errors stay unknown, never settled or zero. A recorded uncertain attempt permits explicit signed status or explicit observational reconciliation, not automatic retry. Repeated views retain the same original facts in memory; durable holds bind them after restart. Current observations must match both the provided prior DTO and stored original facts. Raw transport cannot mint a permit.
+
+## Pending source unit
+
+Passive providers and known-reference administrative commands follow this consumer. Importing transport, journals or the consumer does not send any command. Actual backend/private-provider activation, app execution and operational acceptance remain separate.
 
 ## Existing boundaries
 
