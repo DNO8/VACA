@@ -28,6 +28,16 @@ The version/environment selection is recorded in the Android task L5–L14 and `
 
 **Conditional output only:** after the parent receives job73's completion, `supabase/.temp/d1-apk-preparation/build-result.json` may supply the build result. Its existence, success, schema and artifact contents have not been inspected here. Do not poll active logs, assume a standard output filename is fresh, or substitute an older APK for a failed/missing result. No automatic retry or replacement build is authorized by this guide.
 
+## Authorized local Gradle correction (S7)
+
+The original job73 logs record a wrapper download timeout, Flutter's internal retry and a disappeared Gradle daemon; no successful APK or outer completion receipt was recovered. Available host memory was approximately1456MiB of7597MiB, while project defaults allow8G heap/4G metaspace. This motivates a local cap, **not a proven OOM diagnosis**. Gradle8.14 now has a cached distribution marker; no distribution/version upgrade was made.
+
+The clone-local `.tooling/gradle-home/gradle.properties` overrides memory to1024M heap/384M metaspace/128M codecache, one worker, no parallelism, no persistent daemon and in-process Kotlin. Project `android/gradle.properties` and the pinned environment JSON are not edited. These local caps are not new defaults for other developers.
+
+The separate single-attempt runner is `supabase/.temp/d1-gradle-resource-correction/build_once.py`, using the same pinned snapshot/arguments above. It preserves the original attempt files; records invocation/result/stdout/stderr separately; stops the process group at a Flutter retry announcement; and keeps the1200-second timeout. Success requires a fresh APK plus unchanged named dependency/project inputs and local limits. This remains a build check, not historical toolchain integrity closure. No suites, phone, backend or financial operations are part of the correction.
+
+One independent static review (`mwa0jr56-2-m94n`) found no concrete blocker in this correction and ran only Python in-memory syntax compilation (exit0). Parent repeated that exact syntax check once (exit0). Neither check executes the build or dynamically establishes Gradle behavior. The actual compilation result must be reported separately.
+
 ## Identity to establish on an actually generated APK
 
 Source predicts the following, but does not prove the compiled artifact:
