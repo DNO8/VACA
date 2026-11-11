@@ -46,6 +46,14 @@ A subsequent bounded connectivity probe (job6, exit0) returned HEAD200 from the 
 
 The fresh runner `supabase/.temp/d1-gradle-network-restored/build_once.py` retains old receipts and checks a1200-second wall-clock deadline during waits of at most2s and again after child exit, rejecting late success. Timeout remains effective124; retry announcements remain failure. Termination grace, reader joins, accounting and runtime scheduling are additional; this is not an absolute runtime guarantee. One targeted static follow-up (`mwc74zb6-3-loua`) found no blocker; syntax check and parent repeat exited0, without builds. A new compilation under restored network conditions still needs its own observed result; no APK or historical integrity closure follows from this correction.
 
+### Android preferences initialization correction
+
+Job7 failed after39.48s (exit1, no retry, no admitted APK) applying the Android application plugin. One offline `help --stacktrace` reproduction (job10, exit1) established `AndroidLocationsException`: `ANDROID_PREFS_ROOT`, `ANDROID_SDK_HOME` and `ANDROID_USER_HOME` supplied conflicting preference locations; the exception recommends only `ANDROID_USER_HOME`. Initial diagnostic job9 used the wrong shell and failed parsing the Bash wrapper before Gradle started; it is not a valid plugin reproduction.
+
+The clone-local environment JSON now removes **only** deprecated `ANDROID_PREFS_ROOT` and `ANDROID_SDK_HOME`. All17 remaining values, including `ANDROID_USER_HOME`, SDK/NDK discovery, home/cache paths and Java configuration, are unchanged. Before-bytes are retained at `supabase/.temp/d1-gradle-preferences-fixed/environment-before.json`. No SDK reinstall, global configuration or dependency/version change occurred.
+
+The fresh `supabase/.temp/d1-gradle-preferences-fixed/build_once.py` is byte-identical to the deadline-corrected runner. One new-env independent static review (`mwc7dayf-4-r39d`) found no blocker; its read-only JSON/runner/syntax check and the parent readback/check exited0. These establish only the bounded configuration change; the actual corrected build remains a separate functional outcome. Historical toolchain integrity and artifact proof remain unresolved.
+
 ## Identity to establish on an actually generated APK
 
 Source predicts the following, but does not prove the compiled artifact:
