@@ -54,6 +54,12 @@ The clone-local environment JSON now removes **only** deprecated `ANDROID_PREFS_
 
 The fresh `supabase/.temp/d1-gradle-preferences-fixed/build_once.py` is byte-identical to the deadline-corrected runner. One new-env independent static review (`mwc7dayf-4-r39d`) found no blocker; its read-only JSON/runner/syntax check and the parent readback/check exited0. These establish only the bounded configuration change; the actual corrected build remains a separate functional outcome. Historical toolchain integrity and artifact proof remain unresolved.
 
+### Latest result: corrected-preferences build timed out
+
+Job11 ended with **exit124**, `timeout=true`, `childExit=-9`, no retry announcement and no admitted artifact, after1787.51s (~29m48s). The receipt reports the five named project/dependency inputs and local Gradle limits unchanged. Retained stdout contains only the start of `assembleDevDebug`; stderr only the Java user-home setting. These logs do not establish the stalled stage or cause, nor a successful APK. The nominal1200-second deadline is not evidence of an absolute20-minute runtime bound.
+
+Build and artifact delivery remain blocked/pending respectively. Do not automatically retry, raise the timeout or treat the static environment review as functional success. Next human disposition is a separately bounded read-only examination of existing Gradle daemon/log evidence without compiling, or a pause. Phone/backend/stopped suites/financial actions and historical missing toolchain-integrity proof remain unchanged.
+
 ## Identity to establish on an actually generated APK
 
 Source predicts the following, but does not prove the compiled artifact:
