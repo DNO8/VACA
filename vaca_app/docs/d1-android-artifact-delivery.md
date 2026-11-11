@@ -38,6 +38,14 @@ The separate single-attempt runner is `supabase/.temp/d1-gradle-resource-correct
 
 One independent static review (`mwa0jr56-2-m94n`) found no concrete blocker in this correction and ran only Python in-memory syntax compilation (exit0). Parent repeated that exact syntax check once (exit0). Neither check executes the build or dynamically establishes Gradle behavior. The actual compilation result must be reported separately.
 
+### Observed resource-bounded attempt and deadline correction
+
+Job4 **failed**: its receipt records effective exit1, child exit0, a retry announcement and no admitted APK. Logs show classpath downloads failing due to DNS/connection timeouts at official Google Maven and Maven Central. Five named project/dependency inputs and local caps stayed unchanged. Observed elapsed time was72236.6s, so the nominal1200-second wall-time bound was **not established**; no suspension or memory cause is inferred.
+
+A subsequent bounded connectivity probe (job6, exit0) returned HEAD200 from the exact official AGP8.11.1 and protobuf3.25.5 POM endpoints in default/direct modes, without proxy variables. No DNS, hosts, proxy, mirror or version was changed.
+
+The fresh runner `supabase/.temp/d1-gradle-network-restored/build_once.py` retains old receipts and checks a1200-second wall-clock deadline during waits of at most2s and again after child exit, rejecting late success. Timeout remains effective124; retry announcements remain failure. Termination grace, reader joins, accounting and runtime scheduling are additional; this is not an absolute runtime guarantee. One targeted static follow-up (`mwc74zb6-3-loua`) found no blocker; syntax check and parent repeat exited0, without builds. A new compilation under restored network conditions still needs its own observed result; no APK or historical integrity closure follows from this correction.
+
 ## Identity to establish on an actually generated APK
 
 Source predicts the following, but does not prove the compiled artifact:
