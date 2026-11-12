@@ -119,27 +119,37 @@ SUPABASE_URL
 SUPABASE_ANON_KEY
 ```
 
-The backend owner confirmed the following **future public target**, not a deployed or activated endpoint (handoff correlation `0c0ca2eaef6fc0110315a1a4679d439a`):
+The backend owner subsequently reported **publication and selected TESTNET activation complete** (correlations `98e25a7af7cf69dd0c2e9200212d19ed` and `f369a4d0db9d9ee7b489d4499eb3902e`). This supersedes the earlier future-target handoff `0c0ca2eaef6fc0110315a1a4679d439a`: do not use its former `GDFTI…` Friendbot pool or former namespace for new configuration. These are owner-reported deployment/activation facts, not this client's HTTP, APK integration or financial verification.
 
 | Public input | Owner-confirmed value / limitation |
 |---|---|
 | `SUPABASE_URL` project origin | `https://tgqxxnldwiqisopiclmk.supabase.co` |
-| Custody base, once published | `https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody` |
+| Published custody base, owner-reported | `https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody` |
 | Network | `TESTNET`, not Stellar Mainnet; project environment label does not change this |
-| Pool public key | `GDFTI45GSLADACBLI7LURAFT6UN5BTERIOMTXBKZYU6DNM2JFQMDRSFL` |
-| Public signed-refund namespace | `091e9722-c862-455b-a215-06ca90700acc`; not a `/config` field |
+| Selected pool public key | `GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN` |
+| Selected public signed-refund namespace | `5a08ccd6-b4ba-4b31-adc9-fe3e57a6bda7`; not a `/config` field |
+| Selected first ledger | `5676563`; owner-reported activation metadata, not a `/config` field |
 | `SUPABASE_ANON_KEY` | Not supplied; accepted public client key still pending |
-| JWT gateway | Not deployed/confirmed; await final publication handoff |
+| JWT gateway | Owner reports `verify_jwt: true`; must remain enabled. Client-compatible authentication contract still pending |
+| Publication | Owner reports `d1-custody` ACTIVE, version1, function ID `ac86ceed-898f-4ccc-9edd-6aad439262f0`, import map enabled |
 
 Owner-reported `GET /config` source response is exactly the following JSON with `no-store`; it is **not a live response**:
 
 ```json
-{"network":"TESTNET","pool_public_key":"GDFTI45GSLADACBLI7LURAFT6UN5BTERIOMTXBKZYU6DNM2JFQMDRSFL","donation_ttl_seconds":300}
+{"network":"TESTNET","pool_public_key":"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN","donation_ttl_seconds":300}
 ```
 
 Owner-reported source routes are POST `/prepare`, `/issue`, `/reconcile`; v1 POST `/refund`, `/refund-status`, `/refund-reconcile`; and v2 POST `/refund-remainder`, `/refund-remainder-status`, `/refund-remainder-reconcile`, retaining the frozen signed-body/Ed25519 contracts. The owner's handler has **no POST `/status`**, and its `/config` does not advertise status. Preserve this client's existing `config.status` gating and separately owned status integration; do not invent remote status availability or fallback. The namespace does not manufacture an existing request UUID/reference.
 
-The owner retains backend consolidation and Supabase publication. It reports migrations015–021 applied,022–047 outstanding and **no `d1-custody` deployment/activation yet**. These are peer reports, not client verification, and transfer no backend import/edit/deploy authority.
+The owner reports deployed bundle bytes matching its prepared files, including index SHA-256 `5275452af36aa8e6990123d42bc7b2ec0ed4d996b07d1187bbaa0829dcf4b6df`, and native selected-activation success with a read-only row confirmation. This supersedes the earlier no-deployment/no-activation status; it does not establish a new migration inventory or authorize importing/editing the owner's root.
+
+The owner reports the human selected **“Con la primera operación real de la app”** for creation-credit persistence. Operating-credit records and preparations remain zero intentionally. Existing real signed/current-admin `/issue` prerequisites will observe/register creation credit once a genuine prepared request exists. Backend implementation/publication/selected activation are reported closed under that deferral: **do not wait for a new ingestion endpoint, create a synthetic preparation or send funds to manufacture closure**. Financial/E2E/SOW acceptance remains unproven.
+
+### Remaining client authentication handoff
+
+The current v1/v2 refund transports set `apikey` and `Content-Type`, but not `Authorization`. A targeted client-source search found no existing Supabase session/token flow. Personal-wallet signatures in the JSON body do not themselves establish JWT gateway authentication. The accepted client-public key/type and intended `Authorization` contract must be supplied before changing transport authentication or building a configured artifact; do not assume a publishable key is a JWT, invent a user session, disable the gateway or substitute a privileged key. One concrete public-contract handoff question has been sent to the backend owner; no backend checks or changes are requested.
+
+The selected target is for new configured context only. **Never rewrite an existing refund's original pool, namespace, request UUID, payment, gross or deadline to match a new activation.** No phone or financial execution is authorized by this handoff.
 
 Never substitute a service-role key, pool seed/private key or release credential. Dart defines are packaged client configuration, not secret storage. The successful job16 supplied neither backend define; an APK exists, but a configured/live D1 refund backend is not established. A later configured artifact must stay within the confirmed public handoff and carry its own build identity and evidence. Public-release monetization/legal URL rules do not justify switching this dev build to `public`.
 
