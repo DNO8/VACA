@@ -32,8 +32,8 @@ Initial/final status was identical and hashes were stable. The verifier wrote no
 
 ## Limits and disposition
 
-- T11 is complete **SOURCE/STATIC ONLY**, pending parent packaging. The existing old APK **does not contain this source change**. No new build, analyzer, stopped suite, phone, backend or financial operation ran in this verification.
+- T11 is complete **SOURCE/STATIC ONLY**, committed locally as `c72193d7ffa1c6103d22916590347cf4fba45ed1` (six scoped paths,71 additions/8 deletions; not pushed). The existing old APK **does not contain this source change**. No new build, analyzer, stopped suite, phone, backend or financial operation ran in this verification.
 - The actual legacy anon/public JWT value remains missing; T12 remains blocked. Configured runtime/key integration is future work. No compiled/live, secret-absence, security or financial acceptance is established; historical proof gaps remain unchanged.
 - Native pending-diff ASSESS was high solely from **item 2: authentication header** agent escalation, not historical replacement-review items 48/56. Native risk was unassessable with untracked state, candidate NULL and outcome unknown. There was no approval, reviewDue continuation or START.
 
-Feature record: [T11 and L39](../tasks/d1-client-android-toolchain.md). Parent retains source-hash spot-check, feature-branch packaging and commit ownership.
+Feature record: [T11 and L39](../tasks/d1-client-android-toolchain.md). Parent subsequently repeated the reported source SHA256 command once: all three hashes matched; scoped diff-check exited0. The six-path source/static unit was committed locally as recorded above. Committed-range ASSESS remained unassessable/untracked/candidate NULL/outcome unknown, not approval or a reviewDue/native continuation. No new verifier, START, functional run or push followed.
