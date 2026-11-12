@@ -19,7 +19,12 @@ class RefundHttpClient {
   })  : _signer = signer,
         _now = now ?? DateTime.now,
         _http = Dio(BaseOptions(
-          headers: {'apikey': publicApiKey, 'Content-Type': 'application/json'},
+          // Legacy public anon JWT: gateway access, not wallet/admin identity.
+          headers: {
+            'apikey': publicApiKey,
+            'Authorization': 'Bearer $publicApiKey',
+            'Content-Type': 'application/json',
+          },
           responseType: ResponseType.stream,
           followRedirects: false,
           validateStatus: (_) => true,

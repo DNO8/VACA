@@ -129,8 +129,8 @@ The backend owner subsequently reported **publication and selected TESTNET activ
 | Selected pool public key | `GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN` |
 | Selected public signed-refund namespace | `5a08ccd6-b4ba-4b31-adc9-fe3e57a6bda7`; not a `/config` field |
 | Selected first ledger | `5676563`; owner-reported activation metadata, not a `/config` field |
-| `SUPABASE_ANON_KEY` | Not supplied; accepted public client key still pending |
-| JWT gateway | Owner reports `verify_jwt: true`; must remain enabled. Client-compatible authentication contract still pending |
+| `SUPABASE_ANON_KEY` | Actual value not supplied; accepted type is this project's legacy public anon JWT (`role: anon`), not a user-session or privileged key |
+| JWT gateway | Owner reports `verify_jwt: true`; must remain enabled. Accepted current contract: same legacy public anon JWT in both `apikey` and `Authorization: Bearer …` |
 | Publication | Owner reports `d1-custody` ACTIVE, version1, function ID `ac86ceed-898f-4ccc-9edd-6aad439262f0`, import map enabled |
 
 Owner-reported `GET /config` source response is exactly the following JSON with `no-store`; it is **not a live response**:
@@ -145,9 +145,13 @@ The owner reports deployed bundle bytes matching its prepared files, including i
 
 The owner reports the human selected **“Con la primera operación real de la app”** for creation-credit persistence. Operating-credit records and preparations remain zero intentionally. Existing real signed/current-admin `/issue` prerequisites will observe/register creation credit once a genuine prepared request exists. Backend implementation/publication/selected activation are reported closed under that deferral: **do not wait for a new ingestion endpoint, create a synthetic preparation or send funds to manufacture closure**. Financial/E2E/SOW acceptance remains unproven.
 
-### Remaining client authentication handoff
+### Accepted gateway contract; actual public key still missing
 
-The current v1/v2 refund transports set `apikey` and `Content-Type`, but not `Authorization`. A targeted client-source search found no existing Supabase session/token flow. Personal-wallet signatures in the JSON body do not themselves establish JWT gateway authentication. The accepted client-public key/type and intended `Authorization` contract must be supplied before changing transport authentication or building a configured artifact; do not assume a publishable key is a JWT, invent a user session, disable the gateway or substitute a privileged key. One concrete public-contract handoff question has been sent to the backend owner; no backend checks or changes are requested.
+Owner report `9f4470eb1c1dfeccdb0d11b69984be61` selects the project's **legacy public anon JWT** for the current wallet-signed D1 endpoints. All three D1 refund transport constructors now set `apikey: <public anon JWT>`, `Authorization: Bearer <same public anon JWT>` and `Content-Type: application/json`. No new login, Supabase Auth/session flow, token refresh or gateway change is introduced. This source change is not included in the already-built job16 APK.
+
+These public headers provide shared project gateway access, **not user/admin identity**. Personal-wallet signed bodies and the backend's actual current `admin_wallets` checks retain their separate authorization role. JWT verification does not establish the wallet signer's identity. This is the explicitly chosen current contract, not a live request result or a universal claim that `apikey`-only/publishable-key compatibility fails; see [Supabase auth headers](https://supabase.com/docs/guides/functions/auth-headers).
+
+The actual public anon JWT value has **not** been supplied or retrieved. The owner-approved public retrieval route is [the project's API keys dashboard](https://supabase.com/dashboard/project/tgqxxnldwiqisopiclmk/settings/api-keys) → **Legacy anon/service_role API keys** → **only anon/public**. The human can provide that public value for client configuration. Never copy the adjacent service-role key or any pool seed/secret; do not substitute a user-session JWT. If legacy anon is unavailable/disabled, report missing public configuration rather than inventing a JWT, adding Auth or disabling the gateway. A configured artifact and live gateway behavior remain unverified; stopped functional suites, phone and financial actions remain deferred.
 
 The selected target is for new configured context only. **Never rewrite an existing refund's original pool, namespace, request UUID, payment, gross or deadline to match a new activation.** No phone or financial execution is authorized by this handoff.
 
