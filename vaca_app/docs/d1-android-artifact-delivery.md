@@ -1,17 +1,19 @@
 # D1 Android delivery: installed artifact and newer verified source
 
-**A configured dev/debug APK is installed, and later refund source changes have passed bounded offline verification. They are different deliverables.** The installed APK does not contain the later RFC3339 parser correction; no replacement APK was produced by the offline verification work. Complete web/app financial acceptance remains open.
+**A replacement dev/debug APK has now been built and inspected from the offline-verified refund source. It is available locally, but not installed.** The earlier installed trust-root APK does not contain the later RFC3339 parser correction. Complete web/app financial acceptance remains open.
+
+The new APK is **161,968,472 bytes**, SHA-256 `d1a62a3165699062dec9227e450c15d9e4abd1f60c90ef859ec49e7ab1cb698f`, built from `c8667d9c3c18eed0f8b9c90acb40adc80b660baa`. See [the build and bounded inspection report](../../odd/evidence/d1-refund-apk-delivery.md) for the observed outcome, original probe failure, corrected parent execution and independent PASS adjudication. The installed-artifact history below remains distinct.
 
 ## Current recorded state
 
 | Deliverable | Observed outcome | Evidence boundary |
 |---|---|---|
-| Configured APK | `cl.vaca.app.dev`, version `0.1.0` / code `1`, debug; **191140969 bytes** | Contains the public backend configuration and bundle/receipt public trust roots; not a production release |
+| Earlier installed APK | `cl.vaca.app.dev`, version `0.1.0` / code `1`, debug; **191140969 bytes** | Contains the public backend configuration and bundle/receipt public trust roots; not a production release |
 | APK SHA-256 | `be229024842593f2c89bbb3b75e1b7d4847d5e3e7ad539e8e06552a097759a17` | Recorded installed artifact, not the newer refund source candidate |
 | Preserving update | `install -r` succeeded; installed hash matched; app ID, first-install time and CE/DE directory inodes were unchanged | No uninstall, clear-data or agent launch; not direct wallet-content verification |
 | Signal and receipt | Human reported successful synchronization and receipt delivery after the update | Human-observed ingestion only, not independent receipt-byte or financial verification |
 | Refund source | Parent suite **60/60 passed**, targeted analyzer clean; **8 reviewer-designed probes passed under parent execution**, then independently adjudicated PASS | Offline mocks and source review, not a new APK or live financial journey |
-| Source publication | Earlier source/evidence delivery reached `c062c2c77e5217d12e85407be50ee8ac7aa19ef5`; later offline work was packaged locally through `f5bba8b4883cabd5bd3a8e3501da9e7d84abe94b` | Local commits are not publication; no hosted APK download has been established |
+| Source publication | Earlier source/evidence delivery reached `c062c2c77e5217d12e85407be50ee8ac7aa19ef5`; later offline work was packaged locally through `f5bba8b4883cabd5bd3a8e3501da9e7d84abe94b`, with handoff documentation at `c8667d9c3c18eed0f8b9c90acb40adc80b660baa` | Local commits are not publication; no hosted APK download has been established |
 
 The installed-artifact/update record is the local task `odd/tasks/d1-apk-trust-root-update.md`, especially L17–L19 and L31–L32; that task is not a published artifact. Current source verification is [the offline independent report](../../odd/evidence/d1-refund-offline-independent.md). Earlier source publication is recorded in [the configured delivery task](../../odd/tasks/d1-configured-apk-delivery.md). These are recorded outcomes, not fresh device or remote inspections.
 
@@ -28,7 +30,7 @@ The web owner must deliver the durable original-reference record and complete UI
 
 ## Remaining delivery boundaries
 
-- A newly built and inspected APK is needed to attribute the later parser fix to a phone artifact. No rebuild, installation or app launch is performed by this documentation update.
+- The replacement APK has been built and inspected, but has not been installed or launched. Do not attribute its source changes to the phone until a separately authorized update is observed.
 - Web release, hosted APK distribution and financial acceptance remain distinct pending deliverables. No complete Vercel candidate is established by this app evidence.
 - Historical independent toolchain-integrity and backend-source prerequisites (#48/#56) remain unresolved; the successful offline review does not close them.
 - The historical build/audit/installation failures below remain evidence. Do not replay old one-shot scripts or infer a current device/process identity from them.
