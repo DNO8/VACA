@@ -65,7 +65,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(RefundPanel), findsOneWidget);
-      expect(find.text('Estado: Sin consultar'), findsOneWidget);
+      for (final key in ['refund-state', 'remainder-state']) {
+        final state = find.descendant(of: find.byType(RefundAdminScreen),
+            matching: find.byKey(ValueKey(key)));
+        expect(state, findsOneWidget);
+        expect(tester.widget<Text>(state).data, 'Estado: Sin consultar');
+      }
       for (final key in _reference.keys) {
         expect(tester.widget<TextFormField>(find.byKey(ValueKey(key))).enabled,
             isFalse);

@@ -22,6 +22,15 @@ Future<void> _tap(WidgetTester tester, String key) async {
   await tester.pumpAndSettle();
 }
 
+void _expectColdPanels(WidgetTester tester) {
+  for (final key in ['refund-state', 'remainder-state']) {
+    final state = find.descendant(of: find.byType(RefundAdminScreen),
+        matching: find.byKey(ValueKey(key)));
+    expect(state, findsOneWidget);
+    expect(tester.widget<Text>(state).data, 'Estado: Sin consultar');
+  }
+}
+
 Future<void> _enter(
     WidgetTester tester, String namespace, String pool, String request) async {
   for (final entry in {
@@ -89,7 +98,7 @@ void main() {
     await _tap(tester, 'refund-open-original');
     final panel = tester.widget<RefundPanel>(find.byType(RefundPanel));
     expect(panel.scope.identity, refundTestScope.identity);
-    expect(find.text('Estado: Sin consultar'), findsOneWidget);
+    _expectColdPanels(tester);
     for (final key in [
       'refund-namespace',
       'refund-pool',
@@ -101,7 +110,11 @@ void main() {
     expect(reads, 0);
     await _tap(tester, 'refund-status');
     expect(reads, 1);
-    expect(find.text('Estado: Resultado desconocido'), findsOneWidget);
+    expect(tester.widget<Text>(find.descendant(of: find.byType(RefundPanel),
+        matching: find.byKey(const ValueKey('refund-state')))).data,
+        'Estado: Resultado desconocido');
+    expect(tester.widget<Text>(find.byKey(const ValueKey('remainder-state'))).data,
+        'Estado: Sin consultar');
     expect(find.textContaining('PRIVATE_CONFIGURATION'), findsNothing);
     expect(find.byKey(const ValueKey('refund-request')), findsNothing);
     await _tap(tester, 'refund-change-reference');
@@ -115,7 +128,7 @@ void main() {
             .text,
         refundTestScope.requestId);
     await _tap(tester, 'refund-open-original');
-    expect(find.text('Estado: Sin consultar'), findsOneWidget);
+    _expectColdPanels(tester);
     expect(reads, 1);
   });
 }
