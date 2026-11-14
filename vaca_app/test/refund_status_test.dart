@@ -9,6 +9,7 @@ import 'package:vaca_app/features/refund/data/refund_wallet_signer.dart';
 import 'package:vaca_app/features/refund/domain/refund_scope.dart';
 import 'package:vaca_app/features/refund/domain/refund_status.dart';
 import 'refund_test_fixtures.dart';
+import 'refund_client_test.dart' show expectV1Reservation;
 
 void main() {
   refundWireTests();
@@ -141,14 +142,15 @@ void refundWireTests() {
           expect(request.method, 'POST');
           expect(request.followRedirects, isFalse);
           expect(request.headers['apikey'], 'public-test-key');
+          expect(request.headers['Authorization'],
+              'Bearer ${request.headers['apikey']}');
           expect(request.uri.path,
               '/functions/v1/d1-custody/${RefundAction.values.singleWhere((a) => a.wire == action).path}');
           expect(body['request_id'], refundTestScope.requestId);
           expect(body.keys.length, 10);
           expect(utf8.encode(request.data! as String).length,
               lessThanOrEqualTo(8192));
-          if (action == 'refund')
-            expect(storage.events, ['write:start', 'write:ack']);
+          if (action == 'refund') expectV1Reservation(storage);
           return refundTestResponse('pending',
               code: action == 'refund_status' ? 200 : 202);
         }));
@@ -171,6 +173,6 @@ void refundWireTests() {
             .where((key) => key.startsWith('d1.refund.v1.'))
             .length,
         1);
-    expect(storage.events, ['write:start', 'write:ack']);
+    expectV1Reservation(storage);
   });
 }

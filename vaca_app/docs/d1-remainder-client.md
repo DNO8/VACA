@@ -2,7 +2,13 @@
 
 ## Delivery status
 
-This is source implementation, not operational acceptance. The human explicitly stopped further checks: no new tests, analyzer, typecheck, build, SDK/SQL, native review or device verification is run for this work. Existing passing checks do not cover these changes.
+This is source implementation, not operational acceptance. The earlier implementation was delivered under an explicit stop on further checks; historical passing checks do not validate it. A subsequent bounded authorization reopens offline refund tests and demonstrated-defect corrections, not network, device, funds or backend verification.
+
+The first preparation unit adds `test/refund_command_coordination_test.dart`: 13 test cases using existing public constructors, synthetic wallet fixtures, in-memory storage and an injected HTTP adapter. They cover both lane orders of concurrent full clients, permanent shared holds and one-use permits, acknowledgement/readback failures before refund signing/POST, legacy/conflicting records, lost-response recovery with explicit status/reconcile, passive construction, ineligible states and durable original-deadline binding. Preparation and correction round 1 left production source unchanged. The parent reports the initial 13 tests passed (exit 0); the broader refund suite recorded 47 passes/12 failures, and the new-test analyzer reported 19 trailing-comma INFO diagnostics (exit 1, no errors/warnings). Correction round 1 updated stale two-record persistence expectations, keyed dual-panel assertions and asynchronous widget settling, and added missing commas. Later results are recorded below; this initial failing run remains historical evidence. Shared fixtures remain unchanged. Broader UI/transport coverage requires its separate scope.
+
+For correction round 2, the parent observed focused RED: 18 passes/2 failures (exit 1), specifically the v1 and v2 UTC RFC3339 cases. Both parsers now uppercase only the temporary `DateTime.tryParse` input for already-admitted lowercase `t`/`z`. The original wire deadline, exports/storage and exact immutable equality remain unchanged, as do calendar-overflow and non-UTC rejection. No test expectations were changed in the source-correction step. Parent job 3 subsequently observed focused GREEN (20 passes, exit 0), full suite 56 passes/4 panel failures, and one remaining analyzer comma INFO (exit 1).
+
+S4 separately authorizes two additional correction rounds without resetting the prior exhausted budget. Additional round 1 changes only the panel test async boundary and the remaining comma: gestures and consumer completion run through `tester.runAsync`, while frames, exact data/button assertions, confirmation and A→B→A response-discard checks remain explicit. Completion signals replace simulated-time pump loops; no production behavior or timeout is changed. Parent job 4 subsequently passed the focused panel checks and all 60 refund tests (exit 0); targeted analysis of `test/refund_command_coordination_test.dart` exited 0 with no issues. Independent verification remains pending because isolated preparation was blocked; these results are parent-executed offline evidence only.
 
 ## Shared first-submission ownership
 
@@ -36,7 +42,7 @@ The remainder panel offers explicit status, advertised first-refund intent with 
 
 Original donor/payment references, original positive gross/deadline and nullable settlement facts remain visible. Unknown stays unknown, not zero or settled. After an uncertain recorded attempt, recovery is explicit observation/reconciliation rather than a second first POST. No automatic polling, lane switch, release, reset or new original identity is offered.
 
-These are authored source paths only: the provider graph, dialogs, populated widgets and financial journeys have not been executed or analyzed for this unit. Historical v1/passive-status/layout evidence does not validate the new integration. Actual backend/private-provider activation, app execution and operational acceptance remain separate. See [the v1 integration guide](d1-refund-client.md) for the unchanged wire contract and historical evidence boundaries.
+The offline results above cover mocked protocol and widget cases, not live backend, on-device provider/dialog behavior or financial journeys. The full refund suite passed in the recorded parent run; independent verification remains pending. Historical v1/passive-status/layout evidence does not validate the new integration. Actual backend/private-provider activation, app execution and operational acceptance remain separate. See [the v1 integration guide](d1-refund-client.md) for the unchanged wire contract and historical evidence boundaries.
 
 ## Existing boundaries
 

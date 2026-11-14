@@ -21,6 +21,27 @@ RefundHttpClient transport(
 RefundClient consumer(RefundHttpClient http, RefundMemoryStorage storage) =>
     RefundClient(http: http, journal: RefundSubmissionJournal(storage));
 
+// Assert both acknowledged writes and the exact additive v1 record contract.
+void expectV1Reservation(RefundMemoryStorage storage) {
+  expect(storage.events,
+      ['write:start', 'write:ack', 'write:start', 'write:ack']);
+  final records = storage.values.entries
+      .where((entry) => entry.key.startsWith('d1.refund.')).toList();
+  expect(records, hasLength(2));
+  final shared = records.singleWhere(
+      (entry) => entry.key.startsWith('d1.refund.submission.'));
+  final legacy = records.singleWhere(
+      (entry) => entry.key.startsWith('d1.refund.v1.'));
+  expect(shared.key.substring('d1.refund.submission.'.length),
+      legacy.key.substring('d1.refund.v1.'.length));
+  expect(jsonDecode(shared.value), {
+    'version': 1, 'lane': 'v1', 'baseline': refundFixture('not_started'),
+  });
+  expect(jsonDecode(legacy.value), {
+    'version': 1, 'baseline': refundFixture('not_started'),
+  });
+}
+
 void main() {
   strictJsonCases();
   test(
@@ -37,7 +58,7 @@ void main() {
       requests.add(action);
       if (action == 'refund') {
         refunds++;
-        expect(storage.events, ['write:start', 'write:ack']);
+        expectV1Reservation(storage);
         expect(
             storage.values.keys
                 .where((key) => key.startsWith('d1.refund.v1.'))
@@ -66,6 +87,7 @@ void main() {
     expect(results.first.status, isNull);
     expect(results.first.safeActions, isEmpty);
     expect(results.first.errorCode, isNot(contains('private diagnostic')));
+    expect(results.first.errorCode, 'd1_refund_transport_unavailable');
     expect(results.last.safeActions, isNot(contains(RefundAction.refund)));
     final durable = Map<String, String>.from(storage.values);
     missing = true;
@@ -77,7 +99,7 @@ void main() {
     expect(refunds, 1);
     expect(requests.last, 'refund_status');
     expect(storage.values, durable);
-    expect(storage.events, ['write:start', 'write:ack']);
+    expectV1Reservation(storage);
   });
 
   test('unacknowledged journal write prevents the first refund POST', () async {
@@ -181,7 +203,7 @@ void main() {
     final reconciled = await client.reconcile(refundTestScope);
     expect(reconciled.isSettled, isTrue);
     expect(requests, ['refund_status', 'refund', 'refund_reconcile']);
-    expect(storage.events, ['write:start', 'write:ack']);
+    expectV1Reservation(storage);
   });
 
   test('non-not_started states never cause refund or create a local attempt',
