@@ -1,10 +1,45 @@
-# D1 Android artifact delivery (dev/debug artifact recorded)
+# D1 Android delivery: installed artifact and newer verified source
 
-**Job16 produced a fresh APK; job17 completed its identity and bounded signing-boundary inspection.** These establish a local dev/debug artifact, not secret-absence certification, a configured/live backend, phone execution or D1 functional/financial acceptance. Earlier failed attempts and the missing independent toolchain-integrity proof remain recorded below.
+**A configured dev/debug APK is installed, and later refund source changes have passed bounded offline verification. They are different deliverables.** The installed APK does not contain the later RFC3339 parser correction; no replacement APK was produced by the offline verification work. Complete web/app financial acceptance remains open.
 
-The latest instruction explicitly defers installing, opening and testing the app on the phone. Backend/Supabase work remains owned separately. See [the Android task](../../odd/tasks/d1-client-android-toolchain.md), S4–S6 and L11–L15.
+## Current recorded state
 
-## Recorded build recipe — not a new execution request
+| Deliverable | Observed outcome | Evidence boundary |
+|---|---|---|
+| Configured APK | `cl.vaca.app.dev`, version `0.1.0` / code `1`, debug; **191140969 bytes** | Contains the public backend configuration and bundle/receipt public trust roots; not a production release |
+| APK SHA-256 | `be229024842593f2c89bbb3b75e1b7d4847d5e3e7ad539e8e06552a097759a17` | Recorded installed artifact, not the newer refund source candidate |
+| Preserving update | `install -r` succeeded; installed hash matched; app ID, first-install time and CE/DE directory inodes were unchanged | No uninstall, clear-data or agent launch; not direct wallet-content verification |
+| Signal and receipt | Human reported successful synchronization and receipt delivery after the update | Human-observed ingestion only, not independent receipt-byte or financial verification |
+| Refund source | Parent suite **60/60 passed**, targeted analyzer clean; **8 reviewer-designed probes passed under parent execution**, then independently adjudicated PASS | Offline mocks and source review, not a new APK or live financial journey |
+| Source publication | Earlier source/evidence delivery reached `c062c2c77e5217d12e85407be50ee8ac7aa19ef5`; later offline work was packaged locally through `f5bba8b4883cabd5bd3a8e3501da9e7d84abe94b` | Local commits are not publication; no hosted APK download has been established |
+
+The installed-artifact/update record is the local task `odd/tasks/d1-apk-trust-root-update.md`, especially L17–L19 and L31–L32; that task is not a published artifact. Current source verification is [the offline independent report](../../odd/evidence/d1-refund-offline-independent.md). Earlier source publication is recorded in [the configured delivery task](../../odd/tasks/d1-configured-apk-delivery.md). These are recorded outcomes, not fresh device or remote inspections.
+
+The current client-public build inputs are `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SERVER_BUNDLE_PUBLIC_KEY` and `SERVER_RECEIPT_PUBLIC_KEY`. Values and local configuration files are not published here. Public anon gateway headers are not wallet/admin identity; pool signing remains backend-owned.
+
+## Original-reference handoff for the existing app entry
+
+1. Retain the authoritative original record: request UUID, TESTNET pool and namespace, payment transaction hash and operation ID, donor, asset, original gross, confirmation time (`confirmedAt`), incident, beneficiary, allocated amount and original deadline.
+2. The existing app route is Identity → Herramientas de prueba → Reembolsos Stellar testnet. Its form accepts only the existing namespace UUID, original pool public key and original issuance request UUID. The additional facts stay in the original record for comparison with validated status; this is **not a receipt importer or automatic discovery feature**.
+3. Never replace the original request UUID with an incident ID, claimable-balance ID or refund attempt ID. Do not generate a replacement UUID, reset a deadline, or rewrite a stored scope to match a newer deployment.
+4. Opening the reference is not refund authorization. Explicit commands still require personal-wallet proofs, backend membership/financial checks and the durable local hold. Timeout, absence, pending status or a missing claimable balance does not prove eligible nonissuance.
+
+The web owner must deliver the durable original-reference record and complete UI/payment flow before a complete cross-client readiness claim. Existing browser-local legacy payments must not be resent or silently converted into a D1 issuance claim. See [the refund integration boundary](d1-refund-client.md#local-administrative-navigation) and [the draft acceptance plan](../../odd/docs/d1-testnet-acceptance-plan.md); neither authorizes financial execution.
+
+## Remaining delivery boundaries
+
+- A newly built and inspected APK is needed to attribute the later parser fix to a phone artifact. No rebuild, installation or app launch is performed by this documentation update.
+- Web release, hosted APK distribution and financial acceptance remain distinct pending deliverables. No complete Vercel candidate is established by this app evidence.
+- Historical independent toolchain-integrity and backend-source prerequisites (#48/#56) remain unresolved; the successful offline review does not close them.
+- The historical build/audit/installation failures below remain evidence. Do not replay old one-shot scripts or infer a current device/process identity from them.
+
+## Historical build and configuration record
+
+**The rest of this document preserves earlier checkpoints.** Statements such as “not configured,” “not pushed,” “deferred” or “unexecuted” describe those checkpoints; use the current-state table and linked later evidence above for the latest recorded outcome. Job numbers belong to their recorded sessions, not a global sequence.
+
+Job16 produced the first fresh APK; job17 completed its identity and bounded signing-boundary inspection. That original artifact did not establish secret absence, configured backend behavior, phone execution or financial acceptance. The instruction at that checkpoint deferred phone installation and testing; later explicit authorization and the preserving update superseded that deferral. Backend/Supabase work remains separately owned. See [the Android task](../../odd/tasks/d1-client-android-toolchain.md), S4–S6 and L11–L15.
+
+### Recorded build recipe — not a new execution request
 
 The parent launched job73 with this Flutter argument vector, from `vaca_app`:
 
