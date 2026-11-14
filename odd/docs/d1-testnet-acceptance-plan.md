@@ -5,6 +5,10 @@ This is a resumable checklist for donation → beneficiary claim, a separate exp
 recovery/refund case, and unissued principal. It contains **no execution results**
 and grants no automatic retries. Plan ready ≠ execution authorized ≠ D1 accepted.
 
+For the current recorded delivery snapshot and owner handoff, use the
+[release coordination checklist](d1-release-coordination.md). The status lanes
+below are historical context, not a replacement for newer scoped evidence.
+
 ## Quick path and scope
 
 1. Resolve the public bindings and approval gates below without collecting secrets.
