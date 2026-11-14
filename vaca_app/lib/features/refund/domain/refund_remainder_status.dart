@@ -75,7 +75,7 @@ class RemainderStatus {
               .hasMatch(deadline),
     );
     final deadlineText = deadline! as String;
-    final parsed = DateTime.tryParse(deadlineText);
+    final parsed = DateTime.tryParse(deadlineText.toUpperCase());
     RefundValidation.require(
       parsed != null &&
           parsed.isUtc &&

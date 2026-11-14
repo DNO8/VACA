@@ -16,6 +16,39 @@ Map<String, Object?> remainderFixture(String state) {
 }
 
 void main() {
+  test('v2 UTC RFC3339 preserves original spelling and rejects overflow', () {
+    final original = RemainderStatus.parse(
+      remainderFixture('not_started'), refundTestScope,
+    );
+    for (final deadline in [
+      '2026-11-07T12:05:00Z',
+      '2026-11-07T12:05:00+00:00',
+      '2026-11-07t12:05:00z',
+    ]) {
+      final status = RemainderStatus.parse(
+        remainderFixture('not_started')..['deadline'] = deadline,
+        refundTestScope,
+      );
+      expect(status.deadline, deadline);
+      expect(status.toJson()['deadline'], deadline);
+      expect(status.donation, original.donation);
+      // Equal instants do not rewrite the immutable original wire spelling.
+      expect(status.sameDonation(original), deadline == original.deadline);
+    }
+    for (final deadline in [
+      '2026-02-30T12:05:00Z',
+      '2026-11-07T12:05:00+01:00',
+    ]) {
+      expect(
+        () => RemainderStatus.parse(
+          remainderFixture('not_started')..['deadline'] = deadline,
+          refundTestScope,
+        ),
+        throwsA(isA<RefundProtocolError>()),
+      );
+    }
+  });
+
   for (final state in [
     'not_due',
     'not_started',

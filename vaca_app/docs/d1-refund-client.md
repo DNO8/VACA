@@ -55,6 +55,8 @@ HTTP replies and stored journal JSON reject duplicate member names in each objec
 
 Amounts are canonical seven-decimal strings bounded by int64 stroops; payment operation IDs are positive uint64 strings. Original payment hash, donor, asset, gross and deadline cannot change after local reservation. An unverified refund object or transaction hash is not inclusion or settlement.
 
+The v1 and v2 deadline parsers uppercase only the temporary `DateTime.tryParse` input to support the already-admitted lowercase `t`/`z` spellings. Original wire strings, exported/stored deadlines and exact immutable equality remain unchanged; calendar-overflow and non-UTC rejection remain enforced. Parent-observed focused RED was 18 passes/2 failures before the two-line source correction; subsequent focused GREEN passed all 20 cases (exit 0). Independent verification remains pending; these offline results do not establish financial acceptance.
+
 Only `settled` is whole-donation terminal, with all accounting known, `gross = beneficiaryClaimed + donorRefunded` and remaining `0.0000000`. Claiming 1 of gross 10 leaves 9 protected; neither a reduced gross nor a partial accounting tuple can replace the original donation. Safe actions permit commands, not spending eligibility. Pending, unknown, blocked and failed inclusion never expose refund/retry/replan/release.
 
 D3 beneficiary claims remain a separate per-balance Horizon/personal-signing flow. Initial issuance `/status` is historical and is not any of these refund endpoints.
