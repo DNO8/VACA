@@ -50,6 +50,12 @@ A lost reply, storage ambiguity, error or reconstruction must retain the hold an
 
 Consumer serialization is shared across instances in one Dart isolate. The journal also rejects simultaneous same-isolate reservations. Neither is a cross-isolate/device compare-and-swap or distributed lock. Server durable nonce/idempotence before Horizon submission remains mandatory.
 
+## Host availability errors
+
+For status, refund and reconcile, HTTP 503 with exactly `{"error":"custody_unavailable"}` or `{"error":"initial_submission_unavailable"}` is recognized alongside `refund_unavailable`. The v1 result retains that `errorCode` but remains `unknown`, with null status, `isSettled == false` and no safe actions. Existing holds remain intact; recognition grants no financial authority or automatic retry. Unknown/malformed error bodies, duplicate keys and wrong HTTP codes remain rejected.
+
+The separate passive v2 status consumer recognizes the same host codes alongside `remainder_unavailable`, also with no safe actions. Full-v2 recovery differs as documented in [the remainder guide](d1-remainder-client.md#explicit-consumer-and-recovery). Parent offline checks passed 32 host-error tests and all 100 refund tests. Targeted analysis reported no errors or warnings and 17 style infos; independent verification remains pending. No rebuilt APK or live acceptance is claimed.
+
 ## State integrity
 Responses have exactly 13 keys and prescribed nested shapes, state/reason/verification/ordered-action tuples and HTTP codes. All replies require `Cache-Control: no-store`. The private transport has no interceptors, redirect following, refresh or retry hooks; response bytes are limited to 16 KiB and a command has a 10-second network cancellation deadline.
 

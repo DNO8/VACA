@@ -135,5 +135,9 @@ const _errors = <int, List<String>>{
   403: ['unauthorized_admin_wallet'],
   404: ['request_not_found', 'not_found'],
   405: ['method_not_allowed'],
-  503: ['refund_unavailable'],
+  503: [
+    'refund_unavailable',
+    'custody_unavailable',
+    'initial_submission_unavailable',
+  ],
 };

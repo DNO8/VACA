@@ -26,11 +26,13 @@ This is local coordination only, not a cross-process/device CAS, backend idempot
 
 Requests are limited to 8192 bytes, responses to 16384 bytes, with a 10-second transport cancellation timer, JSON/no-store admission, duplicate-key rejection and exact DTO/error validation. Status admits 200; reconcile admits 202 for pending/unknown, otherwise 200; refund admits 202 for pending/unknown, 409 for not_due/blocked, otherwise 200, never not_started. Observed refund facts must match the permit's original baseline. No interceptor retries, redirect, polling, protocol fallback or automatic reconcile exists.
 
+HTTP 503 with exactly `{"error":"custody_unavailable"}` or `{"error":"initial_submission_unavailable"}` is recognized alongside `remainder_unavailable` for all three commands and the separate passive-v2 status consumer. Results retain the exact `errorCode`, null status and `unknown`/not-settled outcome. Exact body/HTTP validation, duplicate-key rejection and durable holds remain unchanged; recognition grants no financial authority or automatic retry. Parent offline checks passed all 32 regressions in `test/refund_host_errors_test.dart` and all 100 refund tests. Targeted analysis reported no errors or warnings and 17 style infos; independent verification remains pending. No rebuilt APK or live acceptance is claimed.
+
 ## Explicit consumer and recovery
 
 `RemainderClient` exposes `status`, `requestRefund`, and `reconcile`. Every operation uses the same original-scope isolate queue as v1. A first refund intent observes a fresh status, binds its original donation/deadline to previously observed facts, requires `not_started` plus the explicit server action, then persists the common hold and consumes its one-use permit. Any existing v1 or v2 hold turns another refund intent into a status-only observation; it never selects the other lane or issues a second refund POST.
 
-Errors stay unknown, never settled or zero. A recorded uncertain attempt permits explicit signed status or explicit observational reconciliation, not automatic retry. Repeated views retain the same original facts in memory; durable holds bind them after restart. Current observations must match both the provided prior DTO and stored original facts. Raw transport cannot mint a permit.
+Errors stay unknown, never settled or zero. On error, the full v2 consumer offers only explicit status without a recorded hold, or status and reconcile with a recorded hold; the separate passive-v2 consumer offers no safe actions. A recorded uncertain attempt permits explicit signed status or explicit observational reconciliation, not automatic retry. Repeated views retain the same original facts in memory; durable holds bind them after restart. Current observations must match both the provided prior DTO and stored original facts. Raw transport cannot mint a permit.
 
 ## Administrative integration
 
