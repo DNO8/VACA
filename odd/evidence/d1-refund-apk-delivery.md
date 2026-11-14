@@ -2,6 +2,12 @@
 
 **A new dev/debug APK was built from the offline-verified refund source and passed bounded artifact inspection. It has not been installed or launched.** This is an Android artifact handoff, not complete D1 web/app or financial acceptance.
 
+## Published test pre-release
+
+[Download the pre-release](https://github.com/DNO8/VACA/releases/tag/d1-android-testnet-c8667d9): `vaca-d1-testnet-c8667d9.apk` and `SHA256SUMS.txt`.
+
+Publication job12 exited 0. GitHub release `445514859` is published (`draft: false`) and marked `prerelease: true`; its tag points to the exact build source below. Both uploaded asset sizes and GitHub-reported SHA-256 digests matched the staged files before and after publication. The stable/latest release remained absent (HTTP 404 before and after); this preview was not promoted to stable. No phone operation accompanied publication.
+
 ## Artifact identity
 
 | Field | Recorded value |
@@ -77,5 +83,5 @@ These are local, ignored evidence paths, not published download links:
 - Source-commit provenance and original-tree preservation are parent-attested. Independent snapshot hashes and receipt consistency do not establish independent Git-history provenance.
 - Public-root bytes in a kernel do not prove runtime selection, backend pairing or receipt validation. No absolute secret-absence claim is made.
 - Historical toolchain-integrity #48 and backend-source review #56 remain open. This inspection does not close them.
-- The APK is a local dev/debug artifact, not a hosted download or store release. No installation, app launch, wallet operation, backend change or financial transaction occurred.
+- The APK is now hosted as the test pre-release linked above, not a stable or store release. No installation, app launch, wallet operation, backend change or financial transaction occurred.
 - Complete D1 readiness still needs the web owner's durable original-reference/payment/UI handoff and separately authorized live acceptance. See [Android delivery](../../vaca_app/docs/d1-android-artifact-delivery.md) for the distinction between this artifact and the installed version.
