@@ -165,6 +165,26 @@ test('049 inert refund service scopes (not production admission)', async t => {
       assert.deepEqual(await waiting.done, { status: 1, signal: null, stdout: 'SET\nSET\n', stderr: 'ERROR:  unauthorized_admin_wallet\n' });
       assert.equal(scopeState(), '[]'); assert.equal(baseline(), original);
     });
+    await t.test('administrator is not implicit service membership', () => {
+      const before = baseline(); reject(call(admin));
+      assert.equal(scopeState(), '[]'); assert.equal(baseline(), before);
+    });
+    await t.test('pool binding changed while assertion waits is rechecked', async () => {
+      grant(); const before = baseline(), scopes = scopeState();
+      try {
+        const updater = asyncSQL(`set application_name='scope_binding_update'; begin;
+          update public.d1_pools set pool=${quote(actor)} where namespace=${quote(ns)};
+          select pg_sleep(6); commit;`);
+        await observe("select exists(select 1 from pg_stat_activity where application_name='scope_binding_update' and wait_event='PgSleep');");
+        const waiting = asyncSQL(`set application_name='scope_binding_wait'; set role service_role; ${call()}`);
+        await observe(`select exists(select 1 from pg_stat_activity w join pg_stat_activity u
+          on u.pid=any(pg_blocking_pids(w.pid)) where w.application_name='scope_binding_wait' and u.application_name='scope_binding_update');`);
+        assert.deepEqual(await updater.done, { status: 0, signal: null, stdout: 'SET\nBEGIN\nUPDATE 1\n\nCOMMIT\n', stderr: '' });
+        assert.deepEqual(await waiting.done, { status: 1, signal: null, stdout: 'SET\nSET\n', stderr: 'ERROR:  unauthorized_admin_wallet\n' });
+        reject(call()); assert.equal(scopeState(), scopes);
+      } finally { sql(`update public.d1_pools set pool=${quote(admin)} where namespace=${quote(ns)};`); remove(); }
+      assert.equal(baseline(), before);
+    });
     await t.test('existing admin discovery contract unchanged; registry never grants production access', () => {
       grant();
       const reader = (n = ns, a = admin) => `select public.d1_load_discovery_checkpoint(${quote(n)},${quote(a)});`;
