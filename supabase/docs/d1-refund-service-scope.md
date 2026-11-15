@@ -20,6 +20,14 @@ Existing discovery and transaction-history page writers inherit this scoped acce
 
 All eight independent048 issuance/credit guards and the049 private assertion are pinned with the original reader before replacement. Unexpected bodies or metadata/ACLs, missing guards, and reapplication fail atomically with `P0001 / unexpected_d1_discovery_service_definition`. Only the reader body changes; signatures, OIDs, ACLs and unrelated functions remain. This is pinned to local retained014/20261011060218 +015–034/048/049, not proof of deployed035–047 compatibility. Quiesce callers before any separately authorized application.
 
+## Original-request evidence admission (051)
+
+Migration051 admits the unsigned-transaction reader and its existing evidence-read descendants only. It derives namespace/pool from the stored preparation, asserts exact membership before pool/evidence locks, then rechecks the same request and admitted namespace `FOR SHARE`. A preparation moved or deleted while waiting is denied; it cannot redirect service scope. This extra revalidation is service-only: the original administrator path and error precedence remain unchanged.
+
+The eight048 guards, private049 assertion,033 active-owner reader and034 candidate reader/writer are pinned before replacement. Drift or reapplication fails atomically with `P0001 / unexpected_d1_request_service_definition`. Issuance writes, sequence ownership and refund-candidate creation remain administrative. Missing evidence stays null; reading opaque unsigned/signed history does not authorize signing, submitting, reassigning or retrying it.
+
+The new `supabase/tests/integration/request-service-admission.test.cjs` uses synthetic inputs through real local preparation/reservation APIs. It checks scope, immutable stored evidence, manual differentials, excluded mutations, preparation movement/deletion races, membership revocation and pinned-gate drift. Synthetic payment and byte fixtures are not verified blockchain observations. See the feature task for actual results.
+
 ## Later integration requirements
 
 Preserve the existing administrator branch and validation/error precedence. Derive a request's namespace/pool from stored originals, invoke the service assertion before pool/evidence locks, and revalidate derived bindings under those locks. An actor argument alone is **not authentication**: the trusted host must bind it to verified service identity. Do not give automation database `service_role` credentials.
@@ -32,4 +40,4 @@ The049-only `supabase/tests/integration/refund-service-scope.test.cjs` uses a di
 
 The new `supabase/tests/integration/discovery-service-admission.test.cjs` loads the actual local015–034/048/049/050 schema. It compares identical administrator queries before/after050, exercises scoped nonempty discovery/history writes and replay, unchanged validation/denials, excluded issuance/credit mutations, concurrent revocation and atomic drift rejection. Its NON-SDK transaction bytes prove SQL storage behavior only; they are never financial approval. Test results and remaining verification are recorded in [the feature task](../../odd/tasks/d1-automatic-refunds.md).
 
-Use the project-local fixture launcher with `D1_TOOL_ROOT` and `TMPDIR` beneath `.tooling/d1-backend`; never point these fixtures at Supabase. No existing T2a fixture rerun is needed. Host identity, external evidence validation, request-reader/refund admission, deployment and activation remain separate gates.
+Use the project-local fixture launcher with `D1_TOOL_ROOT` and `TMPDIR` beneath `.tooling/d1-backend`; never point these fixtures at Supabase. No existing T2a fixture rerun is needed. Host identity, external evidence validation, refund-mutation admission, deployment and activation remain separate gates.
