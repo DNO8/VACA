@@ -36,6 +36,16 @@ The eight048 issuance guards, private049 assertion,033 reservation writer/origin
 
 `supabase/tests/integration/active-owner-service-admission.test.cjs` covers the original reservation and genuine absence, administrator process-output differentials, scope denials, unchanged reservation/candidate gates, metadata, actual concurrent revocation/pool-rebinding waits and atomic rejection. Fixtures are synthetic SQL evidence, not blockchain or host-identity proof. Results remain in the feature task. This migration is pinned to the owned local schema; application to any deployed schema requires separate compatibility validation and authorization.
 
+## Historical candidate read admission (053)
+
+Migration053 admits `d1_load_refund_candidate` only as historical evidence. Its pinned051 request-reader dependency establishes service membership and locks the original request scope before pool/evidence locks; the candidate reader then revalidates that same scope. Existing candidate bytes, original administrator authorizer, subordinate ownership and the absent-candidate lookup remain unchanged. Neither a candidate nor its absence establishes eligibility, fresh observation, signing or submission authority.
+
+An independent current-administrator check is added to `d1_record_refund_candidate` immediately after its inherited lookup, before input validation and exact replay. The original late check remains. Without this early guard, widening the reader would unintentionally admit service calls to the writer's replay branch. Services may not create or replay through that writer, resolve conflicts, restore ownership, choose a lane or bypass validation; administrators retain their original behavior and error precedence.
+
+One atomic preflight pins048 guards,049 assertion, relevant post051/post052 readers, the original reservation and both034 functions. Drift, unexpected metadata/ACLs and reapplication fail with `P0001 / unexpected_d1_candidate_read_service_definition`, without a partially widened reader. Only the two function bodies change. No grants or provisioned identity are added.
+
+The focused `supabase/tests/integration/refund-candidate-read-service-admission.test.cjs` uses the existing public preparation, observation and administrator candidate APIs with synthetic evidence. It compares administrator lookup/creation/replay/conflict/validation/isolation before and after053, tests service reads and writer denials, actual revocation/pool waits and atomic rejection. It does not execute ledger transactions or prove deployed-schema compatibility. Consult the feature task for observed results.
+
 ## Later integration requirements
 
 Preserve the existing administrator branch and validation/error precedence. Derive a request's namespace/pool from stored originals, invoke the service assertion before pool/evidence locks, and revalidate derived bindings under those locks. An actor argument alone is **not authentication**: the trusted host must bind it to verified service identity. Do not give automation database `service_role` credentials.
