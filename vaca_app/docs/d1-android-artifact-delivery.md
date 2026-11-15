@@ -1,5 +1,19 @@
 # D1 Android delivery: installed artifact and newer verified source
 
+## Latest delivery: 9840e9ff — published test pre-release
+
+**The host-error-handling APK has been built, independently inspected and published with its checksum as test pre-release445695443.** Source `9840e9ffedbc49c8f4e6b894ee2b62f257b4e85b` is published on `feat/d1-t5b-proof`. The exact APK is **161968472 bytes**, SHA-256 `69b6832bb512d824a885f67af483f0e1701cec291444fdc06e79eca102cddf72`; download filename `vaca-d1-testnet-9840e9ff.apk`.
+
+Parent build job1 exited0 in121.972s. Independent artifact inspection passed after retaining the initial missing-java PATH failure (35 passing assertions, apksigner127) and a targeted correction (16 passing assertions, apksigner0/v2/expected certificate, final nine payload hashes unchanged). See [current build and inspection evidence](../../odd/evidence/d1-host-errors-apk-delivery.md) for provenance limits: two HTTP clients' source embedding is independently checked; configuration/Git/current-input preservation remains separately attributed parent evidence. No standalone status-client compiled coverage or historical #48/#56 closure is claimed.
+
+Published downloads: [release](https://github.com/DNO8/VACA/releases/tag/d1-android-testnet-9840e9ff), [APK](https://github.com/DNO8/VACA/releases/download/d1-android-testnet-9840e9ff/vaca-d1-testnet-9840e9ff.apk), [checksum](https://github.com/DNO8/VACA/releases/download/d1-android-testnet-9840e9ff/SHA256SUMS.txt). Parent hash-pinned job-2 exited0 in36.88590751599986s, verified the exact source/tag, `draft:false`, `prerelease:true` and both asset sizes/GitHub SHA-256 digests. The checksum is95 bytes, SHA-256 `0e4a9ae50f43a7a3eb83c19349e523d25cbbe18d02fbd550066c2ea46094ae87`. Latest remained absent; prior release445514859/tagc8667d9 was unchanged. No installation, launch, backend/web deployment, runtime or financial acceptance follows.
+
+Independent static helper/receipt review `mwh37v36-6-m6rr` returned PASS (parent handoff):44 commands,38 exit0/six expected404 exit1/no timeout. This used retained API receipts, not independent live retrieval; helper/manifest byte hashes were parent-pinned, not independently recomputed by that reviewer. The release body's conditional “Publication is PENDING until the parent verifies the actual GitHub transaction.” is historical preparation wording inherited from notes, not the observed publication status. Remote notes and local publication evidence remain unchanged.
+
+## Previously published c8667d9 delivery (preserved)
+
+The following publication/current-state checkpoints describe **c8667d9**, not the newer published9840e9ff delivery.
+
 **A replacement dev/debug APK has now been built and inspected from the offline-verified refund source. It is [available as a test pre-release](https://github.com/DNO8/VACA/releases/tag/d1-android-testnet-c8667d9), but not installed.** The earlier installed trust-root APK does not contain the later RFC3339 parser correction. Complete web/app financial acceptance remains open.
 
 The new APK is **161,968,472 bytes**, SHA-256 `d1a62a3165699062dec9227e450c15d9e4abd1f60c90ef859ec49e7ab1cb698f`, built from `c8667d9c3c18eed0f8b9c90acb40adc80b660baa`. See [the build and bounded inspection report](../../odd/evidence/d1-refund-apk-delivery.md) for the observed outcome, original probe failure, corrected parent execution and independent PASS adjudication. The installed-artifact history below remains distinct.
