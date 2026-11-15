@@ -1,5 +1,17 @@
 # D1 Android delivery: installed artifact and newer verified source
 
+## Latest phone update: 9840e9ff — preserving installation confirmed
+
+Under explicit S20 authorization, the published dev/debug APK was installed on the bound Samsung SM-A075M using one `install -r`. Android returned `Success`; all nine device-command receipts report exit0, complete output, no timeout and empty stderr. The installed SHA-256 is `69b6832bb512d824a885f67af483f0e1701cec291444fdc06e79eca102cddf72`, replacing the previously installed `be229024842593f2c89bbb3b75e1b7d4847d5e3e7ad539e8e06552a097759a17` artifact.
+
+App ID `10363` and first installation time `2026-11-13 12:57:21` remained unchanged. Recorded last update time advanced to `2026-11-14 22:46:09`. This proves package-identity continuity, not byte-for-byte equality of wallet or other application-data contents. No uninstall, data-clear or app-launch command was executed. Android enforced signature compatibility; no new installed-certificate scan was performed.
+
+**The automatic wrapper failed and its exit1 remains retained.** PowerShell exited0, but outer stderr contained nine completed CIM progress records, causing `PowerShell stderr is nonempty; retain uncertainty, no retry`. Independent retained-receipt review `mwh6c9bw-4-nh6r` examined every device stage and found no Error/Warning stream or installation error: S20's bounded installation/hash/continuity requirements are established separately from the failed wrapper gate. The install took10.4413153s; total wrapper duration36.125176845998794s, without timeout. No installer replay or result rewrite occurred.
+
+Local receipts: `supabase/.temp/d1-phone-update-9840e9ff/recovery1/update/`, including `preserving_update.*`, `installed_apk_hash_{before,after}.*`, `metadata_{before,after}.*`, `powershell.{stdout,stderr}` and unchanged `result.json`. Earlier absent-listener, startup outer-timeout, date-format comparison and empty-device-list failures remain recorded separately; they are not erased by this outcome.
+
+This update establishes installation only—not app runtime behavior, financial acceptance, web deployment or historical #48/#56 proof closure. The sections below retain earlier publication and installation checkpoints; their earlier not-installed statements do not supersede this later update.
+
 ## Latest delivery: 9840e9ff — published test pre-release
 
 **The host-error-handling APK has been built, independently inspected and published with its checksum as test pre-release445695443.** Source `9840e9ffedbc49c8f4e6b894ee2b62f257b4e85b` is published on `feat/d1-t5b-proof`. The exact APK is **161968472 bytes**, SHA-256 `69b6832bb512d824a885f67af483f0e1701cec291444fdc06e79eca102cddf72`; download filename `vaca-d1-testnet-9840e9ff.apk`.
