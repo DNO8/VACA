@@ -10,7 +10,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/local/enums.dart';
 import '../../about/presentation/about_vaca_screen.dart';
-import '../../refund/presentation/refund_admin_screen.dart';
 import '../domain/identity_profile.dart';
 
 class IdentityDataScreen extends ConsumerStatefulWidget {
@@ -410,8 +409,6 @@ class _IdentityDataScreenState extends ConsumerState<IdentityDataScreen> {
                         onTap: widget.onOpenWallet,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const RefundAdminEntry(),
                     const SizedBox(height: AppSpacing.sm),
                     Card(
                       child: ListTile(
