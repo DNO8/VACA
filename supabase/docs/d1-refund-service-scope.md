@@ -28,6 +28,14 @@ The eight048 guards, private049 assertion,033 active-owner reader and034 candida
 
 The new `supabase/tests/integration/request-service-admission.test.cjs` uses synthetic inputs through real local preparation/reservation APIs. It checks scope, immutable stored evidence, manual differentials, excluded mutations, preparation movement/deletion races, membership revocation and pinned-gate drift. Synthetic payment and byte fixtures are not verified blockchain observations. See the feature task for actual results.
 
+## Active-owner evidence admission (052)
+
+Migration052 admits only `d1_load_active_issuance_sequence`. A non-admin must pass the private049 assertion for the namespace's authoritative pool before the original pool/ownership locks. Membership precedes pool locking, and the assertion rechecks the pool binding after waiting. The original administrator branch, validation/error precedence and receipt-or-SQL-NULL result remain unchanged. A missing owner is evidence of absence under the pool lock, not permission to reserve, release, sign or refund.
+
+The eight048 issuance guards, private049 assertion,033 reservation writer/original reader and both034 candidate functions are pinned. Unexpected function bodies or metadata/ACLs, missing reservation guards and reapplication fail atomically with `P0001 / unexpected_d1_active_owner_service_definition`. Only the reader body changes: no grants, provisioning, ownership mutation or candidate admission. Existing comments remain unchanged as part of metadata preservation; this section documents the added scoped read path.
+
+`supabase/tests/integration/active-owner-service-admission.test.cjs` covers the original reservation and genuine absence, administrator process-output differentials, scope denials, unchanged reservation/candidate gates, metadata, actual concurrent revocation/pool-rebinding waits and atomic rejection. Fixtures are synthetic SQL evidence, not blockchain or host-identity proof. Results remain in the feature task. This migration is pinned to the owned local schema; application to any deployed schema requires separate compatibility validation and authorization.
+
 ## Later integration requirements
 
 Preserve the existing administrator branch and validation/error precedence. Derive a request's namespace/pool from stored originals, invoke the service assertion before pool/evidence locks, and revalidate derived bindings under those locks. An actor argument alone is **not authentication**: the trusted host must bind it to verified service identity. Do not give automation database `service_role` credentials.
