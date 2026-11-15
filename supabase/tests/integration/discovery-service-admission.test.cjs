@@ -142,7 +142,9 @@ test('050 scoped discovery/history admission preserves manual and issuance bound
       sql(`insert into ${registry} values ('${actor}','${ns}','${admin}');`,null);
     });
     await t.test('reachable operating-credit and issuance mutations stay admin-only',()=>{
-      for(const [name,payload] of [['d1_record_operating_credit',`,'{"operationId":"1"}'::jsonb`],
+      for(const [name,payload] of [['d1_save_unsigned_transaction',`,'AQID','${hash}'`],
+        ['d1_record_issuance_fee_commitment',",'100','200'"],['d1_record_issuance_outcome',",'{}'::jsonb"],
+        ['d1_record_operating_credit',`,'{"operationId":"1"}'::jsonb`],
         ['d1_record_initial_financial_observation',",'{}'::jsonb"],['d1_record_fresh_initial_financial_observation',",'{}'::jsonb"],
         ['d1_record_signed_transaction',`, '${hash}','AQID'`],['d1_claim_submission_attempt',`, '${hash}','${id(9)}'`]])
         reject(rpc(name,actor,ns,payload));
@@ -167,6 +169,23 @@ test('050 scoped discovery/history admission preserves manual and issuance bound
       reject(save('discovery',discovery));reject(save('transaction',history));
       sql(`insert into ${registry} values ('${actor}','${ns}','${admin}');`,null);
     });
+    await t.test('public reader waiting behind revocation or pool rebinding must reject stale scope',async()=>{
+      for(const [change,restore,count] of [
+        [`delete from ${registry} where namespace='${ns}';`,`insert into ${registry} values ('${actor}','${ns}','${admin}');`,'DELETE 1'],
+        [`update public.d1_pools set pool='${actor}' where namespace='${ns}';`,`update public.d1_pools set pool='${admin}' where namespace='${ns}';`,'UPDATE 1']]){
+        const before=publicState();
+        try{
+          const holder=asyncSQL(`set application_name='discovery_changing';begin;${change}select pg_sleep(6);commit;`);
+          await observe("select exists(select 1 from pg_stat_activity where application_name='discovery_changing' and wait_event='PgSleep');");
+          const waiting=asyncSQL(`set application_name='discovery_waiting';set role service_role;${load()}`);
+          await observe("select exists(select 1 from pg_stat_activity w join pg_stat_activity h on h.pid=any(pg_blocking_pids(w.pid)) where w.application_name='discovery_waiting' and h.application_name='discovery_changing');");
+          assert.deepEqual(await holder,{status:0,signal:null,stdout:`SET\nBEGIN\n${count}\n\nCOMMIT\n`,stderr:''});
+          assert.deepEqual(await waiting,{status:1,signal:null,stdout:'SET\nSET\n',stderr:'ERROR:  unauthorized_admin_wallet\n'});
+          reject(save('transaction',history));
+        }finally{sql(restore,null);}
+        assert.deepEqual(publicState(),before);
+      }
+    });
     await t.test('missing guarded prerequisite, checker drift, ACL drift, reader drift and reapplication fail atomically',()=>{
       assert.ok(migration,'050 migration must exist');const afterCatalog=catalog(), afterReader=definition(reader);
       const mismatch='unexpected_d1_discovery_service_definition';
@@ -175,7 +194,12 @@ test('050 scoped discovery/history admission preserves manual and issuance bound
           run('psql',[...args,'--set',`VERBOSITY=${v}`,'-c',migration]),{status:1,stdout:'BEGIN\n',stderr:`ERROR:  ${e}\n`});
         assert.deepEqual(catalog(),before);assert.deepEqual(publicState(),state);};
       attempt();sql(originalReader.definition,null);
-      for(const sig of [reader,checker,'public.d1_record_operating_credit(uuid,text,jsonb)']){
+      const credit='public.d1_record_operating_credit(uuid,text,jsonb)',guarded=definition(credit);
+      const originalCredit=fs.readFileSync(path.join(directory,'022_d1_operating_credit_observations.sql'),'utf8')
+        .match(/create function public\.d1_record_operating_credit\([\s\S]*?\$\$;/)[0];
+      sql(originalCredit.replace('create function','create or replace function'),null);attempt();reject(load());
+      sql(guarded.definition,null);
+      for(const sig of [reader,checker,credit]){
         const d=definition(sig);alterBody(sig,b=>b+'\n-- drift\n');attempt();sql(d.definition,null);
       }
       sql(`grant execute on function ${checker} to service_role;`,null);attempt();
