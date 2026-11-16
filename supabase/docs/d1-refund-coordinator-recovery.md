@@ -32,3 +32,18 @@ principal. It does not release ownership or authorize another submission.
 window. A valid wallet signature alone is not database administrator membership.
 Automatic callers must not fabricate this verified command or impersonate an
 administrator; their scoped admission is a separate implementation step.
+
+## Manual coordinator and inert wrapper
+
+`createRefundHttpHandler` handles the existing signed status, execution and
+reconciliation commands. Submission still goes through the durable candidate,
+signing and one-shot submission journals. A transport acknowledgement remains
+unknown, not confirmed settlement. Reconciliation advances bounded stored history;
+ambiguous writes or submissions do not trigger automatic retry or resend.
+
+`createRefundRuntime({ refund, custodyHandler })` intercepts only the three exact
+v1 routes and passes other requests to the supplied custody handler unchanged.
+It is not mounted by `index.ts`; the current custody, donor and status composition
+has not been replaced. Real private providers and automatic-service admission
+remain necessary before activation. All six recovered modules retain canonical
+source behavior; compatibility and security checks remain unexecuted.
