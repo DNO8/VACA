@@ -1,0 +1,41 @@
+"use strict";
+const {test}=require("node:test"),assert=require("node:assert/strict"),{createHash}=require("node:crypto");
+const {isolated,domain,remainderSnapshot,actor,admin,stranger,id,hash,lit}=require("../fixtures/automatic-refund-admission.cjs");
+const digest=x=>createHash("sha256").update(JSON.stringify(x)).digest("hex");
+const asleep=n=>`select exists(select 1 from pg_stat_activity where application_name='${n}' and wait_event='PgSleep');`;
+const waiting=(w,h)=>`select exists(select 1 from pg_stat_activity w join pg_stat_activity h on h.pid=any(pg_blocking_pids(w.pid)) where w.application_name='${w}' and h.application_name='${h}');`;
+const jsonline=r=>JSON.parse(r.stdout.split("\n").find(x=>x.startsWith("{")));
+test("independent S7/S11: v2 concurrent one-shot ownership, revoked waiter and permanent opposite-lane exclusion",async t=>{
+ const db=await isolated(t),d=domain(db),n=8,f=d.seed(n,admin,{rich:true});d.enroll(n);
+ db.json(d.rpc("d1_record_beneficiary_claim",n,actor,","+lit(d.acquisition(f))));
+ db.sql(`select pg_sleep(greatest(0,${f.end}-extract(epoch from clock_timestamp())+0.01));`);
+ const at=d.clock();d.discovery(n,at,904,[],actor);
+ db.sql(d.rpc("d1_record_transaction_page",108,actor,","+lit(d.page(at,904,f.issued.pagingToken))));
+ const claims=db.json(d.rpc("d1_list_beneficiary_claim_set",108,actor));
+ const candidate=db.json(d.rpc("d1_record_remainder_candidate",n,actor,`,'AQID','${hash(5008)}','3','${at+300}','${claims.set_hash}'`));
+ const snapshot=remainderSnapshot(db,d,f,candidate);
+ const financial=db.json(d.rpc("d1_record_remainder_financial_observation",n,actor,","+lit(snapshot)));f.remainderHashes=[financial.snapshot_hash];
+ const sign=(who,nonce)=>d.rpc("d1_claim_remainder_signing",n,who,`,'${financial.snapshot_hash}','${id(nonce)}'`);
+ const compete=async(name,q1,q2,flag)=>{
+  const a=db.asyncSQL(`set application_name='${name}1';begin;set role service_role;${q1}select pg_sleep(1);commit;`);
+  await db.observe(asleep(name+"1"));
+  const b=db.asyncSQL(`set application_name='${name}2';set role service_role;${q2}`);await db.observe(waiting(name+"2",name+"1"));
+  const results=await Promise.all([a,b]);for(const r of results){assert.equal(r.status,0);assert.equal(r.stderr,"");}
+  const [x,y]=results.map(jsonline);assert.equal(x[flag],true);assert.equal(y[flag],false);return [x,y];
+ };
+ const [a,b]=await compete("ivsign",sign(actor,808),sign(admin,809),"invoked");assert.deepEqual(a.claim,b.claim);
+ const envelope=createHash("sha256").update(Buffer.from("BAUG","base64")).digest("hex");
+ db.json(d.rpc("d1_record_signed_remainder",n,actor,`,'${id(808)}','${financial.snapshot_hash}','BAUG','${envelope}'`));
+ const send=(who,nonce)=>d.rpc("d1_claim_remainder_submission_attempt",n,who,`,'${financial.snapshot_hash}','${id(nonce)}'`);
+ const [c,e]=await compete("ivsend",send(actor,908),send(admin,909),"claimed");assert.deepEqual(c.attempt,e.attempt);
+ const before=digest(d.state());
+ d.reject(d.rpc("d1_record_refund_candidate",n,actor,`,'AQID','${hash(6008)}'`),"refund_lane_fence_conflict","23505");
+ d.reject(sign(stranger,810));d.reject(d.rpc("d1_register_issuance_intent",n,actor));assert.equal(digest(d.state()),before);
+ const revoke=db.asyncSQL(`set application_name='ivrevoke';begin;delete from public.d1_refund_service_scopes where actor='${actor}';select pg_sleep(1);commit;`);
+ await db.observe(asleep("ivrevoke"));const waiter=db.asyncSQL(`set application_name='ivwait';set role service_role;${send(actor,910)}`);
+ await db.observe(waiting("ivwait","ivrevoke"));assert.deepEqual(await revoke,{status:0,stdout:"SET\nBEGIN\nDELETE 1\n\nCOMMIT\n",stderr:""});
+ assert.deepEqual(await waiter,{status:1,stdout:"SET\nSET\n",stderr:"ERROR:  unauthorized_admin_wallet\n"});
+ assert.equal(digest(d.state()),before);d.enroll(n);
+ assert.equal(db.json(sign(actor,811)).invoked,false);assert.equal(db.json(send(actor,911)).claimed,false);assert.equal(digest(d.state()),before);
+ t.diagnostic("real v2 sign/send contenders blocked; one winner each; rejected writes and revoked waiter preserve SHA256 public journals");
+});
