@@ -1,6 +1,7 @@
 import { CustodyError } from "./handler.ts";
 import { observeRefundLifecycle } from "./refund-lifecycle-observation.ts";
 import { calculateIssuanceEncumbrances } from "./issuance-encumbrances.ts";
+import { readOperatingCredits } from "./operating-credit-reader.ts";
 import type { RefundCandidateScope } from "./refund-candidate-journal.ts";
 import type { RefundHttpResponse } from "./refund-http-contract.ts";
 
@@ -79,7 +80,10 @@ export async function observeRefundSettlement(client: Client, configuration: Ref
     const allowed = new Set(["d1_load_refund_outcome", "d1_load_refund_candidate", "d1_load_refund_submission_attempt",
       "d1_load_refund_financial_observation", "d1_load_issuance_outcome", "d1_load_submission_attempt", "d1_load_signed_transaction",
       "d1_load_unsigned_transaction", "d1_load_initial_financial_observation", "d1_load_active_issuance_sequence",
-      "d1_load_transaction_history_state", "d1_list_transaction_records"]);
+      "d1_load_transaction_history_state", "d1_list_transaction_records", "d1_load_discovery_state",
+      "d1_load_operating_credit_state", "d1_list_operating_credits", "d1_load_operating_credit"]);
+    const membership = new Map<string, { name: string; args: Data; data: unknown }>();
+    let membershipStable = true;
     const readonly: Client = Object.freeze({ async rpc(name: string, parameters: Data) {
       check(allowed.has(name) && parameters.p_authorized_by === scope.authenticatedAdmin);
       if (Object.hasOwn(parameters, "p_request_id")) check(parameters.p_request_id === scope.requestId);
@@ -90,6 +94,9 @@ export async function observeRefundSettlement(client: Client, configuration: Ref
         if (reply.data === null && error.code === "42501" && error.message === "unauthorized_admin_wallet") denied = true;
         throw unavailable();
       }
+      const args = snapshot(parameters), key = name + JSON.stringify(args), previous = membership.get(key);
+      if (previous) membershipStable = membershipStable && same(previous.data, reply.data);
+      else { check(membership.size < 10000); membership.set(key, { name, args, data: reply.data }); }
       return { data: reply.data, error: null };
     } });
     // This genuine reader internally validates018/032/034-038 and SDK inclusion;
@@ -116,11 +123,11 @@ export async function observeRefundSettlement(client: Client, configuration: Ref
     } else if (refund?.outcome === "success" && initial.outcome032 && initialOutcome) {
       check(outcome038 !== null);
       const cp = history.state.checkpoint; check(cp !== null);
-      const accounting = calculateIssuanceEncumbrances({ namespace: scope.namespace, pool: scope.pool,
-        firstLedger: history.state.first_ledger,
+      const accountingInput = { namespace: scope.namespace, pool: scope.pool, firstLedger: history.state.first_ledger,
         anchor: { sequence: cp.through_ledger, hash: cp.ledger_hash, closedAt: cp.closed_at },
-        transactions: [...history.records], operatingCredits: [],
-        issuances: [{ unsignedJournal: initial.unsigned018, outcomeReceipt: initial.outcome032 }] });
+        transactions: [...history.records],
+        issuances: [{ unsignedJournal: initial.unsigned018, outcomeReceipt: initial.outcome032 }] };
+      const accounting = calculateIssuanceEncumbrances({ ...accountingInput, operatingCredits: [] });
       const included = history.records.find(r => r.transactionHash === outcome038.transaction_hash);
       const original = accounting.original.donations.find(d => d.operationId === donation.paymentOperationId &&
         d.transactionHash === donation.paymentTransactionHash);
@@ -136,8 +143,29 @@ export async function observeRefundSettlement(client: Client, configuration: Ref
       // Genuine parsers permit only payment, or atomic original CB claim +
       // payment. Recognize those exact hash/index pairs, never a global waiver.
       const recognizedRefundIndices = noCreation ? [0] : originalClaim ? [0, 1] : [];
-      const unmatched = accounting.unmatchedActivity.filter(a => !(full && recognizedRefundIndices.includes(a.operationIndex) &&
-        a.transactionHash === outcome038.transaction_hash && a.reason === "unexplained_pool_operation"));
+      const unrecognized = (a: typeof accounting.unmatchedActivity[number]) => !(full && recognizedRefundIndices.includes(a.operationIndex) &&
+        a.transactionHash === outcome038.transaction_hash && a.reason === "unexplained_pool_operation");
+      let unmatched = accounting.unmatchedActivity.filter(unrecognized);
+      if (full && (noCreation || originalClaim) && unmatched.length !== 0) {
+        // Without genuine operating credits, creation funding is conservatively
+        // protected income and pre-donation ChangeTrust remains unexplained.
+        // Reuse the complete historical receipt reader and accounting rules;
+        // never whitelist setup operations here or assume an absent credit.
+        const credits = await readOperatingCredits(readonly, scope.namespace, scope.authenticatedAdmin, scope.pool);
+        check(same(credits.state.discovery_state, history.state.income_state));
+        const credited = calculateIssuanceEncumbrances({ ...accountingInput, operatingCredits: credits.receipts });
+        check(same(credited.original.donations.find(d => d.operationId === original.operationId), original) &&
+          same(credited.encumbrances, accounting.encumbrances) && same(credited.failedIssuances, accounting.failedIssuances));
+        unmatched = credited.unmatchedActivity.filter(unrecognized);
+        // Credit-reader awaits must not hide changed lifecycle, history, receipt
+        // membership or admission. These are bounded read-only validations, not
+        // a retry, fresh financial authority or an ownership release.
+        check(membershipStable);
+        for (const entry of membership.values()) {
+          await readonly.rpc(entry.name, entry.args);
+          check(membershipStable);
+        }
+      }
       if (!full || (!noCreation && !originalClaim)) unresolved = "contradictory_history";
       else if (unmatched.length !== 0) unresolved = "unmatched_namespace_activity";
       else {

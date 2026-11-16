@@ -147,6 +147,58 @@ for (const failed of [false, true]) Deno.test(`issued full-gross: ${failed ? "fa
   await responseIs(await handler(manualRequest("refund", cutoff + 1)), 200, settled.state);
   equal(b.counters, counts); equal(await b.stored(), before);
 });
+Deno.test("issued settlement: missing credits do not waive setup or invent zero remaining principal", async () => {
+  const f = await automaticFixture(false, false, true, true); f.control.executeRefund = true;
+  const execute = createRefundExecutor({ ...f.executionDependencies, source: f.source, financial: f.financial, fetcher: f.fetcher,
+    construction: { feePerOperationStroops: "100", validUntil: cutoff + 60 } });
+  equal((await execute(scope, "refund")).kind, "state"); await f.ingestPosted();
+  const settled = await execute(scope, "refund_reconcile");
+  if (settled.kind !== "state") throw Error(JSON.stringify(settled)); equal(settled.state.state, "settled");
+  const before = await f.stored(), counts = { ...f.counters };
+  const client = { async rpc(name: string, args: Record<string, unknown>) {
+    const reply = await f.client.rpc(name, args), data = reply.data as Record<string, any>;
+    if (name === "d1_load_operating_credit_state") data.receipt_count = 0;
+    if (name === "d1_list_operating_credits") { data.credit_state.receipt_count = 0; data.receipts = []; data.next_cursor = "0"; }
+    return reply;
+  } };
+  const handler = createRefundHttpHandler({ client, configuration: f.configuration });
+  await responseIs(await handler(manualRequest("refund_status", cutoff + 1)), 200, { ...settled.state,
+    state: "refund_observed", safeActions: ["refund_status", "refund_reconcile"],
+    settlement: { beneficiaryClaimedAmount: null, donorRefundedAmount: "10.0000000", remainingPrincipalAmount: null } });
+  equal(f.counters, counts); equal(await f.stored(), before);
+});
+Deno.test("issued settlement: credit provenance, admission and joined membership drift fail without effects", async () => {
+  const f = await automaticFixture(false, false, true, true); f.control.executeRefund = true;
+  const execute = createRefundExecutor({ ...f.executionDependencies, source: f.source, financial: f.financial, fetcher: f.fetcher,
+    construction: { feePerOperationStroops: "100", validUntil: cutoff + 60 } });
+  equal((await execute(scope, "refund")).kind, "state"); await f.ingestPosted();
+  const settled = await execute(scope, "refund_reconcile");
+  if (settled.kind !== "state") throw Error(JSON.stringify(settled)); equal(settled.state.state, "settled");
+  for (const fault of ["receipt", "head", "historyDrift", "ownerDrift", "creditDrift", "denied", "thrown"]) {
+    const before = await f.stored(), counts = { ...f.counters }; let creditSeen = false, creditReads = 0;
+    const client = { async rpc(name: string, args: Record<string, unknown>) {
+      const reply = await f.client.rpc(name, args), data = reply.data as Record<string, any>;
+      if (name === "d1_load_operating_credit_state") {
+        creditSeen = true; creditReads++;
+        if (fault === "head") data.discovery_state.checkpoint.ledger_hash = "a".repeat(64);
+        if (fault === "creditDrift" && creditReads > 1) data.set_hash = "a".repeat(64);
+      }
+      if (fault === "receipt" && name === "d1_list_operating_credits") data.receipts[0].observation.amountStroops = "1";
+      if (creditSeen && fault === "historyDrift" && name === "d1_load_transaction_history_state") data.record_count++;
+      if (creditSeen && fault === "ownerDrift" && name === "d1_load_active_issuance_sequence") data.transaction_sequence = "5";
+      if (name === "d1_load_operating_credit" && fault === "denied")
+        return { data: null, error: { code: "42501", message: "unauthorized_admin_wallet" } };
+      if (name === "d1_load_operating_credit" && fault === "thrown") throw Error("private forged unauthorized_admin_wallet");
+      return reply;
+    } };
+    f.calls.length = 0;
+    await responseIs(await createRefundHttpHandler({ client, configuration: f.configuration })(manualRequest("refund_status", cutoff + 1)),
+      fault === "denied" ? 403 : 503, { error: fault === "denied" ? "unauthorized_admin_wallet" : "refund_unavailable" });
+    equal(f.calls.includes("d1_load_operating_credit_state"), true);
+    equal(f.calls.every(n => n.startsWith("d1_load_") || n.startsWith("d1_list_")), true);
+    equal(f.counters, counts); equal(await f.stored(), before);
+  }
+});
 Deno.test("manual v1: genuine proof is not admin membership; core denial maps exact403", async () => {
   const f = await automaticFixture(), before = await f.stored(); f.control.deny = true; f.calls.length = 0;
   equal(await createRefundExecutor(f.executionDependencies)(scope, "refund"), { kind: "error", error: "unauthorized_admin_wallet" });

@@ -1,6 +1,108 @@
 # Automatic refund runtime: offline evidence and remaining gaps
 
-**T2ak / S21 is partial. The one permitted correction is consumed.** Baseline
+**T2al / S22 scoped local verification is complete; independent verification is
+still parent-owned.** Baseline `093c106743b34a252f13d358dfdaa03c1c3eddf2`.
+The issued full-gross settlement defect is corrected with **one correction out
+of one authorized**. No new preparation failures or correction cycles occurred.
+This is not deployment, activation, SQL admission, issued-v2 end-to-end or live
+financial acceptance.
+
+## T2al correction and per-spec evidence
+
+`functions/d1-custody/refund-settlement-observation.ts` now uses the existing
+`readOperatingCredits` receipt validator when otherwise authentic full-gross
+inclusion still has unmatched history. The receipts must match the lifecycle's
+discovery head. The existing encumbrance calculator then re-evaluates the same
+history with those credits; selected donation, encumbrances and failed issuance
+bindings must remain identical. No setup operation is whitelisted by this leaf.
+The credit reader's own membership checks are retained, and all observed
+lifecycle/history/credit memberships are reloaded before accepting the joined
+result. Missing credits leave setup unmatched; malformed evidence or drift fails
+closed. The already-resolved native path does not acquire new RPC dependencies.
+
+Only existing read RPC capabilities are used, with captured actor/namespace/
+request bindings. No SQL grants, new RPCs, writers, providers, signing authority,
+ownership release or execution engine changes were introduced. The previous
+T2ak automatic page correction is unchanged.
+
+| Spec | Observed evidence |
+|---|---|
+| S1 | Genuine issued full-gross successful/failed original issuance journeys now reach persisted SDK settlement; prior native automatic catch-up tests remain green. |
+| S5 | Exact manual/core issued HTTP202, partial503, settled200 DTO parity passes. Native manual differential outputs, reads, writes, journals and effect counters are identical. |
+| S7 | Missing/corrupt credits, mismatched head, history/owner/credit drift and admission denial cannot create settlement authority or financial effects. Exact403 versus sanitized503 behavior is retained. |
+| S11 | Genuine operating-credit receipt/history validation and unchanged unmatched-activity rules close the setup-accounting join. Original/attempt/fence ownership and one-shot send remain intact. |
+| S20 | Focused64/64, relevant regressions134/134 and four-entrypoint offline compilation passed with denied real network. |
+| S22 | Inspected retained RED; one correction, three required checks and one temporary manual differential completed. No allowance reset or extra retry. |
+
+## T2al retained results and manual comparison
+
+Reports are under `.tooling/d1-backend/tmp/t2al-settlement-093c106/`.
+Each check has separate `.stdout`, `.stderr`, `.exit` artifacts. The first three
+commands are exactly the focused/regression/compilation commands retained below
+in the historical command section, with only foreground output capture added.
+
+| Stem | Exit | Observed result |
+|---|---:|---|
+| `focused` | 0 | 64 passed / 0 failed (1m36s) |
+| `regression` | 0 | 134 passed / 0 failed (1m49s) |
+| `compile` | 0 | Empty stdout; four `Check` stderr lines; zero tests executed |
+| `differential` | 0 | Four paired manual journeys, 44 HTTP calls per version, both native cases identical; two issued cases differ only as specified below |
+| `manual-baseline`, `manual-candidate` | 0 each | Exact normalized stdout equal, stderr equal and empty; stored financial journals equal after generated nonce normalization |
+
+Retained RED was read from
+`../t2ak-issued-catchup-86d3d973/focused-after.stdout` and `.stderr`: two issued
+cases returned `refund_observed` / `unmatched_namespace_activity`. It was not
+rerun to obtain RED. Both originally failing tests remain intact and now pass,
+including their previously unreachable settled/no-resend assertions. Two added
+rule-focused tests cover missing credits and seven provenance/admission/drift
+variants without writes or provider/sign/send effects.
+
+The **one** temporary differential command was:
+
+```sh
+env -i PATH=/usr/bin:/bin HOME=/home/danilo/projects/vaca-d1-t5b-proof/.tooling/d1-backend/home TMPDIR=/home/danilo/projects/vaca-d1-t5b-proof/.tooling/d1-backend/tmp /usr/bin/python3 /home/danilo/projects/vaca-d1-t5b-proof/.tooling/d1-backend/tmp/t2al-settlement-093c106/manual-differential.py
+```
+
+The script used `mktemp -d` to create only
+`.tooling/d1-backend/tmp/t2al-manual-diff.txxJuQ/`, materialized the required public
+TS import closure plus the two required fixtures and unchanged Deno config/lock,
+and ran each version once in the foreground with:
+
+```sh
+env -i PATH=/usr/bin:/bin HOME="$T/home" TMPDIR="$T/tmp" DENO_DIR="$T/deno-cache" DENO_NO_UPDATE_CHECK=1 NO_UPDATE_NOTIFIER=1 "$T/deno-2.6.8/deno" run --cached-only --frozen --allow-env --deny-net manual.ts
+```
+
+Exact argv/cwd are retained in `manual-baseline.command` and
+`manual-candidate.command`; `differential-manifest.json` lists copied paths.
+No repository/history wholesale copy, runtime bypass, network, real keys or
+configuration/launcher modification was used. The temporary driver is not a
+committed test and is not part of the deliverable source.
+
+Each native/issued case covers successful and failed initial issuance, invalid
+proof, not-due command, current admission denial, refund, pending status, partial
+and complete reconciliation, included status, repeated refund and reconciliation.
+For issued cases only, four post-inclusion responses per case change from
+`refund_observed` to `settled`, beneficiary/remaining amounts from null to
+`0.0000000`, and safe actions to status-only. Donor refund stays `10.0000000`;
+status codes, headers, all other DTO fields, write effects and stored journals
+are identical. Each affected call adds21 read-only credit/membership validation
+calls; every baseline read remains in order. The comparator explicitly validates
+those differences before normalizing them. Native reads also compare exactly.
+Generated attempt/signing identities alone are normalized in stored journals;
+XDR, signatures, hashes, amounts and ownership bindings are not removed.
+
+Self-review found no suppressed unmatched operations, fabricated success,
+substituted helper, replaced engine or new write capability. The fixture was not
+changed in T2al. The two new negative tests assert exact public responses and
+unchanged journals/effect counters. Independent security/concurrency verification,
+actual SQL admission and deployed behavior remain outside this local verdict;
+issued-v2 coverage is not claimed. Reports and the selective differential scratch
+remain for parent retention/cleanup. Parent tracker and foreign changes were
+preserved; no staging or commits were performed.
+
+## Historical T2ak / S21 handoff — retained, superseded by T2al above
+
+**T2ak / S21 was partial. Its one permitted correction was consumed.** Baseline
 `86d3d973b520fb660385aba07840e2690f4de35d`. Automatic tick-only catch-up now passes
 for both native lanes. Issued full-gross transactions sign, submit, reach real
 SDK inclusion and persist successful038 outcomes, but remain `refund_observed`
