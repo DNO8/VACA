@@ -1,6 +1,7 @@
 import { createCustodyHandler, type CustodyConfiguration, type CustodyHandler } from "./handler.ts";
 import type { IssuanceHttpDependencies } from "./issuance-http.ts";
 import type { ReconciliationHttpDependencies } from "./issuance-reconciliation-http.ts";
+import type { DonorPaymentHttpDependencies } from "./donor-payment-http.ts";
 
 export interface PrivateCustodyRuntime {
   readonly client: IssuanceHttpDependencies["client"];
@@ -14,11 +15,15 @@ export interface PrivateCustodyRuntime {
 export function createCustodyRuntime(
   base: Omit<CustodyConfiguration, "issuance" | "reconciliation">,
   lifecycle?: PrivateCustodyRuntime,
+  donorPayment?: DonorPaymentHttpDependencies,
 ): CustodyHandler {
-  if (!lifecycle) return createCustodyHandler(base);
+  // Donor capture is independent of optional issuance/reconciliation wiring.
+  // Existing one/two-argument callers and an explicit base hook remain valid.
+  const mounted = donorPayment ? { ...base, donorPayment } : base;
+  if (!lifecycle) return createCustodyHandler(mounted);
   const { client, configuration, fetcher, reconciliationSource, availabilityFetcher } = lifecycle;
   return createCustodyHandler({
-    ...base,
+    ...mounted,
     status: base.status ?? {
       client,
       configuration: { namespace: configuration.namespace, pool: configuration.pool, now: configuration.now },
