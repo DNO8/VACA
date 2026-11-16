@@ -1,6 +1,6 @@
 # Preserve the deployed D1 host when adding automatic refunds
 
-`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **It is not deployed or independently verified yet.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
+`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **It is locally verified, not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
 
 ## Preserved boundaries
 
@@ -18,7 +18,9 @@
 - RED against current preparation-only composition: `/issue`404 rather than400; donor route503 rather than retained404.
 - Parent focused/regression run:41 tests passed, zero failures; proposed entrypoint graph compiled successfully. This covers invalid/stale/wrong-scope proofs, membership denial, config, all manual proof boundaries and disabled/malformed tick isolation.
 - Three earlier typecheck failures remain recorded: test SDK seed type, host RPC type and test duplicate spread. None was counted as behavioral RED or suppressed with `--no-check`.
-- Independent verification, fresh-preflight positive coverage and retained-live-host differential remain outstanding. Existing automatic-engine proof is not rerun merely to refresh it.
+- Independent verification passed seven probes:45 exact v4 route/proof comparisons plus genuine preflight, attempt/outcome replay, manual forwarding/expiry, wrong-pool signer rejection and startup503. Parent adoption ran all seven with the four focused cases:11PASS, zero failures.
+- Positive preflight starts from genuinely parsed populated history and an existing unsigned journal, completes empty pages, and creates the operating-credit receipt/fee commitment. It does not prove first-ever backfill or first-time sequence reservation. Manual ACK remains `unknown`, not inclusion.
+- The snapshot differential lives outside normal unit discovery at `tests/probes/deployment-live-parity.ts`; it requires the retained public v4 artifact below. Run explicitly with `deno test --cached-only --frozen --allow-env --deny-net tests/probes/deployment-live-parity.ts` from `supabase/`. The portable positive regressions are in `tests/unit/deployment-completion-regression.test.ts`. See [independent evidence](../../odd/evidence/d1-deployment-host-independent.md). Existing automatic-engine proof was not rerun merely to refresh it.
 
 ## Delivery gate
 
