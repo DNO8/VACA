@@ -26,6 +26,12 @@ The verifier stopped PID226187 and reported original HEAD plus17 status records 
 
 Probe: `supabase/tests/integration/pre-admission-source-alignment-independent.probe.cjs`, SHA256 `60e135182d49aa11085baef39a8700f20352059fe62e418969fb6a480ad42c1a`. Its `.probe.cjs` name excludes ordinary `*.test.cjs` discovery. It requires `raw-mcp-catalog.json` and `catalog-baseline.json` in `$TMPDIR/recording-migration-preflight-l2dbpjf2/`; missing capture must fail, never silently substitute a reconstructed body. The portable focused test remains independently runnable without this snapshot.
 
-The captured remote server was PostgreSQL17.6; executed local PostgreSQL was17.7. Exact remote-version execution, full financial-engine/service-enrollment/concurrency rehearsals and deployment remain unverified. Gate stubs isolate authorization and are not financial acceptance.
+The captured remote server was PostgreSQL17.6; the independent probes ran on local PostgreSQL17.7. The full probe suite was not run against remote17.6. Gate stubs isolate authorization and are not financial acceptance; full financial-engine/service-enrollment/concurrency rehearsals remain unverified.
 
 Native committed-range ASSESS for09da5cdc→8665560: three paths/312 lines, native risk medium, agent Risk2 escalation high, independent verifier required, `reviewDue:false/under_budget`, `consumed:false`, outcome unknown. This is **not native approval**; no START was due. Initial unstaged assessment's untracked-declaration failure remains historical.
+
+## Subsequent authorized delivery, separate from local verification
+
+Under the human's S4 continuation, the project-scoped deployment MCP applied047a successfully. Fresh ledger readback records `20261116195945 / d1_pre_admission_source_alignment_047a`. A separate full catalog readback and mechanical comparison exited0:9/9 exact canonical bodies; all nine OIDs, complete `pg_proc` metadata except `prosrc`, catalog comments and dependency edges preserved. Retained `post-047a-{raw,catalog,result}.json` beside the original capture; post-readback raw SHA256 `d856f584bd65a35459b44499f897a10776e9e6e0cdaab80f8d79faaa58cbf495`.
+
+Only047a was applied. The existing custody function remains ACTIVEv4/JWTtrue. No048–058, enrollment, scheduler, secret, backend runtime, APK or financial execution was performed. The next048 source explicitly requires quiescing callers; await confirmation of that operational window before further live mutations.

@@ -1,6 +1,6 @@
 # Align the deployed baseline before refund service admissions
 
-`047a_d1_pre_admission_source_alignment.sql` is a **proposed, locally tested forward migration**, not a deployed change. Run it after047 and before048. It aligns nine precisely identified function bodies with the already-agreed canonical036–040 sources without relaxing any048–058 guard.
+`047a_d1_pre_admission_source_alignment.sql` was applied to the selected Testnet custody project as migration `20261116195945` (`d1_pre_admission_source_alignment_047a`), after047 and before048. Fresh readback verified all nine exact canonical036–040 bodies and preservation of OIDs, complete non-body function metadata, comments and dependency edges. No048–058 guard was relaxed. Later admissions and the automatic runtime are **not yet deployed**.
 
 ## Why this prerequisite exists
 
@@ -32,4 +32,4 @@ Run from the repository root using the retained pinned Node/PostgreSQL launcher.
 
 Retain the full live function definitions, metadata, ACL grantors, comments and dependency edges before mutation; hashes alone are not recovery material. Bind the exact source and recheck the target immediately before an authorized application. Stop on unexpected drift or uncertain receipts; never edit a pin to fit the server. Recovery/rollback is separately authorized and must not drop data or use CASCADE.
 
-After reviewed alignment, resume [recording readiness](../../odd/tasks/d1-recording-readiness.md) with048→049→050→051→052→053→055→056→057→058; exclude optional054. Use [deployment-index.ts](../functions/d1-custody/deployment-index.ts) for the backend, not the experimental entrypoint. Enrollment, activation and human financial rehearsal keep their separate operating gates.
+Before048, establish the caller-quiescence window explicitly required by its source; it has not yet been confirmed. After reviewed alignment, resume [recording readiness](../../odd/tasks/d1-recording-readiness.md) with048→049→050→051→052→053→055→056→057→058; exclude optional054. Use [deployment-index.ts](../functions/d1-custody/deployment-index.ts) for the backend, not the experimental entrypoint. Enrollment, activation and human financial rehearsal keep their separate operating gates.
