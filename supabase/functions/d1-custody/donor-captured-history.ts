@@ -158,6 +158,7 @@ function parseJSONB(input: unknown): unknown {
   }
   const result = value(0); whitespace(); valid(cursor === source.length); return result;
 }
+export { parseJSONB as parseCapturedJSONB };
 function same(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a === null || b === null || typeof a !== "object" || typeof b !== "object" || Array.isArray(a) !== Array.isArray(b)) return false;
