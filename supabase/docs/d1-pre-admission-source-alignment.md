@@ -17,7 +17,9 @@ The existing readers still require administrators. This comparison does not esta
 
 ## Evidence and limits
 
-The focused disposable-PostgreSQL test observed RED against the captured baseline, then5PASS with no failures/skips. It reconstructs the captured bodies from portable sources and exact observed MD5s, compares the resulting complete catalog to canonical source, checks unchanged public RPC error results, tests body/ACL-drift atomic rejection, and applies the unchanged048–053,055–058 chain with an empty service registry. This is not live operational or financial acceptance. Independent verification remains pending.
+The focused disposable-PostgreSQL test observed RED against the captured baseline, then5PASS with no failures/skips. It reconstructs the captured bodies from portable sources and exact observed MD5s, compares the resulting complete catalog to canonical source, checks unchanged public RPC error results, tests body/ACL-drift atomic rejection, and applies the unchanged048–053,055–058 chain with an empty service registry. Independent verification passed6 tests using the actual raw-captured definitions, including rejection before any attempted DDL and all eight independent administrator gates. Parent adoption replay of the exact probe also passed6 tests with48 inputs unchanged. This is not live operational or financial acceptance. See [independent evidence](../../odd/evidence/d1-pre-admission-alignment-independent.md).
+
+The snapshot-dependent independent probe is `tests/integration/pre-admission-source-alignment-independent.probe.cjs`, outside ordinary `*.test.cjs` discovery. Run it explicitly with the same environment below and that file path only when the two hash-bound public capture files are present under `$TMPDIR/recording-migration-preflight-l2dbpjf2/`. Missing capture is an error, not permission to substitute a fixture.
 
 ```sh
 D1_TOOL_ROOT="$PWD/.tooling/d1-backend" TMPDIR="$PWD/.tooling/d1-backend/tmp" \
