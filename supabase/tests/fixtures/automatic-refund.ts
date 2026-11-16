@@ -1,6 +1,6 @@
 import { Account, Operation, Keypair, Networks, Transaction, TransactionBuilder, xdr, hash } from "@stellar/stellar-sdk";
 import { Buffer } from "node:buffer";
-import { fixture, pool, admin, beneficiary, namespace, requestId, closedAt } from "./initial-financial-authorization.ts";
+import { fixture, pool, admin, beneficiary, donor, issuer, namespace, requestId, closedAt } from "./initial-financial-authorization.ts";
 import { parseDiscoveredOperation } from "../../functions/d1-custody/discovery.ts";
 import { parseIncludedTransaction } from "../../functions/d1-custody/transaction-observation.ts";
 import { parseInitialIssuanceOutcome } from "../../functions/d1-custody/initial-issuance-outcome.ts";
@@ -37,8 +37,11 @@ export function manualRequest(action: keyof typeof REFUND_ROUTES | keyof typeof 
 }
 // External RPC journal model, not a replacement helper/validator. Original018,
 // signed031 and included032 are genuine SDK transactions and production parsers.
-export async function automaticFixture(failed = false, claimed = false, freshFullGross = false) {
-  const base = fixture();
+export async function automaticFixture(failed = false, claimed = false, freshFullGross = false, issued = false) {
+  // Reuse the real issuance fixture, including the pool's successful ChangeTrust
+  // BEFORE protected donations. Never omit trustline history to obtain settlement.
+  if (issued && (claimed || !freshFullGross)) throw Error("issued fixture requires fresh full-gross lane");
+  const base = issued ? fixture("none", "issued", "100.0000000", false, "1.0000000", "before") : fixture();
   const freshAccount = claimed || freshFullGross;
   const firstLedger = freshAccount ? 10 : 8;
   if (freshAccount) {
@@ -104,7 +107,8 @@ export async function automaticFixture(failed = false, claimed = false, freshFul
     Object.assign(base.h.history.checkpoint!, { through_ledger: 13, ledger_hash: "3".repeat(64), closed_at: cutoff });
     Object.assign(base.h.history.income_state.checkpoint!, { through_ledger: 13, ledger_hash: "3".repeat(64), closed_at: cutoff });
     Object.assign(base.h.account, { sequence: "3", lastModifiedLedger: 11, anchor: { sequence: 13, hash: "3".repeat(64), closedAt: cutoff } });
-    base.h.account.native.balance = failed ? "1099999920" : "1089999920";
+    base.h.account.native.balance = issued ? "1099999797" : failed ? "1099999920" : "1089999920";
+    if (issued) base.h.account.issuedBalances[0].balance = failed ? "100000000" : "90000000";
     base.h.account.account.num_sponsoring = failed ? 0 : 1;
   }
   base.h.credit.discovery_state = structuredClone(base.h.history.income_state);
@@ -354,7 +358,8 @@ export async function automaticFixture(failed = false, claimed = false, freshFul
           const operation = { id, paging_token: id, transaction_hash: record.transactionHash, transaction_successful: true,
             source_account: pool, created_at: record.raw.transaction.created_at,
             type_i: decoded.toEnvelope().v1().tx().operations()[i].body().switch().value,
-            ...(op.type === "payment" ? { type: "payment", from: pool, to: op.destination, amount: op.amount, asset_type: "native" } : { type: "claim_claimable_balance" }) };
+            ...(op.type === "payment" ? { type: "payment", from: pool, to: op.destination, amount: op.amount,
+              asset_type: op.asset.getAssetType(), ...(op.asset.isNative() ? {} : { asset_code: op.asset.getCode(), asset_issuer: op.asset.getIssuer() }) } : { type: "claim_claimable_balance" }) };
           return parseDiscoveredOperation({ pool, anchor: record.context.anchor, operation, transaction: record.raw.transaction });
         }).filter(r => BigInt(r.paging_token) > BigInt(cp.cursor));
         return { complete: records.length === 0, page: { revision: 1, from_cursor: cp.cursor, to_cursor: records.at(-1)?.paging_token ?? cp.cursor,
@@ -404,7 +409,12 @@ export async function automaticFixture(failed = false, claimed = false, freshFul
       equal(sent.signatures.length, 1); equal(Keypair.fromPublicKey(pool).verify(sent.hash(), sent.signatures[0].signature()), true);
       equal(sent.operations.length, control.executeRefund && !failed ? 2 : 1);
       const payment = sent.operations.at(-1)!; equal(payment.type, "payment");
-      if (payment.type === "payment") equal(payment.amount, control.executeRefund ? "10.0000000" : "9.0000000");
+      if (payment.type === "payment") {
+        equal(payment.amount, control.executeRefund ? "10.0000000" : "9.0000000");
+        equal(payment.destination, donor);
+        equal(payment.asset.isNative() ? { type: "native" } : { type: "issued", code: payment.asset.getCode(), issuer: payment.asset.getIssuer() },
+          issued ? { type: "issued", code: "USD", issuer } : { type: "native" });
+      }
       if (control.ambiguousSend) throw Error("private timeout after send");
       return Response.json({ hash: sent.hash().toString("hex") });
     }

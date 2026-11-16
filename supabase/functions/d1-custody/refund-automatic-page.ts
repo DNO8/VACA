@@ -297,6 +297,20 @@ export function createRefundAutomaticPage(dependencies: RefundAutomaticPageDepen
                 check(nested.requestId === requestId && nested.lane === lane && nested.candidateHash === fence.candidateHash);
               }
             };
+            // A partial019/024 page cannot produce an honest lifecycle/status
+            // DTO. Positively validate incomplete coverage BEFORE status, rather
+            // than treating any status error as permission to retry. Only an
+            // existing matching fence/candidate can select reconciliation here;
+            // the genuine core still checks current018 admission and performs
+            // at most one bounded page per stream, never financial execution.
+            let reconcileIncomplete = false;
+            if (selection.kind === "existing") {
+              const discovery = await new DiscoveryDatabase(neutral, namespace, actor).loadState();
+              check(discovery.pool === pool);
+              reconcileIncomplete = !discovery.coverage_complete ||
+                !(await new TransactionHistoryDatabase(neutral, namespace, actor, pool, "TESTNET").loadState()).coverage_complete;
+              if (reconcileIncomplete) await matchCandidateFence();
+            }
             // Factories capture absolute expiry. Construct anew per original,
             // and omit construction entirely for existing immutable candidates.
             const started = now();
@@ -308,18 +322,18 @@ export function createRefundAutomaticPage(dependencies: RefundAutomaticPageDepen
             let settled = false;
             if (lane === "full_gross_v1") {
               const execute = createRefundExecutor(options);
-              let result = await execute(scope, "refund_status");
-              if (result.kind === "state") await matchCandidateFence();
-              if (result.kind === "state" && result.state.state !== "settled") {
+              let result = await execute(scope, reconcileIncomplete ? "refund_reconcile" : "refund_status");
+              if (!reconcileIncomplete && result.kind === "state") await matchCandidateFence();
+              if (!reconcileIncomplete && result.kind === "state" && result.state.state !== "settled") {
                 if (result.state.safeActions.includes("refund")) result = await execute(scope, "refund");
                 else if (result.state.safeActions.includes("refund_reconcile")) result = await execute(scope, "refund_reconcile");
               }
               settled = result.kind === "state" && result.state.state === "settled";
             } else {
               const execute = createRemainderExecutor(options);
-              let result = await execute(scope, "refund_remainder_status");
-              if (result.kind === "state") await matchCandidateFence();
-              if (result.kind === "state" && result.state.state !== "settled") {
+              let result = await execute(scope, reconcileIncomplete ? "refund_remainder_reconcile" : "refund_remainder_status");
+              if (!reconcileIncomplete && result.kind === "state") await matchCandidateFence();
+              if (!reconcileIncomplete && result.kind === "state" && result.state.state !== "settled") {
                 if (result.state.safeActions.includes("refund_remainder")) result = await execute(scope, "refund_remainder");
                 else if (result.state.safeActions.includes("refund_remainder_reconcile")) result = await execute(scope, "refund_remainder_reconcile");
               }

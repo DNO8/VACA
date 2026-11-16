@@ -1,6 +1,116 @@
 # Automatic refund runtime: offline evidence and remaining gaps
 
-**T2aj is partial, not operational acceptance.** On baseline
+**T2ak / S21 is partial. The one permitted correction is consumed.** Baseline
+`86d3d973b520fb660385aba07840e2690f4de35d`. Automatic tick-only catch-up now passes
+for both native lanes. Issued full-gross transactions sign, submit, reach real
+SDK inclusion and persist successful038 outcomes, but remain `refund_observed`
+instead of `settled`. The two failing tests remain enabled; no passing verdict
+or independent/live financial acceptance is claimed.
+
+## T2ak coverage and source correction
+
+| Spec | Observed evidence | Remaining boundary |
+|---|---|---|
+| S1 | Both native lanes advance partial discovery then partial transaction history using only authenticated automatic ticks, reach persisted settlement and become read-only. | Issued full-gross settlement remains blocked. |
+| S5 | All original56 focused cases pass. Issued successful/failed initial transactions have real manual/core signing, HTTP202, partial reconciliation503 and included-outcome HTTP200 parity. | Both issued settled-state assertions fail; their later settled/no-resend assertions are not reached. |
+| S7 | Partial catch-up refuses foreign/mismatched fences, current018 denial and malformed coverage without provider/write/sign/send effects or journal changes. | Scripted RPC admission is not independent SQL permission proof. |
+| S11 | Genuine019/024 state readers, bounded ingestion and actual038/047 producers handle catch-up; attempts/fences remain unchanged even at saved candidate expiry+1. Ambiguous save ends the tick without readback. | Issued settlement accounting still lacks sufficient recognized setup evidence. |
+| S20 | Focused tests, relevant regressions and offline graph compilation executed with isolated environment and real network denied. | Failing checks block completion; independent verification remains parent-owned. |
+| S21 | Both requested gaps were exercised; one reproduced page blocker corrected, no preparation failure or extra correction. | A second reproduced blocker remains outside the allowed source surface and exhausted allowance. |
+
+`functions/d1-custody/refund-automatic-page.ts:300` now positively validates
+incomplete019/024 coverage for an existing fenced candidate before requiring a
+status DTO. A matching fence/candidate permits **only** the genuine reconciliation
+action. Unknown coverage or a status error does not trigger retry/fallback.
+The existing core still checks current018 admission. There is no execution after
+reconciliation, second page per stream, renewed authority, fence release or new
+sign/send. Manual cores and shared financial validators are unchanged, so the
+conditional manual base-versus-candidate differential was not applicable and was
+not run. Existing manual behavior tests remain passing.
+
+The new HTTP tick tests expose only provider-side inclusion between ticks; they
+never call `ingestPosted`, ingestion helpers, manual reconciliation, or write RPCs
+to advance stored history. Three successive inclusion ticks assert exact200
+bodies/no-store, bounded writes, cursor/coverage progress and immutable submission
+journals; only the third settles. A further tick is read-only. Public core status
+is read only after the ticks have settled, to check exact financial amounts.
+
+## T2ak retained check outputs
+
+All outputs are retained separately under the owned directory:
+`.tooling/d1-backend/tmp/t2ak-issued-catchup-86d3d973/` (repository relative).
+Each stem below has `.stdout`, `.stderr`, and `.exit`; read those files rather
+than rerunning to recover output. The commands are exactly the three documented
+Deno commands retained below, wrapped only in foreground stdout/stderr/exit
+capture with shell noclobber. No launcher/configuration/dependency changes.
+
+| Stem | Check | Exit | Observed result |
+|---|---|---:|---|
+| `focused-red` | Original focused command, before source edit | 1 | 57 passed / 5 failed (1m24s); all62 tests executed, no compilation error |
+| `focused-after` | Same focused command, after the one correction | 1 | 60 passed / 2 failed (1m29s); both tick-only cases and ambiguous-resume case now pass |
+| `regression` | Original relevant refund regression command | 1 | 130 passed / 2 failed (1m41s); same two issued settlement failures only |
+| `compile` | Original four-entrypoint `test --no-run` command | 0 | Empty stdout; stderr has four `Check` lines; zero tests executed |
+
+There are62 focused tests: configuration5, HTTP10, page18, selector10, v1
+execution11, v2 execution8. Six cases were added in T2ak. No failure was hidden,
+skipped, converted to an expected-success assertion or repaired with fixture
+history omission. The first run was meaningful behavioral RED, not preparation
+failure. The one correction changed only automatic page composition; the second
+blocker remains. Prior preparation failures and redundant evidence reruns are
+retained in the historical snapshot below and are not reset by S21.
+
+## Remaining blocker and bounded handoff
+
+Both issued cases in `tests/unit/refund-execution.test.ts:109` fail at line141:
+
+```text
+actual:   {"state":"refund_observed","unresolved":"unmatched_namespace_activity"}
+expected: {"state":"settled","unresolved":null}
+```
+
+They already asserted actual generated-key signatures, correct USD/issuer/donor
+and full10.0000000 payment, one POST, manual/core parity, parsed submitted-XDR
+inclusion, and persisted successful038 donor-returned amount. They preserve the
+successful pool ChangeTrust before donor income rather than inventing a trustline
+with no history.
+
+The remaining source seam is
+`functions/d1-custody/refund-settlement-observation.ts:122`: settlement calls the
+real encumbrance calculator with `operatingCredits: []`. Consequently creation
+funding is considered protected income before ChangeTrust, and the exact setup
+operation remains unmatched at lines139–142. This is not permission to ignore
+unmatched activity, assume zeros, or substitute a settled DTO. This file was
+**not** in the delegated allowed edit surfaces and was not edited.
+
+Proposed continuation for explicit human authorization only: same scoped writer,
+add exactly `supabase/functions/d1-custody/refund-settlement-observation.ts` to the
+existing fixture/v1-test/runtime-guide surfaces, at most one correction of this
+remaining reproduced accounting blocker, no unrelated changes. Reuse genuine
+credit/history validators and their membership invariants; do not globally waive
+setup operations or expand database privileges. Validate with the same three
+commands and a temporary owned-scratch manual base/candidate differential if
+shared behavior is changed. The parent must explicitly authorize that differential
+command/scratch preparation. Current S21 allowance is exhausted; this proposal
+is not permission to continue. Any further required source surface must be
+reported, not silently added.
+
+Self-review: production change is confined to automatic page scheduling. New
+success assertions use real engines and SDK-derived posted envelopes, not fake
+permits or settled DTOs; the independent expected issued-settlement assertion is
+still red. RPC journals, digests and inclusion transport remain modeled external
+ports, not a PostgreSQL or deployed-provider proof. Issued coverage targets the
+previous full-gross gap; no issued-v2 end-to-end claim is made. All foreign
+tracked/untracked changes and parent tracker edits were preserved. Retained
+scratch contains reports only, for parent cleanup; no tests allocate filesystem
+state. Prior fixture/document artifacts are now tracked in the parent commits.
+
+## Historical T2aj snapshot — retained, not the current verdict
+
+The following records the pre-S21 handoff and its original commands/results.
+Its pending tick-only gap is superseded by the T2ak evidence above; its failures,
+correction counts and redundant reruns remain historical facts.
+
+**T2aj was partial, not operational acceptance.** On baseline
 `2c6ba304c7823cc2435ed47f88d4233b5108688b`, the new public-interface coverage passes
 56 focused tests and 126 refund regressions. Offline compilation also passes.
 The bounded correction batch adds nine tests covering native full-gross execution,
@@ -9,7 +119,7 @@ The earlier issued-asset full execution gap remains; see the handoff below.
 No production source, SQL, migration, dependency, tracker or host wiring changed.
 Independent verification remains parent-owned.
 
-## Review first
+### Historical review first
 
 1. `tests/fixtures/automatic-refund.ts` models external RPC journals and provider
    transport, reusing `initial-financial-authorization.ts`. It does not replace
@@ -31,7 +141,7 @@ provider responses are scripted in memory; Deno denies real network access. No
 actual environment configuration, credentials, server execution, deployment,
 activation or real funds were used. Tests allocate no filesystem scratch.
 
-## Public-interface coverage
+### Historical public-interface coverage
 
 | Spec | Observed coverage | Limitation |
 |---|---|---|
@@ -41,7 +151,7 @@ activation or real funds were used. Tests allocate no filesystem scratch.
 | S11 | Real 019/024/032 validation, genuine039 acquisition/persistence, complete claim-set validation, funding, candidate, financial observations, signing and submission ownership, then 038/047 outcomes. Partial discovery/history pages stop further actions; existing v1 fence routes its exact candidate hash. | Not actual database replay/concurrency or deployed-provider proof. Partial-page tests prove bounded stops, not automatic eventual catch-up. |
 | S20 | Foreground local deterministic tests and cached/frozen graph compilation, with retained preparation failures below. | Independent verification remains parent-owned; no operational acceptance. |
 
-### Counts by new test file
+#### Historical counts by new test file
 
 | File under `tests/unit/` | Tests |
 |---|---:|
@@ -77,7 +187,7 @@ fabricated as a second successful payment. A genuine existing v1 candidate/fence
 routes without another write. Nonempty discovery and transaction pages stop
 reconciliation after one save, leaving submission ownership unchanged.
 
-## Exact validation commands
+### Exact validation commands (reused by T2ak; following results are historical)
 
 All commands ran in the foreground. The tool reports combined stdout/stderr;
 separate stream attribution is unavailable. Successful test output contains the
@@ -85,7 +195,7 @@ individual named `ok` cases and summary below; no failure diagnostics occurred
 in the final runs. Compilation returned no output. No `deno check --cached-only`
 command was used.
 
-### Focused
+#### Focused
 
 ```sh
 cd /home/danilo/projects/vaca-d1-t5b-proof/supabase && T=/home/danilo/projects/vaca-d1-t5b-proof/.tooling/d1-backend && env -i PATH=/usr/bin:/bin HOME="$T/home" TMPDIR="$T/tmp" DENO_DIR="$T/deno-cache" DENO_NO_UPDATE_CHECK=1 NO_UPDATE_NOTIFIER=1 "$T/deno-2.6.8/deno" test --cached-only --frozen --allow-env --deny-net tests/unit/refund-automatic*.test.ts tests/unit/refund-lane-selection.test.ts tests/unit/refund-execution.test.ts tests/unit/remainder-execution.test.ts
@@ -97,7 +207,7 @@ Final exit code **0**. ANSI-stripped summary:
 ok | 56 passed | 0 failed (1m9s)
 ```
 
-### Relevant refund regressions
+#### Relevant refund regressions
 
 ```sh
 cd /home/danilo/projects/vaca-d1-t5b-proof/supabase && T=/home/danilo/projects/vaca-d1-t5b-proof/.tooling/d1-backend && env -i PATH=/usr/bin:/bin HOME="$T/home" TMPDIR="$T/tmp" DENO_DIR="$T/deno-cache" DENO_NO_UPDATE_CHECK=1 NO_UPDATE_NOTIFIER=1 "$T/deno-2.6.8/deno" test --cached-only --frozen --allow-env --deny-net tests/unit/refund-*.test.ts tests/unit/recovery-refund-plan.test.ts tests/unit/remainder-execution.test.ts
@@ -113,7 +223,7 @@ The foreign untracked `refund-claimable-independent-probe.test.ts` was run by th
 authorized glob and was not edited. Other foreign tracked/untracked changes were
 preserved, including the parallel writer's integration test.
 
-### Compilation only
+#### Compilation only
 
 ```sh
 cd /home/danilo/projects/vaca-d1-t5b-proof/supabase && T=/home/danilo/projects/vaca-d1-t5b-proof/.tooling/d1-backend && env -i PATH=/usr/bin:/bin HOME="$T/home" TMPDIR="$T/tmp" DENO_DIR="$T/deno-cache" DENO_NO_UPDATE_CHECK=1 NO_UPDATE_NOTIFIER=1 "$T/deno-2.6.8/deno" test --no-run --cached-only --frozen --deny-net functions/d1-custody/index.ts functions/d1-custody/refund-automatic-page.ts functions/d1-custody/refund-http.ts functions/d1-custody/remainder-http.ts
@@ -122,7 +232,7 @@ cd /home/danilo/projects/vaca-d1-t5b-proof/supabase && T=/home/danilo/projects/v
 Exit code **0**, no output, four entrypoint graphs, **zero tests executed**.
 Importing/running the server was not part of this check.
 
-## Retained failures and test-first classification
+### Historical retained failures and test-first classification
 
 This is coverage of already-working behavior, **not a fabricated RED/GREEN bug
 fix**. No production defect was reproduced or corrected. Two test-preparation
@@ -153,7 +263,7 @@ tails, the exact commands were rerun without code changes to retain directly
 visible final summaries: **56/0** (1m9s), **126/0** (1m25s), and compilation exit
 **0** with no output. These are evidence reruns, not a fresh correction budget.
 
-## Remaining proof and handoff
+### Historical remaining proof and handoff
 
 - Native full-gross signing/submission and manual/core financial parity are now
   proved, including successful and failed original issuance. Issued-asset full
