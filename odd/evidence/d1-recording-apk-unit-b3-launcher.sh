@@ -10,4 +10,4 @@ if [ "$requested" != true ]; then
     exit 1
 fi
 mkdir /b3/state/attempt 2>/dev/null || { printf '%s\n' B3_REJECT_RETRY >&2; exit 1; }
-exec /bin/sh /b3/gradlew "$@"
+exec /bin/bash /b3/gradlew "$@"

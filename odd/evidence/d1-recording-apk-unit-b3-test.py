@@ -115,7 +115,7 @@ class PublicGates(unittest.TestCase):
         with self.assertRaises(ValueError): m.artifact(self.root)
 
     def test_existing_context_refuses_before_private_access(self):
-        self.assertEqual(m.ROOT, m.a.T/'unit-b3-offline-recovery')
+        self.assertEqual(m.ROOT, m.a.T/'unit-b3-bash-recovery')
         with patch.object(m, 'ROOT', self.root), patch.object(m, 'open_inputs') as private:
             self.assertEqual(m.prepare(), 1)
             private.assert_not_called()
@@ -138,7 +138,12 @@ class PublicGates(unittest.TestCase):
         for name in ('state', 'original'):
             (self.root/name).mkdir()
         # The executed production launcher is unchanged; only namespace paths differ.
-        (self.root/'original/gradlew').write_text('#!/bin/sh\nprintf "ORIGINAL_FAILURE\\n" >&2\nexit 7\n')
+        (self.root/'original/gradlew').write_text(
+            '#!/usr/bin/env bash\n'
+            'function splitJvmOpts() {\n    JVM_OPTS=("$@")\n}\n'
+            'splitJvmOpts ORIGINAL_FAILURE\n'
+            'printf "%s\\n" "${JVM_OPTS[@]}" >&2\nexit 7\n'
+        )
         args = ['/usr/bin/bwrap', '--unshare-net', '--unshare-pid', '--die-with-parent', '--clearenv',
                 '--tmpfs', '/', '--ro-bind', '/usr', '/usr', '--ro-bind', '/bin', '/bin',
                 '--ro-bind', '/lib', '/lib', '--ro-bind', '/lib64', '/lib64', '--proc', '/proc', '--dev', '/dev',
