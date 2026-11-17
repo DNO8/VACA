@@ -13,6 +13,24 @@
 | Automation | Only the exact `internal-refund-tick` pathname reaches the existing automatic HTTP handler. Disabled/malformed configuration leaves it503 without disabling initial/manual routes. The selected runtime always supplies the fixed original-confirmation policy below; authentication, paging and lane eligibility remain in their existing modules. |
 | Public responses | Config keeps its exact three fields, wildcard CORS and no-store. No `/status` or donor route is newly enabled in this deployment host. Startup failure remains503 `custody_unavailable`; tick-only failure remains503 `refund_tick_unavailable`. |
 
+## Supabase RPC transport boundary
+
+The delivery entrypoint projects the real SDK response to its own `data` and
+`error` value properties before passing it to the host. SDK `status`, `count`
+and other transport metadata do not belong to the financial DTO envelope.
+Missing, inherited or accessor-only payload properties are rejected without
+invoking getters. The RPC receiver stays bound; the adapter adds no retry.
+
+This changes neither the payload nor database error identity. Existing strict
+DTO validation, wallet proofs, membership checks and exact 403/404 mappings
+remain downstream. The automatic page retains its existing normalization.
+No engine, SQL, dependency pin, credential or deadline changes are involved.
+
+The focused regression uses the pinned real Supabase client with synthetic
+PostgREST responses, including its actual metadata, through the delivery
+entrypoint. Network, signing-secret and unintended RPC effects are forbidden.
+This local correction is not deployment or activation evidence.
+
 ## Fixed automatic confirmation scope
 
 `DEPLOYED_ORIGINAL_CONFIRMATION_POLICY` in `deployment-runtime.ts` pins the inclusive original Stellar confirmation lower bound to **2026-11-15T03:00:00Z** (`1794711600` Unix seconds), equivalent to 2026-11-15 00:00 in Chile continental time (UTC−03:00). This is the agreed absolute instant, not a moving “yesterday”. There is no new environment variable or secret and no HTTP override; the request remains exactly `{ "afterRequestId": null }` or a cursor UUID.
