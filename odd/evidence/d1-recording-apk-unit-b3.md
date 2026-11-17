@@ -28,7 +28,7 @@ python3 -B odd/evidence/d1-recording-apk-unit-b3.py prepare
 python3 -B odd/evidence/d1-recording-apk-unit-b3.py build --prepared-sha <parent-observed-accepted-prepare-sha256>
 ```
 
-Prepare has a90s overall deadline and30s/64KiB certificate capture. It exclusively creates unit-b3 and records source/control/public/private identities; no APK is compiled. The parent must inspect the protected receipt and retain its hash before build.
+Prepare has a90s overall deadline and30s/64KiB certificate capture. Under S19 it exclusively creates unit-b3-offline-recovery and records source/control/public/private identities; failed unit-b3 remains immutable. The recovery also binds the public twelve-file local-tool manifest in its parent admission receipt; no APK is compiled during prepare. The parent must inspect the protected receipt and retain its hash before build.
 Build requires the exact accepted receipt hash, unchanged controls/inputs/source and fresh output/attempt state. It has a1900s overall deadline and1800s/1MiB subprocess bound; parent background execution adds a bounded outer deadline. Existing contexts/invocations, first failure, timeout or output cap stop; there is no retry, alternate-root or resume CLI.
 Use an owned clean HOME/TMPDIR and restrictive permissions. Receipts/raw streams and generated outputs remain protected; configuration-derived values can enter compiler intermediates and APK bytes. Do not publish raw logs or private inputs.
 
