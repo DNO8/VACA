@@ -13,6 +13,9 @@ import shlex
 import signal
 import stat
 import sys
+import selectors
+import subprocess
+import time
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).absolute().parent
@@ -104,13 +107,73 @@ def controls(root):
     return result
 
 
+def descriptor(binding):
+    number = int(Path(binding).name)
+    a.require(number >= 3 and binding == f'/proc/{os.getpid()}/fd/{number}', 'B3_DESCRIPTOR_BINDING')
+    os.fstat(number)
+    return number
+
+
+def capture(argv, folder, seconds=300, cap=1048576, descriptors=()):
+    # B1's bounded capture semantics, with explicit inheritance only for native FD mounts.
+    mounts = {int(argv[i+1]) for i, token in enumerate(argv) if token == '--ro-bind-fd'}
+    a.require(set(descriptors) == mounts, 'B3_DESCRIPTOR_MEMBERSHIP')
+    folder.mkdir()
+    a.create(folder/'argv.json', json.dumps(argv).encode())
+    a.create(folder/'stdout', b'')
+    a.create(folder/'stderr', b'')
+    result, process, total = dict(exit=-1, reason='launch'), None, 0
+    deadline = time.monotonic()+seconds
+    try:
+        process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   env={'PATH': '/usr/bin:/bin'}, start_new_session=True, pass_fds=tuple(descriptors))
+        with selectors.DefaultSelector() as selector, (folder/'stdout').open('ab') as out, (folder/'stderr').open('ab') as err:
+            for pipe, target in ((process.stdout, out), (process.stderr, err)):
+                selector.register(pipe, selectors.EVENT_READ, target)
+            while selector.get_map():
+                remaining = deadline-time.monotonic()
+                if remaining <= 0:
+                    result['reason'] = 'timeout'
+                    break
+                for key, _ in selector.select(min(.1, remaining)):
+                    block = os.read(key.fileobj.fileno(), 65536)
+                    if not block:
+                        selector.unregister(key.fileobj)
+                        continue
+                    key.data.write(block[:max(0, cap-total)])
+                    total += len(block)
+                    if total > cap:
+                        result['reason'] = 'output cap'
+                        break
+                if total > cap:
+                    break
+            if result['reason'] == 'launch':
+                try:
+                    result['exit'] = process.wait(timeout=max(.001, deadline-time.monotonic()))
+                    result['reason'] = 'ok' if result['exit'] == 0 else 'nonzero'
+                except subprocess.TimeoutExpired:
+                    result['reason'] = 'timeout'
+    finally:
+        if process is not None:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            result['exit'] = process.wait()
+            process.stdout.close()
+            process.stderr.close()
+        a.create(folder/'result.json', json.dumps(result).encode())
+        a.create(folder/'exit', str(result['exit']).encode())
+    return result
+
+
 def certificate(root, signer):
     args = ['/usr/bin/bwrap', '--die-with-parent', '--unshare-all', '--clearenv', '--tmpfs', '/',
             '--proc', '/proc', '--dev', '/dev', '--ro-bind', '/usr', '/usr', '--ro-bind', '/lib', '/lib',
-            '--ro-bind', '/lib64', '/lib64', '--ro-bind', str(a.J), '/jdk', '--ro-bind', signer, '/signer',
+            '--ro-bind', '/lib64', '/lib64', '--ro-bind', str(a.J), '/jdk', '--ro-bind-fd', str(descriptor(signer)), '/signer',
             '--tmpfs', '/tmp', '--setenv', 'HOME', '/tmp', '--', '/jdk/bin/keytool', '-J-Duser.home=/tmp',
             '-exportcert', '-alias', 'androiddebugkey', '-storepass', 'android', '-keystore', '/signer']
-    result = b.capture(args, root/'certificate', seconds=30, cap=65536)
+    result = capture(args, root/'certificate', seconds=30, cap=65536, descriptors=(descriptor(signer),))
     a.require(result == dict(exit=0, reason='ok') and a.digest(root/'certificate/stdout') == CERT_PIN,
               'B3_CERTIFICATE_IDENTITY')
     return CERT_PIN
@@ -119,9 +182,9 @@ def certificate(root, signer):
 def plan(root, bindings):
     args = b2.plan(root, policy=True, app=True)
     replace(args, ['--ro-bind', str(root/'placeholder'), '/b2/public-placeholder'],
-            ['--ro-bind', bindings['signer'], '/b3/signer'])
+            ['--ro-bind-fd', str(descriptor(bindings['signer'])), '/b3/signer'])
     replace(args, ['--chdir', '/app/vaca_app/android'], ['--chdir', '/app/vaca_app'])
-    args += ['--ro-bind', bindings['config'], '/b3/config', '--ro-bind', str(root/'projects.json'), '/b3/projects.json',
+    args += ['--ro-bind-fd', str(descriptor(bindings['config'])), '/b3/config', '--ro-bind', str(root/'projects.json'), '/b3/projects.json',
              '--bind', str(root/'state'), '/b3/state', '--bind', str(root/'dart-tool'), '/app/vaca_app/.dart_tool',
              '--bind', str(root/'project-cache'), '/app/vaca_app/android/.gradle']
     for name in b.OUTPUTS[:3]:
@@ -232,7 +295,8 @@ def build(prepared_sha=None):
             a.require(records == prepared['privateInputs'] and prepared['certificate'] == CERT_PIN, 'B3_PRIVATE_INPUT_CHANGED')
             args = plan(root, bindings)+['--', *command()]
             a.create(root/'mount-plan.json', json.dumps(args, indent=2).encode())
-            receipt['result'] = b.capture(args, root/'compile', seconds=1800, cap=1048576)
+            receipt['result'] = capture(args, root/'compile', seconds=1800, cap=1048576,
+                                        descriptors=tuple(descriptor(value) for value in bindings.values()))
             a.require(receipt['result'] == dict(exit=0, reason='ok'), 'B3_BUILD_FAILED')
             lines = (root/'compile/stdout').read_text(errors='replace').splitlines()
             a.require(lines.count('B3_FINAL devDebug cl.vaca.app.dev debug /b3/signer') == 1, 'B3_FINAL_MODEL')
