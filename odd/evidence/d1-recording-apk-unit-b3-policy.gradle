@@ -1,3 +1,8 @@
+import org.gradle.execution.plan.Node
+import org.gradle.execution.plan.TaskNode
+import org.gradle.execution.taskgraph.TaskExecutionGraphInternal
+import java.util.function.BiConsumer
+
 gradle.startParameter.setOffline(true)
 // B3 only: the fixed app request and its bounded, variant-scoped closure.
 def appRoot = '/app/vaca_app/android'
@@ -56,17 +61,41 @@ gradle.taskGraph.whenReady { graph ->
     if (!app.plugins.hasPlugin('com.android.application')) throw new GradleException('B3_REJECT_APP_PLUGIN')
     model(app)
     def target = app.tasks.getByName('assembleDevDebug')
-    def allowed = new HashSet()
-    def pending = new ArrayDeque()
-    pending.add(target)
-    while (!pending.isEmpty()) {
-        def task = pending.removeFirst()
-        if (!allowed.add(task)) continue
-        if (allowed.size() > 4096) throw new GradleException('B3_REJECT_GRAPH_SIZE')
-        pending.addAll(task.taskDependencies.getDependencies(task))
-        pending.addAll(task.finalizedBy.getDependencies(task))
+    if (gradle.gradleVersion != '8.14' || !(graph instanceof TaskExecutionGraphInternal)) {
+        throw new GradleException('B3_REJECT_GRAPH_API')
     }
-    if (!graph.hasTask(target)) throw new GradleException('B3_REJECT_TARGET')
+    // The visitor locates only the exact root; neither scheduled nor entry nodes seed the walk.
+    def roots = []
+    graph.visitScheduledNodes({ List<Node> nodes, Set<Node> entries ->
+        nodes.each { node ->
+            if (node instanceof TaskNode && node.getTask().is(target)) roots.add(node)
+        }
+    } as BiConsumer<List<Node>, Set<Node>>)
+    if (roots.size() != 1 || !graph.hasTask(target)) throw new GradleException('B3_REJECT_TARGET')
+    def allowed = Collections.newSetFromMap(new IdentityHashMap())
+    def parents = new IdentityHashMap()
+    def edges = new IdentityHashMap()
+    def taskNodes = new IdentityHashMap()
+    def pending = new ArrayDeque()
+    def enqueue = { Node node, Node parent, String edge ->
+        if (!parents.containsKey(node)) {
+            if (parents.size() >= 4096) throw new GradleException('B3_REJECT_GRAPH_SIZE')
+            parents.put(node, parent)
+            edges.put(node, edge)
+            pending.add(node)
+        }
+    }
+    enqueue(roots[0], null, 'root')
+    while (!pending.isEmpty()) {
+        Node node = pending.removeFirst()
+        if (node instanceof TaskNode) {
+            allowed.add(node.getTask())
+            taskNodes.put(node.getTask(), node)
+        }
+        // Include non-Task bridges; never follow ordering, predecessor or finalizing-successor edges.
+        node.getDependencySuccessors().each { enqueue(it, node, 'dependency') }
+        node.getFinalizers().each { enqueue(it, node, 'finalizer') }
+    }
     def allowAssetCleanup = { task ->
         if (task.path != ':app:cleanMergeDevDebugAssets' || task.project.path != ':app') return false
         if (!(task instanceof org.gradle.api.tasks.Delete) || task.actions.size() != 1) {
@@ -106,42 +135,18 @@ gradle.taskGraph.whenReady { graph ->
         if (checks.containsValue(false)) {
             def diagnostic = [task: task.path.take(256), project: task.project.path.take(256),
                               checks: checks]
-            if (!checks.closure) {
-                // Observe planned edges only; this never adds a task to the admission set.
-                try {
-                    def parents = [(target): null]
-                    def edges = [:]
-                    def queue = new ArrayDeque()
-                    queue.add(target)
-                    while (!queue.isEmpty() && parents.size() < 4096 && !parents.containsKey(task)) {
-                        def current = queue.removeFirst()
-                        def next = graph.getDependencies(current).collect { [it, 'executionDependency'] }
-                        next.addAll(current.finalizedBy.getDependencies(current).findAll {
-                            graph.hasTask(it)
-                        }.collect { [it, 'declaredFinalizer'] })
-                        next.each { edge ->
-                            if (parents.size() < 4096 && !parents.containsKey(edge[0])) {
-                                parents[edge[0]] = current
-                                edges[edge[0]] = edge[1]
-                                queue.add(edge[0])
-                            }
-                        }
-                    }
-                    diagnostic.graphReachable = parents.containsKey(task)
-                    diagnostic.visited = parents.size()
-                    diagnostic.capped = parents.size() == 4096
-                    def chain = []
-                    def current = diagnostic.graphReachable ? task : null
-                    while (current != null && chain.size() < 32) {
-                        chain.add([task: current.path.take(256), edge: edges[current]])
-                        current = parents[current]
-                    }
-                    diagnostic.chain = chain.reverse()
-                    diagnostic.chainTruncated = current != null
-                } catch (Exception failure) {
-                    diagnostic.traceFailure = failure.class.simpleName
-                }
+            diagnostic.graphReachable = checks.closure
+            diagnostic.visited = parents.size()
+            def chain = []
+            Node current = taskNodes.get(task)
+            while (current != null && chain.size() < 32) {
+                def step = [nodeType: current.class.simpleName.take(128), edge: edges.get(current)]
+                if (current instanceof TaskNode) step.task = current.getTask().path.take(256)
+                chain.add(step)
+                current = parents.get(current)
             }
+            diagnostic.chain = chain.reverse()
+            diagnostic.chainTruncated = current != null
             println('B3_TASK_DIAGNOSTIC ' + groovy.json.JsonOutput.toJson(diagnostic))
             throw new GradleException('B3_REJECT_TASK: ' + task.path)
         }
