@@ -100,9 +100,51 @@ gradle.taskGraph.whenReady { graph ->
         def neutral = task.name in ['preBuild', 'checkKotlinGradlePluginConfigurationErrors']
         def variant = task.project.path == ':app' ? task.name.contains('DevDebug') : task.name.contains('Debug')
         def forbidden = task.name =~ /(?i)(release|profile|prod|staging|clean|publish|upload|install|uninstall|connected|test|lint)/
-        if (task.project.rootProject.projectDir.canonicalPath != appRoot ||
-            !approvedProjects.contains(task.project.path) || !allowed.contains(task) ||
-            !(neutral || variant)) throw new GradleException('B3_REJECT_TASK: ' + task.path)
+        def checks = [root: task.project.rootProject.projectDir.canonicalPath == appRoot,
+                      project: approvedProjects.contains(task.project.path),
+                      closure: allowed.contains(task), variant: neutral || variant]
+        if (checks.containsValue(false)) {
+            def diagnostic = [task: task.path.take(256), project: task.project.path.take(256),
+                              checks: checks]
+            if (!checks.closure) {
+                // Observe planned edges only; this never adds a task to the admission set.
+                try {
+                    def parents = [(target): null]
+                    def edges = [:]
+                    def queue = new ArrayDeque()
+                    queue.add(target)
+                    while (!queue.isEmpty() && parents.size() < 4096 && !parents.containsKey(task)) {
+                        def current = queue.removeFirst()
+                        def next = graph.getDependencies(current).collect { [it, 'executionDependency'] }
+                        next.addAll(current.finalizedBy.getDependencies(current).findAll {
+                            graph.hasTask(it)
+                        }.collect { [it, 'declaredFinalizer'] })
+                        next.each { edge ->
+                            if (parents.size() < 4096 && !parents.containsKey(edge[0])) {
+                                parents[edge[0]] = current
+                                edges[edge[0]] = edge[1]
+                                queue.add(edge[0])
+                            }
+                        }
+                    }
+                    diagnostic.graphReachable = parents.containsKey(task)
+                    diagnostic.visited = parents.size()
+                    diagnostic.capped = parents.size() == 4096
+                    def chain = []
+                    def current = diagnostic.graphReachable ? task : null
+                    while (current != null && chain.size() < 32) {
+                        chain.add([task: current.path.take(256), edge: edges[current]])
+                        current = parents[current]
+                    }
+                    diagnostic.chain = chain.reverse()
+                    diagnostic.chainTruncated = current != null
+                } catch (Exception failure) {
+                    diagnostic.traceFailure = failure.class.simpleName
+                }
+            }
+            println('B3_TASK_DIAGNOSTIC ' + groovy.json.JsonOutput.toJson(diagnostic))
+            throw new GradleException('B3_REJECT_TASK: ' + task.path)
+        }
         if (forbidden.find() && !allowAssetCleanup(task)) throw new GradleException('B3_REJECT_TASK: ' + task.path)
     }
     println('B3_FINAL devDebug cl.vaca.app.dev debug /b3/signer')
