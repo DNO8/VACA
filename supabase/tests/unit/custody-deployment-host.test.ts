@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
 import { hash, Keypair } from "@stellar/stellar-sdk";
 import { createCustodyDeploymentHost } from "../../functions/d1-custody/deployment-host.ts";
-import { createDeploymentRuntime, DEPLOYED_SCOPE } from "../../functions/d1-custody/deployment-runtime.ts";
+import { createDeploymentRuntime, DEPLOYED_SCOPE, DEPLOYED_ORIGINAL_CONFIRMATION_POLICY } from "../../functions/d1-custody/deployment-runtime.ts";
+import { createRefundAutomaticPage } from "../../functions/d1-custody/refund-automatic-page.ts";
+import { createRefundExecutor } from "../../functions/d1-custody/refund-execution.ts";
+import { createRemainderExecutor } from "../../functions/d1-custody/remainder-execution.ts";
+import { automaticFixture, closedAt, scope, manualRequest, poolKey } from "../fixtures/automatic-refund.ts";
 
 const pool = Keypair.fromRawEd25519Seed(Buffer.alloc(32, 71));
 const funder = Keypair.fromRawEd25519Seed(Buffer.alloc(32, 72));
@@ -79,6 +83,40 @@ Deno.test("deployment preflight verifies proof before membership and never reads
     assert.deepEqual(calls, status === 403 ? [["d1_load_issuance_outcome", {
       p_request_id: namespace, p_authorized_by: funder.publicKey(),
     }]] : []);
+  }
+});
+
+Deno.test("deployment fixed inclusive cutoff excludes old originals without changing manual status in either lane", async () => {
+  assert.deepEqual(DEPLOYED_ORIGINAL_CONFIRMATION_POLICY, { confirmedAtOrAfter: 1794711600 });
+  assert.equal(new Date(DEPLOYED_ORIGINAL_CONFIRMATION_POLICY.confirmedAtOrAfter * 1000).toISOString(), "2026-11-15T03:00:00.000Z");
+  assert.equal(Object.isFrozen(DEPLOYED_ORIGINAL_CONFIRMATION_POLICY), true);
+  assert.ok(closedAt < DEPLOYED_ORIGINAL_CONFIRMATION_POLICY.confirmedAtOrAfter);
+  for (const remainder of [false, true]) {
+    const f = await automaticFixture(false, remainder, !remainder);
+    f.control.executeRefund = !remainder; f.control.saveRemainderCandidate = remainder; f.control.executeRemainder = remainder;
+    await createRefundAutomaticPage(f.pageDependencies)(null, 2);
+    const before = await f.stored(), counts = { ...f.counters }; f.calls.length = 0;
+    assert.deepEqual(await createRefundAutomaticPage({ ...f.pageDependencies,
+      originalConfirmationPolicy: DEPLOYED_ORIGINAL_CONFIRMATION_POLICY })(null, 2),
+      { processed: 1, held: 1, nextAfterRequestId: null });
+    assert.deepEqual(f.calls, ["d1_list_due_refund_originals", "d1_load_refund_lane_fence", "d1_load_unsigned_transaction"]);
+    assert.deepEqual(f.counters, counts); assert.equal(await f.stored(), before);
+    const action = remainder ? "refund_remainder_status" : "refund_status";
+    const expected = remainder ? await createRemainderExecutor(f.executionDependencies)(scope, "refund_remainder_status") :
+      await createRefundExecutor(f.executionDependencies)(scope, "refund_status");
+    assert.equal(expected.kind, "state");
+    if (expected.kind !== "state") throw Error("expected genuine manual state");
+    const client = { async rpc(name: string, args: Record<string, unknown>) {
+      const reply = await f.client.rpc(name, args); assert.equal(reply.error, null);
+      return { data: reply.data, error: null };
+    } };
+    const handler = createCustodyDeploymentHost({ client, pool: scope.pool, namespace: scope.namespace,
+      firstLedger: 10, creationOperationId: "42949672961", teamFunders: [scope.authenticatedAdmin],
+      fetcher: f.fetcher, now: () => f.control.now, readSecret: () => poolKey.secret() });
+    const response = await handler(manualRequest(action, f.control.now));
+    assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await response.json(), expected.state);
+    assert.deepEqual(f.counters, counts); assert.equal(await f.stored(), before);
   }
 });
 

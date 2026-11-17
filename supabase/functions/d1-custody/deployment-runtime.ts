@@ -1,7 +1,7 @@
 import { createCustodyDeploymentHost, type DeploymentHostDependencies } from "./deployment-host.ts";
 import { HorizonDiscoverySource } from "./discovery-source.ts";
 import { readRefundAutomaticConfiguration } from "./refund-automatic-configuration.ts";
-import { createRefundAutomaticPage } from "./refund-automatic-page.ts";
+import { createRefundAutomaticPage, type RefundOriginalConfirmationPolicy } from "./refund-automatic-page.ts";
 import { createRefundAutomaticHttp } from "./refund-automatic-http.ts";
 
 // Public bindings retained from deployed v4; configuration cannot select another target.
@@ -11,6 +11,11 @@ export const DEPLOYED_SCOPE = Object.freeze({
   creationOperationId: "24380652438728705",
   funder: "GABY7MJYU3ORNMO2THEUSO3R5H2R5FUC7VT5QHTSLGP3PAT3C4QBPEE4",
   url: "https://tgqxxnldwiqisopiclmk.supabase.co",
+});
+// Approved inclusive original-confirmation bound: Chile midnight on 2026-11-15.
+// Fixed rollout scope, never a moving "yesterday", request field or secret setting.
+export const DEPLOYED_ORIGINAL_CONFIRMATION_POLICY: RefundOriginalConfirmationPolicy = Object.freeze({
+  confirmedAtOrAfter: Date.parse("2026-11-15T03:00:00Z") / 1000,
 });
 interface Dependencies {
   getEnv(name: string): string | undefined;
@@ -45,6 +50,7 @@ export function createDeploymentRuntime(dependencies: Dependencies) {
     if (configuration !== null) {
       const { token, ...pageConfiguration } = configuration;
       const runPage = createRefundAutomaticPage({ ...pageConfiguration, client, now,
+        originalConfirmationPolicy: DEPLOYED_ORIGINAL_CONFIRMATION_POLICY,
         source: new HorizonDiscoverySource(fetcher), fetcher });
       automatic = createRefundAutomaticHttp({ token, maxBatchSize: configuration.maxBatchSize,
         runPage: after => runPage(after, configuration.maxBatchSize) });

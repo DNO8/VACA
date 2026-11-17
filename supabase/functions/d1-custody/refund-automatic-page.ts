@@ -18,7 +18,13 @@ type Source = Pick<HorizonDiscoverySource, "readPage" | "readTransactionPageAtCh
 type Data = Record<string, unknown>;
 type Lane = "full_gross_v1" | "verified_remainder_v2";
 interface Fence { readonly requestId: string; readonly lane: Lane; readonly candidateHash: string }
+export interface RefundOriginalConfirmationPolicy {
+  /** Inclusive lower bound on the saved original Stellar confirmation, Unix seconds. */
+  readonly confirmedAtOrAfter: number;
+}
 export interface RefundAutomaticPageDependencies {
+  /** Trusted host scope only. Omission retains legacy automatic behavior. */
+  readonly originalConfirmationPolicy?: RefundOriginalConfirmationPolicy;
   readonly client: Client;
   readonly namespace: string;
   readonly pool: string;
@@ -134,7 +140,15 @@ const accountingReads = new Set(["d1_load_beneficiary_claim", "d1_load_refund_ou
  * lock. Dedicated HTTP authentication and SQL service admission are mandatory. */
 export function createRefundAutomaticPage(dependencies: RefundAutomaticPageDependencies): RefundAutomaticPage {
   try {
-    const d = exact(dependencies, "client,namespace,pool,actor,network,now,source,financial,feePerOperationStroops,transactionLifetimeSeconds,maxBatchSize,fetcher");
+    const supplied = fields(dependencies), hasOriginalPolicy = Object.hasOwn(supplied, "originalConfirmationPolicy");
+    const d = exact(supplied, "client,namespace,pool,actor,network,now,source,financial,feePerOperationStroops,transactionLifetimeSeconds,maxBatchSize,fetcher" +
+      (hasOriginalPolicy ? ",originalConfirmationPolicy" : ""));
+    let confirmedAtOrAfter: number | null = null;
+    if (hasOriginalPolicy) {
+      const originalPolicy = exact(d.originalConfirmationPolicy, "confirmedAtOrAfter");
+      integer(originalPolicy.confirmedAtOrAfter, 0, 253402300499);
+      confirmedAtOrAfter = originalPolicy.confirmedAtOrAfter;
+    }
     const { namespace, pool, actor, feePerOperationStroops, transactionLifetimeSeconds, maxBatchSize } = d;
     uuid(namespace); address(pool); address(actor); check(d.network === "TESTNET");
     integer(transactionLifetimeSeconds, 1, 600); integer(maxBatchSize, 1, 50);
@@ -224,10 +238,9 @@ export function createRefundAutomaticPage(dependencies: RefundAutomaticPageDepen
             };
             const first = await readFence(); // Foreign namespace owner holds BEFORE any provider/write.
             if (first !== null && first.requestId !== requestId) { held++; continue; }
-            let selection: RefundLaneSelection;
-            if (first !== null) {
-              selection = { kind: "existing", lane: first.lane, candidateHash: first.candidateHash };
-            } else {
+            // With a host cutoff, the same original gate also precedes existing
+            // candidate status/recovery. Omitted policy preserves legacy routing.
+            if (first === null || confirmedAtOrAfter !== null) {
               // Actual018 admission and immutable original deadline, not a renewed
               // refund transaction lifetime. This preflight grants evidence ONLY.
               const lookup = exact((await neutral.rpc("d1_load_unsigned_transaction", args)).data,
@@ -244,6 +257,12 @@ export function createRefundAutomaticPage(dependencies: RefundAutomaticPageDepen
               const deadline = preparation.confirmed_at + 300;
               check(saved.deadline === new Date(deadline * 1000).toISOString().replace(".000Z", "Z") &&
                 request.deadline === saved.deadline && now() >= deadline);
+              check(confirmedAtOrAfter === null || preparation.confirmed_at >= confirmedAtOrAfter);
+            }
+            let selection: RefundLaneSelection;
+            if (first !== null) {
+              selection = { kind: "existing", lane: first.lane, candidateHash: first.candidateHash };
+            } else {
               const discovery = await ingestDiscoveryPage(new DiscoveryDatabase(neutral, namespace, actor), boundedSource);
               check(discovery.receipt.pool === pool && discovery.completeAtAnchor);
               const history = await ingestTransactionPage(new TransactionHistoryDatabase(neutral, namespace, actor, pool, "TESTNET"), boundedSource);
