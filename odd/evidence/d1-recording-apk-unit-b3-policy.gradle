@@ -67,13 +67,43 @@ gradle.taskGraph.whenReady { graph ->
         pending.addAll(task.finalizedBy.getDependencies(task))
     }
     if (!graph.hasTask(target)) throw new GradleException('B3_REJECT_TARGET')
+    def allowAssetCleanup = { task ->
+        if (task.path != ':app:cleanMergeDevDebugAssets' || task.project.path != ':app') return false
+        if (!(task instanceof org.gradle.api.tasks.Delete) || task.actions.size() != 1) {
+            throw new GradleException('B3_REJECT_ASSET_CLEANUP')
+        }
+        def buildArea = new File('/app/vaca_app/build/app').toPath()
+        def checkedPaths = { files ->
+            def paths = files.collect { file ->
+                def path = file.toPath().toAbsolutePath().normalize()
+                if (path != file.canonicalFile.toPath() || path == buildArea || !path.startsWith(buildArea)) {
+                    throw new GradleException('B3_REJECT_ASSET_CLEANUP')
+                }
+                path
+            } as Set
+            if (paths.isEmpty()) throw new GradleException('B3_REJECT_ASSET_CLEANUP')
+            paths
+        }
+        def merge = app.tasks.getByName('mergeDevDebugAssets')
+        def expected = checkedPaths(merge.outputs.files.files)
+        def validate = {
+            if (task.followSymlinks || app.layout.buildDirectory.get().asFile.canonicalFile.toPath() != buildArea ||
+                checkedPaths(task.targetFiles.files) != expected || checkedPaths(merge.outputs.files.files) != expected) {
+                throw new GradleException('B3_REJECT_ASSET_CLEANUP')
+            }
+        }
+        validate()
+        task.doFirst { validate() }
+        true
+    }
     graph.allTasks.each { task ->
         def neutral = task.name in ['preBuild', 'checkKotlinGradlePluginConfigurationErrors']
         def variant = task.project.path == ':app' ? task.name.contains('DevDebug') : task.name.contains('Debug')
         def forbidden = task.name =~ /(?i)(release|profile|prod|staging|clean|publish|upload|install|uninstall|connected|test|lint)/
         if (task.project.rootProject.projectDir.canonicalPath != appRoot ||
             !approvedProjects.contains(task.project.path) || !allowed.contains(task) ||
-            forbidden.find() || !(neutral || variant)) throw new GradleException('B3_REJECT_TASK: ' + task.path)
+            !(neutral || variant)) throw new GradleException('B3_REJECT_TASK: ' + task.path)
+        if (forbidden.find() && !allowAssetCleanup(task)) throw new GradleException('B3_REJECT_TASK: ' + task.path)
     }
     println('B3_FINAL devDebug cl.vaca.app.dev debug /b3/signer')
 }
