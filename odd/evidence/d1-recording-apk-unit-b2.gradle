@@ -1,0 +1,8 @@
+// Assertion fixture only: deliberately does NOT set offline mode.
+gradle.beforeSettings { settings ->
+    def identity = settings.settingsDir == new File('/app') ? 'root' : 'included'
+    println("B2_OFFLINE ${identity}=${settings.settingsDir} offline=${gradle.startParameter.offline}")
+    if (!gradle.startParameter.offline) {
+        throw new GradleException("B2_${identity.toUpperCase()}_OFFLINE_REQUIRED: offline=false before settings")
+    }
+}

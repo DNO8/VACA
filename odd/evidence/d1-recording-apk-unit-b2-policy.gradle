@@ -1,0 +1,52 @@
+gradle.startParameter.setOffline(true)
+// No AGP imports: plugin-owned extensions are accessed only after application.
+def appRoot = '/app/vaca_app/android'
+def flutterRoot = System.getenv('FLUTTER_ROOT') + '/packages/flutter_tools/gradle'
+def roots = ['/app': 'root', '/app/included': 'included', (appRoot): 'app', (flutterRoot): 'flutter']
+def publicStore = new File('/b2/public-placeholder').canonicalFile
+gradle.beforeSettings { settings ->
+    def identity = settings.settingsDir.canonicalPath
+    if (!roots.containsKey(identity) || !gradle.startParameter.offline) {
+        throw new GradleException('B2_REJECT_SETTINGS: ' + identity)
+    }
+    println("B2_OFFLINE ${roots[identity]}=${identity} offline=true")
+}
+gradle.beforeProject { project ->
+    if (project.rootProject.projectDir.canonicalPath == appRoot && project.path == ':app') {
+        project.plugins.withId('com.android.application') {
+            project.extensions.getByName('androidComponents').finalizeDsl { dsl ->
+                def signing = dsl.signingConfigs.getByName('debug')
+                signing.storeFile = publicStore
+                signing.storePassword = 'public-inert'
+                signing.keyAlias = 'public-inert'
+                signing.keyPassword = 'public-inert'
+                dsl.buildTypes.getByName('debug').signingConfig = signing
+            }
+            project.tasks.register('b2PublicModel') {
+                doLast {
+                    def variants = project.extensions.getByName('android').getApplicationVariants().findAll {
+                        it.getName() == 'devDebug'
+                    }
+                    if (variants.size() != 1) throw new GradleException('B2_REJECT_VARIANTS')
+                    def variant = variants[0]
+                    def signing = variant.getSigningConfig()
+                    if (variant.getApplicationId() != 'cl.vaca.app.dev' || signing == null ||
+                        signing.getName() != 'debug' || signing.getStoreFile()?.canonicalFile != publicStore ||
+                        !publicStore.isFile()) throw new GradleException('B2_REJECT_FINAL_SIGNING_MODEL')
+                    println('B2_MODEL variant=devDebug applicationId=cl.vaca.app.dev signingConfig=debug storeFile=/b2/public-placeholder')
+                }
+            }
+        }
+    }
+}
+gradle.taskGraph.whenReady { graph ->
+    graph.allTasks.each { task ->
+        def identity = task.project.rootProject.projectDir.canonicalPath
+        def allowed = (identity == appRoot && task.path == ':app:b2PublicModel') ||
+            (identity in ['/app', '/app/included'] && task.path == ':b2PublicReport') ||
+            (identity == flutterRoot && task.project.path == ':' && task.name in [
+                'compileKotlin', 'compileJava', 'compileGroovy', 'pluginDescriptors', 'processResources',
+                'classes', 'jar', 'checkKotlinGradlePluginConfigurationErrors'])
+        if (!allowed) throw new GradleException("B2_REJECT_TASK: ${identity} ${task.path}")
+    }
+}
