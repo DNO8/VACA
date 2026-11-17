@@ -1,5 +1,5 @@
 # B2 public Gradle and final devDebug model verified
-T2c / S1,S2,S6,S8,S9,S12,S13,S14. Public checks and actual fixture/app model pass under job77; checkpoint and native acceptance remain pending. A/B1 are immutable/closed; no authority query/replay, private input, APK, publication, installation or D1 HTTP occurred.
+T2c / S1,S2,S6,S8,S9,S12,S13,S14. Public checks and actual fixture/app model pass under job77; checkpoint e45727c07eab516b90787479fec4b7fbe09bb64d is committed. Native review was declined for this candidate: no lineage or native approval; ordinary high-risk writer/independent verification is fulfilled. A/B1 are immutable/closed; no authority query/replay, private input, APK, publication, installation or D1 HTTP occurred.
 
 ## Runtime success; earlier failed contexts remain immutable
 The RED, `local-green` and job76 contexts remain immutable. The unchanged one-shot guard refuses reuse; no CLI/global change was introduced. Under S13/S14 the parent admitted fresh `unit-b2-fixtures/public-runtime-l51-01` through existing run_green(root), never replaying an old context. Original limits remained420s overall/450s outer, fixture60s, app300s and1MiB per child, with accepted process-group cleanup; no RED CLI path exists.
