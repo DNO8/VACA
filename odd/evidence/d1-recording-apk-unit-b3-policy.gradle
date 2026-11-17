@@ -1,0 +1,79 @@
+gradle.startParameter.setOffline(true)
+// B3 only: the fixed app request and its bounded, variant-scoped closure.
+def appRoot = '/app/vaca_app/android'
+def flutterRoot = System.getenv('FLUTTER_ROOT') + '/packages/flutter_tools/gradle'
+def signer = new File('/b3/signer').canonicalFile
+def approvedProjects = new groovy.json.JsonSlurper().parse(new File('/b3/projects.json')) as Set
+def model = { project ->
+    def variants = project.extensions.getByName('android').getApplicationVariants().findAll {
+        it.getName() == 'devDebug'
+    }
+    if (variants.size() != 1) throw new GradleException('B3_REJECT_VARIANTS')
+    def variant = variants[0]
+    def signing = variant.getSigningConfig()
+    if (variant.getApplicationId() != 'cl.vaca.app.dev' || signing == null ||
+        signing.getName() != 'debug' || signing.getStoreFile()?.canonicalFile != signer || !signer.isFile()) {
+        throw new GradleException('B3_REJECT_SIGNING_MODEL')
+    }
+}
+gradle.beforeSettings { settings ->
+    def identity = settings.settingsDir.canonicalPath
+    if (!(identity in [appRoot, flutterRoot]) || !gradle.startParameter.offline) {
+        throw new GradleException('B3_REJECT_SETTINGS')
+    }
+    if (identity == appRoot && (gradle.startParameter.taskNames != ['assembleDevDebug'] ||
+        !new File('/b3/state/attempt').isDirectory())) throw new GradleException('B3_REJECT_REQUEST')
+    println('B3_OFFLINE ' + (identity == appRoot ? 'app' : 'flutter'))
+}
+gradle.beforeProject { project ->
+    if (project.rootProject.projectDir.canonicalPath == appRoot && project.path == ':app') {
+        project.plugins.withId('com.android.application') {
+            project.extensions.getByName('androidComponents').finalizeDsl { dsl ->
+                def signing = dsl.signingConfigs.getByName('debug')
+                signing.storeFile = signer
+                signing.storePassword = 'android'
+                signing.keyAlias = 'androiddebugkey'
+                signing.keyPassword = 'android'
+                dsl.buildTypes.getByName('debug').signingConfig = signing
+            }
+        }
+    }
+}
+gradle.taskGraph.whenReady { graph ->
+    def identity = gradle.rootProject.projectDir.canonicalPath
+    if (identity == flutterRoot) {
+        graph.allTasks.each { task ->
+            if (task.project.rootProject.projectDir.canonicalPath != flutterRoot || task.project.path != ':' ||
+                !(task.name in ['compileKotlin', 'compileJava', 'compileGroovy', 'pluginDescriptors',
+                                'processResources', 'classes', 'jar', 'checkKotlinGradlePluginConfigurationErrors'])) {
+                throw new GradleException('B3_REJECT_FLUTTER_TASK')
+            }
+        }
+        return
+    }
+    if (identity != appRoot) throw new GradleException('B3_REJECT_BUILD')
+    def app = gradle.rootProject.project(':app')
+    if (!app.plugins.hasPlugin('com.android.application')) throw new GradleException('B3_REJECT_APP_PLUGIN')
+    model(app)
+    def target = app.tasks.getByName('assembleDevDebug')
+    def allowed = new HashSet()
+    def pending = new ArrayDeque()
+    pending.add(target)
+    while (!pending.isEmpty()) {
+        def task = pending.removeFirst()
+        if (!allowed.add(task)) continue
+        if (allowed.size() > 4096) throw new GradleException('B3_REJECT_GRAPH_SIZE')
+        pending.addAll(task.taskDependencies.getDependencies(task))
+        pending.addAll(task.finalizedBy.getDependencies(task))
+    }
+    if (!graph.hasTask(target)) throw new GradleException('B3_REJECT_TARGET')
+    graph.allTasks.each { task ->
+        def neutral = task.name in ['preBuild', 'checkKotlinGradlePluginConfigurationErrors']
+        def variant = task.project.path == ':app' ? task.name.contains('DevDebug') : task.name.contains('Debug')
+        def forbidden = task.name =~ /(?i)(release|profile|prod|staging|clean|publish|upload|install|uninstall|connected|test|lint)/
+        if (task.project.rootProject.projectDir.canonicalPath != appRoot ||
+            !approvedProjects.contains(task.project.path) || !allowed.contains(task) ||
+            forbidden.find() || !(neutral || variant)) throw new GradleException('B3_REJECT_TASK: ' + task.path)
+    }
+    println('B3_FINAL devDebug cl.vaca.app.dev debug /b3/signer')
+}

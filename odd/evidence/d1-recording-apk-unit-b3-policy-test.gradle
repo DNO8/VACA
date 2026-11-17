@@ -1,0 +1,80 @@
+import org.gradle.api.GradleException
+// Execute the unchanged production policy in Groovy with public model/graph doubles.
+def appPath = '/app/vaca_app/android'
+def flutterPath = System.getenv('FLUTTER_ROOT') + '/packages/flutter_tools/gradle'
+def root = new Expando(projectDir: new File(appPath))
+def app = new Expando(path: ':app', rootProject: root)
+def library = new Expando(path: ':public_plugin', rootProject: root)
+def signing = new Expando(getName: { 'debug' }, getStoreFile: { new File('/b3/signer') })
+def variant = new Expando(getName: { 'devDebug' }, getApplicationId: { 'cl.vaca.app.dev' }, getSigningConfig: { signing })
+app.plugins = new Expando(hasPlugin: { name -> name == 'com.android.application' })
+app.extensions = new Expando(getByName: { name -> new Expando(getApplicationVariants: { [variant] }) })
+def makeTask = { project, name ->
+    def dependencies = []
+    def finalizers = []
+    new Expando(project: project, name: name, path: project.path + ':' + name,
+        dependencies: dependencies, finalizers: finalizers,
+        taskDependencies: new Expando(getDependencies: { task -> dependencies as Set }),
+        finalizedBy: new Expando(getDependencies: { task -> finalizers as Set }))
+}
+def target = makeTask(app, 'assembleDevDebug')
+def dependency = makeTask(app, 'preBuild')
+def finalizer = makeTask(library, 'finishDebug')
+target.dependencies.add(dependency)
+target.finalizers.add(finalizer)
+app.tasks = new Expando(getByName: { name -> assert name == 'assembleDevDebug'; target })
+root.project = { name -> assert name == ':app'; app }
+def settingsCheck, graphCheck
+// Groovy accessor methods exercise the same policy spelling used by Gradle.
+def parameters = new Expando(offline: false, taskNames: ['assembleDevDebug'])
+parameters.setOffline = { value -> parameters.offline = value }
+def fake = new Expando(startParameter: parameters, rootProject: root)
+fake.beforeSettings = { closure -> settingsCheck = closure }
+fake.beforeProject = { closure -> /* AGP finalizeDsl is separately proven at actual build. */ }
+fake.taskGraph = new Expando(whenReady: { closure -> graphCheck = closure })
+def policy = new File('/b3/policy.gradle').text
+new GroovyShell(getClass().classLoader, new Binding([gradle: fake])).evaluate('import org.gradle.api.GradleException\n' + policy)
+assert parameters.offline
+settingsCheck(new Expando(settingsDir: new File(appPath)))
+def graph = new Expando(allTasks: [target, dependency, finalizer], hasTask: { task -> task.is(target) })
+graphCheck(graph)
+def cases = 1
+def rejects = { expected, action ->
+    boolean rejected = false
+    try { action() } catch (GradleException error) {
+        assert error.message.startsWith(expected)
+        rejected = true
+    }
+    assert rejected
+    cases++
+}
+parameters.taskNames = ['assembleDevDebug', 'clean']
+rejects('B3_REJECT_REQUEST') { settingsCheck(new Expando(settingsDir: new File(appPath))) }
+parameters.taskNames = ['assembleDevDebug']
+parameters.offline = false
+rejects('B3_REJECT_SETTINGS') { settingsCheck(new Expando(settingsDir: new File(appPath))) }
+parameters.offline = true
+rejects('B3_REJECT_SETTINGS') { settingsCheck(new Expando(settingsDir: new File('/unapproved'))) }
+def extra = makeTask(app, 'extraDevDebug')
+graph.allTasks = [target, extra]
+rejects('B3_REJECT_TASK') { graphCheck(graph) }
+for (bad in [makeTask(app, 'assembleProdDebug'), makeTask(library, 'compileReleaseJava'),
+             makeTask(new Expando(path: ':unknown', rootProject: root), 'compileDebugJava')]) {
+    target.dependencies.add(bad)
+    graph.allTasks = [target, dependency, finalizer, bad]
+    rejects('B3_REJECT_TASK') { graphCheck(graph) }
+    target.dependencies.remove(bad)
+}
+graph.allTasks = [target, dependency, finalizer]
+signing.getStoreFile = { new File('/wrong-store') }
+rejects('B3_REJECT_SIGNING_MODEL') { graphCheck(graph) }
+signing.getStoreFile = { new File('/b3/signer') }
+root.projectDir = new File(flutterPath)
+def plugin = new Expando(path: ':', rootProject: root)
+def groovy = makeTask(plugin, 'compileGroovy')
+graph.allTasks = [groovy]
+graphCheck(graph)
+cases++
+plugin.path = ':unapproved'
+rejects('B3_REJECT_FLUTTER_TASK') { graphCheck(graph) }
+println('B3_POLICY_PUBLIC_PASS cases=' + cases)
