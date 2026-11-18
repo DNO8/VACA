@@ -9,6 +9,18 @@ def appRoot = '/app/vaca_app/android'
 def flutterRoot = System.getenv('FLUTTER_ROOT') + '/packages/flutter_tools/gradle'
 def signer = new File('/b3/signer').canonicalFile
 def approvedProjects = new groovy.json.JsonSlurper().parse(new File('/b3/projects.json')) as Set
+def jniRoot = '/owned/pub/hosted/pub.dev/jni-1.0.0/android'
+def jniIdentity = { project ->
+    project.rootProject.projectDir.canonicalPath == appRoot && project.path == ':jni' &&
+        approvedProjects.contains(':jni') && project.projectDir.canonicalPath == jniRoot &&
+        project.projectDir.toPath().toAbsolutePath().normalize() == new File(jniRoot).toPath()
+}
+def arm64Only = { contributors ->
+    contributors.each { contributor ->
+        contributor.getNdk().getAbiFilters().clear()
+        contributor.getNdk().getAbiFilters().add('arm64-v8a')
+    }
+}
 def model = { project ->
     def variants = project.extensions.getByName('android').getApplicationVariants().toList()
     if (variants.size() != 1 || variants[0].getName() != 'devDebug') {
@@ -31,6 +43,22 @@ gradle.beforeSettings { settings ->
     println('B3_OFFLINE ' + (identity == appRoot ? 'app' : 'flutter'))
 }
 gradle.beforeProject { project ->
+    if (project.rootProject.projectDir.canonicalPath == appRoot && project.path == ':jni') {
+        if (!jniIdentity(project)) throw new GradleException('B3_REJECT_JNI_IDENTITY')
+        project.plugins.withId('com.android.library') {
+            def components = project.extensions.getByName('androidComponents')
+            components.beforeVariants(components.selector().all(), { builder ->
+                builder.setEnable(builder.getEnable() && builder.getName() == 'debug' && builder.getBuildType() == 'debug')
+            } as org.gradle.api.Action)
+            components.finalizeDsl { dsl ->
+                if (!dsl.productFlavors.isEmpty()) throw new GradleException('B3_REJECT_JNI_VARIANTS')
+                def debug = dsl.buildTypes.getByName('debug')
+                arm64Only([dsl.defaultConfig, debug])
+                debug.getExternalNativeBuild().getCmake().getArguments().add('-DCMAKE_BUILD_TYPE=debug')
+                dsl.getExternalNativeBuild().getCmake().setBuildStagingDirectory(new File('/app/vaca_app/build/.jni-cxx'))
+            }
+        }
+    }
     if (project.rootProject.projectDir.canonicalPath == appRoot && project.path == ':app') {
         project.plugins.withId('com.android.application') {
             def components = project.extensions.getByName('androidComponents')
@@ -39,10 +67,7 @@ gradle.beforeProject { project ->
                     builder.getBuildType() == 'debug' && builder.getFlavorName() == 'dev')
             } as org.gradle.api.Action)
             components.finalizeDsl { dsl ->
-                [dsl.defaultConfig, dsl.productFlavors.getByName('dev'), dsl.buildTypes.getByName('debug')].each { contributor ->
-                    contributor.getNdk().getAbiFilters().clear()
-                    contributor.getNdk().getAbiFilters().add('arm64-v8a')
-                }
+                arm64Only([dsl.defaultConfig, dsl.productFlavors.getByName('dev'), dsl.buildTypes.getByName('debug')])
                 def signing = dsl.signingConfigs.getByName('debug')
                 signing.storeFile = signer
                 signing.storePassword = 'android'
@@ -69,6 +94,11 @@ gradle.taskGraph.whenReady { graph ->
     def app = gradle.rootProject.project(':app')
     if (!app.plugins.hasPlugin('com.android.application')) throw new GradleException('B3_REJECT_APP_PLUGIN')
     model(app)
+    def jni = gradle.rootProject.project(':jni')
+    if (!jniIdentity(jni) || !jni.plugins.hasPlugin('com.android.library')) throw new GradleException('B3_REJECT_JNI_IDENTITY')
+    def libraryVariants = jni.extensions.getByName('android').getLibraryVariants().toList()
+    if (libraryVariants.size() != 1 || libraryVariants[0].getName() != 'debug' ||
+        libraryVariants[0].getBuildType().getName() != 'debug') throw new GradleException('B3_REJECT_JNI_VARIANTS')
     def target = app.tasks.getByName('assembleDevDebug')
     if (gradle.gradleVersion != '8.14' || !(graph instanceof TaskExecutionGraphInternal)) {
         throw new GradleException('B3_REJECT_GRAPH_API')
@@ -141,8 +171,10 @@ gradle.taskGraph.whenReady { graph ->
     def nativeInfrastructure = { task ->
         def validate = {
             def reject = { String reason -> throw new GradleException('B3_REJECT_NATIVE_' + reason) }
-            if (task.project.path != ':app' || task.project.rootProject.projectDir.canonicalPath != appRoot ||
-                !allowed.contains(task)) reject('SCOPE')
+            def jniTask = task.project.is(jni)
+            if (task.project.rootProject.projectDir.canonicalPath != appRoot || !allowed.contains(task) ||
+                !(task.project.is(app) || (jniTask && jniIdentity(task.project) &&
+                    task.project.plugins.hasPlugin('com.android.library')))) reject('SCOPE')
             def abi
             if (nativeBuild.isInstance(task)) {
                 def builder = task.'getBuilder$gradle_core'()
@@ -155,7 +187,7 @@ gradle.taskGraph.whenReady { graph ->
             }
             if (abi == null || abi.getInfo().getName() != 'arm64-v8a' || !abi.isActiveAbi()) reject('ABI')
             def variant = abi.getVariant()
-            def variantChecks = [variantName: variant.getVariantName() == 'devDebug',
+            def variantChecks = [variantName: variant.getVariantName() == (jniTask ? 'debug' : 'devDebug'),
                                  debuggable: variant.isDebuggableEnabled() as boolean,
                                  optimizationTag: variant.getOptimizationTag() == 'debug',
                                  validAbiList: variant.getValidAbiList() == ['arm64-v8a'],
@@ -170,16 +202,18 @@ gradle.taskGraph.whenReady { graph ->
                 if (path != file.canonicalFile.toPath()) reject('PATH_CANONICAL')
                 path
             }
-            def buildArea = new File('/app/vaca_app/build/app').toPath()
-            def staging = new File('/app/vaca_app/build/.cxx').toPath()
+            def buildArea = new File(jniTask ? '/app/vaca_app/build/jni' : '/app/vaca_app/build/app').toPath()
+            def staging = new File(jniTask ? '/app/vaca_app/build/.jni-cxx' : '/app/vaca_app/build/.cxx').toPath()
             def module = variant.getModule()
-            def cmake = new File(flutterRoot + '/src/main/scripts/CMakeLists.txt')
+            def cmake = new File(jniTask ? '/owned/pub/hosted/pub.dev/jni-1.0.0/src/CMakeLists.txt' :
+                flutterRoot + '/src/main/scripts/CMakeLists.txt')
+            def cmakePin = jniTask ? '0241a96defe71682561f674d5a8273a82ad45da99a4e0881c3d1dae1f19d722a' :
+                '1cd4fd6c4b9131b249743965e5611770424b9a0b12602126b2239b5e3b3b0265'
             if (module.getBuildSystem().name() != 'CMAKE' || canonical(module.getMakeFile()) != canonical(cmake) ||
                 !cmake.isFile() || cmake.length() > 4096 ||
-                java.security.MessageDigest.getInstance('SHA-256').digest(cmake.bytes).encodeHex().toString() !=
-                    '1cd4fd6c4b9131b249743965e5611770424b9a0b12602126b2239b5e3b3b0265' ||
-                canonical(module.getModuleRootFolder()) != canonical(app.projectDir) ||
-                canonical(module.getCxxFolder()) != staging || canonical(app.layout.buildDirectory.get().asFile) != buildArea) reject('CMAKE')
+                java.security.MessageDigest.getInstance('SHA-256').digest(cmake.bytes).encodeHex().toString() != cmakePin ||
+                canonical(module.getModuleRootFolder()) != canonical(task.project.projectDir) ||
+                canonical(module.getCxxFolder()) != staging || canonical(task.project.layout.buildDirectory.get().asFile) != buildArea) reject('CMAKE')
             def outputs = [abi.getCxxBuildFolder(), abi.getSoFolder(), abi.getSoRepublishFolder(),
                            module.getIntermediatesFolder()] + task.outputs.files.files
             outputs.each { file ->

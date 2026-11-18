@@ -27,7 +27,7 @@ spec = importlib.util.spec_from_file_location('accepted_b2_library', LIBRARY)
 b2 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(b2)
 b, a = b2.b, b2.a
-ROOT = a.T/'unit-b3-native-tag-recovery'
+ROOT = a.T/'unit-b3-jni-recovery'
 PRIVATE = {'config': a.F.parent/'d1-client-public-config.json',
            'signer': a.F.parent/'d1-android-home/android/debug.keystore'}
 CONFIG_PIN = 'cd97e32ef1744e702c33e8249da01e70b85768d6c306ec62cad7e12e11d8ce89'
