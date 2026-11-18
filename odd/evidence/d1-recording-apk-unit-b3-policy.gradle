@@ -39,6 +39,10 @@ gradle.beforeProject { project ->
                     builder.getBuildType() == 'debug' && builder.getFlavorName() == 'dev')
             } as org.gradle.api.Action)
             components.finalizeDsl { dsl ->
+                [dsl.defaultConfig, dsl.productFlavors.getByName('dev'), dsl.buildTypes.getByName('debug')].each { contributor ->
+                    contributor.getNdk().getAbiFilters().clear()
+                    contributor.getNdk().getAbiFilters().add('arm64-v8a')
+                }
                 def signing = dsl.signingConfigs.getByName('debug')
                 signing.storeFile = signer
                 signing.storePassword = 'android'
@@ -130,35 +134,34 @@ gradle.taskGraph.whenReady { graph ->
         task.doFirst { validate() }
         true
     }
-    // AGP8.11.1 public signatures/creation bytecode were checked in the pinned cached JAR.
     def loader = app.plugins.getPlugin('com.android.application').class.classLoader
     def nativeBuild = loader.loadClass('com.android.build.gradle.tasks.ExternalNativeBuildTask')
     def nativeConfigure = loader.loadClass('com.android.build.gradle.tasks.ExternalNativeBuildJsonTask')
     def regularBuilder = loader.loadClass('com.android.build.gradle.internal.cxx.build.CxxRegularBuilder')
     def nativeInfrastructure = { task ->
         def validate = {
-            def reject = { throw new GradleException('B3_REJECT_NATIVE') }
+            def reject = { String reason -> throw new GradleException('B3_REJECT_NATIVE_' + reason) }
             if (task.project.path != ':app' || task.project.rootProject.projectDir.canonicalPath != appRoot ||
-                !allowed.contains(task)) reject()
+                !allowed.contains(task)) reject('SCOPE')
             def abi
             if (nativeBuild.isInstance(task)) {
                 def builder = task.'getBuilder$gradle_core'()
-                if (!regularBuilder.isInstance(builder)) reject()
+                if (!regularBuilder.isInstance(builder)) reject('BUILDER')
                 abi = builder.getAbi()
                 if (!task.'getVariant$gradle_core'().is(abi.getVariant()) ||
-                    task.getSoFolder().get().asFile != abi.getSoFolder()) reject()
+                    task.getSoFolder().get().asFile != abi.getSoFolder()) reject('WIRING')
             } else {
                 abi = task.'getAbi$gradle_core'()
             }
-            if (abi == null || abi.getInfo().getName() != 'arm64-v8a' || !abi.isActiveAbi()) reject()
+            if (abi == null || abi.getInfo().getName() != 'arm64-v8a' || !abi.isActiveAbi()) reject('ABI')
             def variant = abi.getVariant()
             if (variant.getVariantName() != 'devDebug' || !variant.isDebuggableEnabled() ||
                 variant.getOptimizationTag() != 'Debug' || variant.getValidAbiList() != ['arm64-v8a'] ||
-                !variant.getBuildSystemArgumentList().contains('-DCMAKE_BUILD_TYPE=debug')) reject()
+                !variant.getBuildSystemArgumentList().contains('-DCMAKE_BUILD_TYPE=debug')) reject('VARIANT')
             def canonical = { File file ->
-                if (file == null) reject()
+                if (file == null) reject('PATH_NULL')
                 def path = file.toPath().toAbsolutePath().normalize()
-                if (path != file.canonicalFile.toPath()) reject()
+                if (path != file.canonicalFile.toPath()) reject('PATH_CANONICAL')
                 path
             }
             def buildArea = new File('/app/vaca_app/build/app').toPath()
@@ -170,12 +173,12 @@ gradle.taskGraph.whenReady { graph ->
                 java.security.MessageDigest.getInstance('SHA-256').digest(cmake.bytes).encodeHex().toString() !=
                     '1cd4fd6c4b9131b249743965e5611770424b9a0b12602126b2239b5e3b3b0265' ||
                 canonical(module.getModuleRootFolder()) != canonical(app.projectDir) ||
-                canonical(module.getCxxFolder()) != staging || canonical(app.layout.buildDirectory.get().asFile) != buildArea) reject()
+                canonical(module.getCxxFolder()) != staging || canonical(app.layout.buildDirectory.get().asFile) != buildArea) reject('CMAKE')
             def outputs = [abi.getCxxBuildFolder(), abi.getSoFolder(), abi.getSoRepublishFolder(),
                            module.getIntermediatesFolder()] + task.outputs.files.files
             outputs.each { file ->
                 def path = canonical(file)
-                if (!([buildArea, staging].any { path != it && path.startsWith(it) })) reject()
+                if (!([buildArea, staging].any { path != it && path.startsWith(it) })) reject('OUTPUT')
             }
         }
         validate()
@@ -194,8 +197,6 @@ gradle.taskGraph.whenReady { graph ->
         if (checks.containsValue(false)) {
             def diagnostic = [task: task.path.take(256), project: task.project.path.take(256),
                               checks: checks]
-            diagnostic.graphReachable = checks.closure
-            diagnostic.visited = parents.size()
             def chain = []
             Node current = taskNodes.get(task)
             while (current != null && chain.size() < 32) {
