@@ -40,7 +40,7 @@ Deno.test("deployment host preserves all deployed POST proof boundaries without 
   }
 });
 
-Deno.test("deployment host retains exact public config and does not enable status or donor expansion", async () => {
+Deno.test("deployment host retains exact public config and keeps administrative status disabled", async () => {
   const { dependencies, effects } = fixture();
   const handler = createCustodyDeploymentHost(dependencies);
   const config = await handler(new Request(`${prefix}/config`));
@@ -48,12 +48,51 @@ Deno.test("deployment host retains exact public config and does not enable statu
   assert.deepEqual(await config.json(), { network: "TESTNET", pool_public_key: pool.publicKey(), donation_ttl_seconds: 300 });
   assert.equal(config.headers.get("cache-control"), "no-store");
   assert.equal(config.headers.get("access-control-allow-origin"), "*");
-  for (const route of ["status", "donor-payment-status", "unknown"]) {
+  for (const route of ["status", "unknown"]) {
     const response = await handler(new Request(`${prefix}/${route}`, { method: "POST", body: "{}" }));
     assert.equal(response.status, 404, route);
     assert.deepEqual(await response.json(), { error: "not_found" }, route);
   }
   assert.deepEqual(effects, { rpc: 0, provider: 0, secret: 0 });
+});
+
+Deno.test("deployment donor mount authenticates before one historical capture without financial effects", async () => {
+  for (const url of [`${prefix}/donor-payment-status`, "https://offline.invalid/donor-payment-status"]) {
+    const { dependencies, effects } = fixture();
+    const calls: unknown[] = [];
+    const rpc = dependencies.client.rpc;
+    dependencies.client.rpc = (name, args) => { calls.push([name, args]); return rpc(name, args); };
+    const handler = createCustodyDeploymentHost(dependencies);
+    for (const [method, body, status, error] of [
+      ["GET", undefined, 405, "method_not_allowed"],
+      ["POST", "{}", 400, "invalid_request"],
+    ] as const) {
+      const response = await handler(new Request(url, { method, body }));
+      assert.equal(response.status, status);
+      assert.deepEqual(await response.json(), { error });
+      assert.equal(response.headers.get("cache-control"), "no-store");
+      assert.deepEqual(calls, []);
+      assert.deepEqual(effects, { rpc: 0, provider: 0, secret: 0 });
+    }
+    const message: Record<string, unknown> = { version: 1, network: "TESTNET",
+      namespace, pool: dependencies.pool, action: "donor_payment_status",
+      payment_transaction_hash: "a".repeat(64), payment_operation_id: "4294967298",
+      timestamp: dependencies.now(), payload: {}, wallet: funder.publicKey() };
+    const canonical = "{" + Object.keys(message).sort().map(k =>
+      JSON.stringify(k) + ":" + JSON.stringify(message[k])).join(",") + "}";
+    const signature = funder.sign(hash(Buffer.from("Stellar Signed Message:\n" + canonical))).toString("base64");
+    const response = await handler(new Request(url, { method: "POST",
+      headers: { "content-type": "application/json" }, body: JSON.stringify({ ...message, signature }) }));
+    assert.equal(response.status, 503);
+    assert.deepEqual(await response.json(), { error: "donor_payment_unavailable" });
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.deepEqual(calls, [["d1_capture_donor_payment", {
+      p_namespace: namespace, p_pool: dependencies.pool,
+      p_transaction_hash: message.payment_transaction_hash,
+      p_operation_id: message.payment_operation_id, p_verified_donor: funder.publicKey(),
+    }]]);
+    assert.deepEqual(effects, { rpc: 1, provider: 0, secret: 0 });
+  }
 });
 
 Deno.test("deployment preflight verifies proof before membership and never reads signer on denial", async () => {

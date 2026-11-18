@@ -1,6 +1,6 @@
 # Preserve the deployed D1 host when adding automatic refunds
 
-`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **It is locally verified, not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
+`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **The historical issuance/manual/automatic composition has local evidence; the new donor mount is source-only and unverified. This candidate is not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
 
 ## Preserved boundaries
 
@@ -11,7 +11,33 @@
 | Manual refunds | Both existing runtime wrappers mount all six exact paths, forwarding the original request. Fee100, request-time expiry+60, financial freshness30/2 and future-refund commitment300 preserve v4 policy. These do not change original donation TTL300. |
 | Signing | Initial/manual signer lazily reads `D1_POOL_SECRET_SEED`, verifies the requested pool and secret-derived key. It never borrows automatic-refund credentials. |
 | Automation | Only the exact `internal-refund-tick` pathname reaches the existing automatic HTTP handler. Disabled/malformed configuration leaves it503 without disabling initial/manual routes. The selected runtime always supplies the fixed original-confirmation policy below; authentication, paging and lane eligibility remain in their existing modules. |
-| Public responses | Config keeps its exact three fields, wildcard CORS and no-store. No `/status` or donor route is newly enabled in this deployment host. Startup failure remains503 `custody_unavailable`; tick-only failure remains503 `refund_tick_unavailable`. |
+| Public responses | Config keeps its exact three fields, wildcard CORS and no-store. Administrative `/status` remains disabled. The signed historical donor route is mounted as described below. Startup failure remains503 `custody_unavailable`; tick-only failure remains503 `refund_tick_unavailable`. |
+
+## Signed historical donor lookup
+
+The host now supplies its existing private RPC client and trusted pool/namespace/clock
+to the existing `donorPaymentHttp` through `createCustodyHandler`. Both
+`/donor-payment-status` and `/functions/v1/d1-custody/donor-payment-status`
+require the existing personal `donor_payment_status` proof and known original
+payment transaction hash plus operation ID. This does not enable administrative status.
+
+The reader authenticates the wallet before the single `d1_capture_donor_payment`
+capture, then validates stored ownership, original payment, allocations and issuance
+evidence before returning the allowlisted historical DTO. No new SQL, signer,
+provider lookup, execution, automatic retry or reconciliation is added.
+
+The current implemented error contract is 400 `invalid_request`, 401
+`invalid_signature` or `stale_request`, 405 `method_not_allowed`, and sanitized
+503 `donor_payment_unavailable` for capture/projection failure, including absent
+or foreign payment evidence. Migration054 cannot certify the older proposal's
+404 `payment_not_found`; consumers must not treat503 as proof of absence.
+
+Historical issuance success and `readAt` do not establish live claimable-balance
+availability, refund eligibility or permission to clear a financial hold.
+Wallet-wide discovery is not provided. The new composition regression definition
+has not been executed because further verification was stopped by the human.
+Earlier v4 parity evidence below predates this intentional donor-route difference;
+it is not verification of this new mount.
 
 ## Supabase RPC transport boundary
 

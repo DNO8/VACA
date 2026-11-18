@@ -61,6 +61,7 @@ export function createCustodyDeploymentHost(dependencies: DeploymentHostDependen
     ledger: new TestnetPayments(fetcher), database, now,
     issuance: { client, configuration: { ...configuration, ...financial, source }, fetcher, availabilityFetcher: fetcher },
     reconciliation: { client, configuration: { ...configuration, source } },
+    donorPayment: { client, configuration },
   });
   const feeCommitment = new IssuanceFeeCommitmentDatabase(client, { pool, futureRefundFee: () => "300" });
   async function lookup(name: string, args: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -111,10 +112,6 @@ export function createCustodyDeploymentHost(dependencies: DeploymentHostDependen
   return async request => {
     try {
       const path = new URL(request.url).pathname;
-      // These shared-handler reservations were not part of the deployed v4 host.
-      if (path === "/donor-payment-status" || path === "/functions/v1/d1-custody/donor-payment-status") {
-        return Response.json({ error: "not_found" }, { status: 404 });
-      }
       if (request.method === "POST" && path === "/functions/v1/d1-custody/issue") await prepareIssuance(request.clone());
       const construction = { feePerOperationStroops: "100", validUntil: now() + 60 };
       const manual = { client, configuration, source, financial, construction, fetcher };
