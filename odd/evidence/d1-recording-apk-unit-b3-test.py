@@ -110,12 +110,26 @@ class PublicGates(unittest.TestCase):
         self.assertEqual(result['size'], apk.stat().st_size)
         self.assertEqual(apk.stat().st_mode & 0o777, 0o600)
         with self.assertRaises(ValueError): m.artifact(self.root, maximum=2)
+        for name in ('dart-tool', 'generated', 'project-cache', 'state', 'home', 'android'):
+            (self.root/name).mkdir(mode=0o700)
+        (self.root/'build').chmod(0o700)
+        before = m.output_state(self.root)
+        session = self.root/'state/kotlin/sessions/public.salive'
+        session.parent.mkdir(parents=True)
+        session.write_bytes(b'PUBLIC')
+        self.assertEqual(m.output_state(self.root), dict(entries=before['entries']+3, bytes=before['bytes']+6))
+        session.rename(session.with_suffix('.keystore'))
+        with self.assertRaisesRegex(ValueError, 'B3_UNEXPECTED_SIGNER'): m.output_state(self.root)
+        session.with_suffix('.keystore').rename(session)
+        session.rename(session.with_suffix('.saved'))
+        session.symlink_to(session.with_suffix('.saved'))
+        with self.assertRaisesRegex(ValueError, 'B3_OUTPUT_COUNT_LINK'): m.output_state(self.root)
         apk.rename(apk.with_suffix('.saved'))
         apk.symlink_to(apk.with_suffix('.saved'))
         with self.assertRaises(ValueError): m.artifact(self.root)
 
     def test_existing_context_refuses_before_private_access(self):
-        self.assertEqual(m.ROOT, m.a.T/'unit-b3-jni-recovery')
+        self.assertEqual(m.ROOT, m.a.T/'unit-b3-kotlin-recovery')
         with patch.object(m, 'ROOT', self.root), patch.object(m, 'open_inputs') as private:
             self.assertEqual(m.prepare(), 1)
             private.assert_not_called()
@@ -132,6 +146,8 @@ class PublicGates(unittest.TestCase):
         self.assertEqual(command[command.index('--flavor')+1], 'dev')
         self.assertIn('--target-platform=android-arm64', command)
         self.assertIn('--dart-define-from-file=/b3/config', command)
+        self.assertEqual(command.count('--android-project-arg=kotlin.project.persistent.dir=/b3/state/kotlin'), 1)
+        self.assertIn('--android-project-arg=kotlin.compiler.execution.strategy=in-process', command)
         self.assertNotIn('--offline', command)
 
     def test_launcher_first_failure_stops_all_further_jvm_attempts(self):

@@ -27,7 +27,7 @@ spec = importlib.util.spec_from_file_location('accepted_b2_library', LIBRARY)
 b2 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(b2)
 b, a = b2.b, b2.a
-ROOT = a.T/'unit-b3-jni-recovery'
+ROOT = a.T/'unit-b3-kotlin-recovery'
 PRIVATE = {'config': a.F.parent/'d1-client-public-config.json',
            'signer': a.F.parent/'d1-android-home/android/debug.keystore'}
 CONFIG_PIN = 'cd97e32ef1744e702c33e8249da01e70b85768d6c306ec62cad7e12e11d8ce89'
@@ -208,7 +208,8 @@ def command():
             '--android-project-arg=org.gradle.java.installations.paths='+str(a.J),
             '--android-project-arg=org.gradle.java.installations.auto-download=false',
             '--android-project-arg=org.gradle.java.installations.auto-detect=false',
-            '--android-project-arg=kotlin.compiler.execution.strategy=in-process']
+            '--android-project-arg=kotlin.compiler.execution.strategy=in-process',
+            '--android-project-arg=kotlin.project.persistent.dir=/b3/state/kotlin']
 
 
 def artifact(root, maximum=512*1024*1024):
@@ -223,8 +224,8 @@ def artifact(root, maximum=512*1024*1024):
 
 def output_state(root):
     count, size = 0, 0
-    for name in ('build', 'dart-tool', 'generated', 'project-cache'):
-        a.require((root/name).stat().st_mode & 0o077 == 0, 'B3_OUTPUT_ROOT_MODE')
+    for name in ('build', 'dart-tool', 'generated', 'project-cache', 'state'):
+        a.require(not (root/name).is_symlink() and (root/name).stat().st_mode & 0o077 == 0, 'B3_OUTPUT_ROOT_MODE')
         for path in (root/name).rglob('*'):
             count += 1
             info = path.lstat()
@@ -232,7 +233,7 @@ def output_state(root):
             a.require(stat.S_ISDIR(info.st_mode) or stat.S_ISREG(info.st_mode), 'B3_OUTPUT_TYPE')
             if path.is_file(): size += info.st_size
             a.require(size <= 8*1024**3, 'B3_OUTPUT_BYTES')
-    for name in ('home', 'android'):
+    for name in ('home', 'android', 'state'):
         a.require(not list((root/name).rglob('*.keystore')), 'B3_UNEXPECTED_SIGNER')
     return dict(entries=count, bytes=size)
 
