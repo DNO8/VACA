@@ -10,10 +10,10 @@ def flutterRoot = System.getenv('FLUTTER_ROOT') + '/packages/flutter_tools/gradl
 def signer = new File('/b3/signer').canonicalFile
 def approvedProjects = new groovy.json.JsonSlurper().parse(new File('/b3/projects.json')) as Set
 def model = { project ->
-    def variants = project.extensions.getByName('android').getApplicationVariants().findAll {
-        it.getName() == 'devDebug'
+    def variants = project.extensions.getByName('android').getApplicationVariants().toList()
+    if (variants.size() != 1 || variants[0].getName() != 'devDebug') {
+        throw new GradleException('B3_REJECT_VARIANTS')
     }
-    if (variants.size() != 1) throw new GradleException('B3_REJECT_VARIANTS')
     def variant = variants[0]
     def signing = variant.getSigningConfig()
     if (variant.getApplicationId() != 'cl.vaca.app.dev' || signing == null ||
@@ -33,7 +33,12 @@ gradle.beforeSettings { settings ->
 gradle.beforeProject { project ->
     if (project.rootProject.projectDir.canonicalPath == appRoot && project.path == ':app') {
         project.plugins.withId('com.android.application') {
-            project.extensions.getByName('androidComponents').finalizeDsl { dsl ->
+            def components = project.extensions.getByName('androidComponents')
+            components.beforeVariants(components.selector().all(), { builder ->
+                builder.setEnable(builder.getEnable() && builder.getName() == 'devDebug' &&
+                    builder.getBuildType() == 'debug' && builder.getFlavorName() == 'dev')
+            } as org.gradle.api.Action)
+            components.finalizeDsl { dsl ->
                 def signing = dsl.signingConfigs.getByName('debug')
                 signing.storeFile = signer
                 signing.storePassword = 'android'
@@ -125,9 +130,63 @@ gradle.taskGraph.whenReady { graph ->
         task.doFirst { validate() }
         true
     }
+    // AGP8.11.1 public signatures/creation bytecode were checked in the pinned cached JAR.
+    def loader = app.plugins.getPlugin('com.android.application').class.classLoader
+    def nativeBuild = loader.loadClass('com.android.build.gradle.tasks.ExternalNativeBuildTask')
+    def nativeConfigure = loader.loadClass('com.android.build.gradle.tasks.ExternalNativeBuildJsonTask')
+    def regularBuilder = loader.loadClass('com.android.build.gradle.internal.cxx.build.CxxRegularBuilder')
+    def nativeInfrastructure = { task ->
+        def validate = {
+            def reject = { throw new GradleException('B3_REJECT_NATIVE') }
+            if (task.project.path != ':app' || task.project.rootProject.projectDir.canonicalPath != appRoot ||
+                !allowed.contains(task)) reject()
+            def abi
+            if (nativeBuild.isInstance(task)) {
+                def builder = task.'getBuilder$gradle_core'()
+                if (!regularBuilder.isInstance(builder)) reject()
+                abi = builder.getAbi()
+                if (!task.'getVariant$gradle_core'().is(abi.getVariant()) ||
+                    task.getSoFolder().get().asFile != abi.getSoFolder()) reject()
+            } else {
+                abi = task.'getAbi$gradle_core'()
+            }
+            if (abi == null || abi.getInfo().getName() != 'arm64-v8a' || !abi.isActiveAbi()) reject()
+            def variant = abi.getVariant()
+            if (variant.getVariantName() != 'devDebug' || !variant.isDebuggableEnabled() ||
+                variant.getOptimizationTag() != 'Debug' || variant.getValidAbiList() != ['arm64-v8a'] ||
+                !variant.getBuildSystemArgumentList().contains('-DCMAKE_BUILD_TYPE=debug')) reject()
+            def canonical = { File file ->
+                if (file == null) reject()
+                def path = file.toPath().toAbsolutePath().normalize()
+                if (path != file.canonicalFile.toPath()) reject()
+                path
+            }
+            def buildArea = new File('/app/vaca_app/build/app').toPath()
+            def staging = new File('/app/vaca_app/build/.cxx').toPath()
+            def module = variant.getModule()
+            def cmake = new File(flutterRoot + '/src/main/scripts/CMakeLists.txt')
+            if (module.getBuildSystem().name() != 'CMAKE' || canonical(module.getMakeFile()) != canonical(cmake) ||
+                !cmake.isFile() || cmake.length() > 4096 ||
+                java.security.MessageDigest.getInstance('SHA-256').digest(cmake.bytes).encodeHex().toString() !=
+                    '1cd4fd6c4b9131b249743965e5611770424b9a0b12602126b2239b5e3b3b0265' ||
+                canonical(module.getModuleRootFolder()) != canonical(app.projectDir) ||
+                canonical(module.getCxxFolder()) != staging || canonical(app.layout.buildDirectory.get().asFile) != buildArea) reject()
+            def outputs = [abi.getCxxBuildFolder(), abi.getSoFolder(), abi.getSoRepublishFolder(),
+                           module.getIntermediatesFolder()] + task.outputs.files.files
+            outputs.each { file ->
+                def path = canonical(file)
+                if (!([buildArea, staging].any { path != it && path.startsWith(it) })) reject()
+            }
+        }
+        validate()
+        task.doFirst { validate() }
+        true
+    }
     graph.allTasks.each { task ->
         def neutral = task.name in ['preBuild', 'checkKotlinGradlePluginConfigurationErrors']
-        def variant = task.project.path == ':app' ? task.name.contains('DevDebug') : task.name.contains('Debug')
+        def nativeTask = nativeBuild.isInstance(task) || nativeConfigure.isInstance(task)
+        def variant = nativeTask ? nativeInfrastructure(task) :
+            (task.project.path == ':app' ? task.name.contains('DevDebug') : task.name.contains('Debug'))
         def forbidden = task.name =~ /(?i)(release|profile|prod|staging|clean|publish|upload|install|uninstall|connected|test|lint)/
         def checks = [root: task.project.rootProject.projectDir.canonicalPath == appRoot,
                       project: approvedProjects.contains(task.project.path),
