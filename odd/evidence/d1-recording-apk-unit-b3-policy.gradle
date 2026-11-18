@@ -155,9 +155,15 @@ gradle.taskGraph.whenReady { graph ->
             }
             if (abi == null || abi.getInfo().getName() != 'arm64-v8a' || !abi.isActiveAbi()) reject('ABI')
             def variant = abi.getVariant()
-            if (variant.getVariantName() != 'devDebug' || !variant.isDebuggableEnabled() ||
-                variant.getOptimizationTag() != 'Debug' || variant.getValidAbiList() != ['arm64-v8a'] ||
-                !variant.getBuildSystemArgumentList().contains('-DCMAKE_BUILD_TYPE=debug')) reject('VARIANT')
+            def variantChecks = [variantName: variant.getVariantName() == 'devDebug',
+                                 debuggable: variant.isDebuggableEnabled() as boolean,
+                                 optimizationTag: variant.getOptimizationTag() == 'Debug',
+                                 validAbiList: variant.getValidAbiList() == ['arm64-v8a'],
+                                 debugArgument: variant.getBuildSystemArgumentList().contains('-DCMAKE_BUILD_TYPE=debug')]
+            if (variantChecks.containsValue(false)) {
+                println('B3_NATIVE_VARIANT_DIAGNOSTIC ' + groovy.json.JsonOutput.toJson(variantChecks))
+                reject('VARIANT')
+            }
             def canonical = { File file ->
                 if (file == null) reject('PATH_NULL')
                 def path = file.toPath().toAbsolutePath().normalize()

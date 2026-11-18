@@ -115,7 +115,7 @@ class PublicGates(unittest.TestCase):
         with self.assertRaises(ValueError): m.artifact(self.root)
 
     def test_existing_context_refuses_before_private_access(self):
-        self.assertEqual(m.ROOT, m.a.T/'unit-b3-native-recovery')
+        self.assertEqual(m.ROOT, m.a.T/'unit-b3-native-metadata')
         with patch.object(m, 'ROOT', self.root), patch.object(m, 'open_inputs') as private:
             self.assertEqual(m.prepare(), 1)
             private.assert_not_called()
