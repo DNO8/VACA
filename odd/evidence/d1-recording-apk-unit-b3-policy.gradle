@@ -157,7 +157,7 @@ gradle.taskGraph.whenReady { graph ->
             def variant = abi.getVariant()
             def variantChecks = [variantName: variant.getVariantName() == 'devDebug',
                                  debuggable: variant.isDebuggableEnabled() as boolean,
-                                 optimizationTag: variant.getOptimizationTag() == 'Debug',
+                                 optimizationTag: variant.getOptimizationTag() == 'debug',
                                  validAbiList: variant.getValidAbiList() == ['arm64-v8a'],
                                  debugArgument: variant.getBuildSystemArgumentList().contains('-DCMAKE_BUILD_TYPE=debug')]
             if (variantChecks.containsValue(false)) {
