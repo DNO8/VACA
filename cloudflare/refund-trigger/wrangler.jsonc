@@ -1,0 +1,32 @@
+{
+  "name": "d1-refund-trigger",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "triggers": {
+    "crons": []
+  },
+  "vars": {
+    "ENABLED": "false",
+    "TARGET_URL": "https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/internal-refund-tick",
+    "SCOPE_ID": "video-auto",
+    "MAX_BATCH": "1"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "REFUND_TRIGGER",
+        "class_name": "RefundTrigger"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "RefundTrigger"
+      ]
+    }
+  ]
+}
