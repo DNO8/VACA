@@ -1,6 +1,6 @@
 # Preserve the deployed D1 host when adding automatic refunds
 
-`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **The historical issuance/manual/automatic composition has local evidence; the new donor mount is source-only and unverified. This candidate is not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
+`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **The donor mount has accepted bounded evidence. Independent video routing has parent-local evidence; independent verification is pending. This candidate is not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
 
 ## Preserved boundaries
 
@@ -34,10 +34,47 @@ or foreign payment evidence. Migration054 cannot certify the older proposal's
 
 Historical issuance success and `readAt` do not establish live claimable-balance
 availability, refund eligibility or permission to clear a financial hold.
-Wallet-wide discovery is not provided. The new composition regression definition
-has not been executed because further verification was stopped by the human.
-Earlier v4 parity evidence below predates this intentional donor-route difference;
-it is not verification of this new mount.
+Wallet-wide discovery is not provided. Donor verification was accepted separately,
+with its recorded limitations; do not rerun it as part of routing work.
+Earlier v4 parity evidence below predates this intentional donor-route difference.
+
+## Independent video routes
+
+Keep manual clients on their existing paths. The second host uses the fixed prefix
+`/functions/v1/d1-custody/video-auto`, followed by exactly one of:
+`config`, `prepare`, `issue`, `reconcile`, `status`, `donor-payment-status`,
+`refund`, `refund-status`, `refund-reconcile`, `refund-remainder`,
+`refund-remainder-status`, `refund-remainder-reconcile`, `internal-refund-tick`.
+The router translates only the pathname; original body bytes, method, headers and
+query remain intact. Existing handlers own authentication and method validation.
+`status` stays disabled. Unknown, nested, trailing and encoded video routes return
+404 `not_found` without entering the manual host. A missing host returns503
+`custody_unavailable` independently; malformed tick-only settings disable only that tick.
+
+| Trusted setting | Required value or role |
+|---|---|
+| `D1_VIDEO_AUTO_ENABLED` | Exactly `true`; absent/other values leave B unavailable. |
+| `D1_VIDEO_AUTO_POOL_PUBLIC_KEY` | `GAPE4SD4RURXR2JFSK3JTVG6TJ53K7ECBILSVLKZY3RFOLXMWWHB5TKT` |
+| `D1_VIDEO_AUTO_NAMESPACE` | `3c6f6494-1712-4a1c-ab8e-560a1b8b072e` |
+| `D1_VIDEO_AUTO_FIRST_LEDGER` | `5824020`; fixed creation operation remains `25013975431254017`. |
+| `D1_VIDEO_AUTO_OPERATING_FUNDER` | Explicitly approved public team funder, not the pool. No inherited default. |
+| `D1_VIDEO_AUTO_OPERATING_OPERATION_ID` | Genuine separate native D1OPS credit reference; canonical uint64 at/after the first ledger, never the creation operation. |
+| `D1_VIDEO_AUTO_POOL_SECRET_SEED` | Human-provisioned B initial/manual signing capability; read lazily and checked against B. Never put its value in this document. |
+| Automatic settings | Each existing `D1_*` automatic setting becomes `D1_VIDEO_AUTO_*`, e.g. `D1_VIDEO_AUTO_AUTOMATIC_REFUNDS_ENABLED`, `D1_VIDEO_AUTO_REFUND_SERVICE_ACTOR`, `D1_VIDEO_AUTO_REFUND_TICK_TOKEN`, `D1_VIDEO_AUTO_REFUND_POOL_SECRET_KEY`. See [complete automatic settings](d1-refund-automatic-configuration.md). |
+
+Only SUPABASE_URL and the backend service capability are shared. No B D1 setting
+falls back to A. Automatic signing remains separate from initial/manual signing.
+Pool selection is never accepted from an HTTP override.
+The optional host `operatingCreditOperationId` defaults to the creation reference
+for unchanged A. B supplies a separate reference, but the existing journal still
+requires anchored, genuine D1OPS evidence from a trusted funder. A reference is not
+credit admission; B's creation balance has memo:none and is not operating credit.
+
+**Not ready for activation:** registration receipt, approved funder/real credit,
+secure signing configuration, service enrollment, exact packaged-runtime proof
+and trigger proof remain outstanding. Client absolute routes need deliberate
+owner-side adaptation; a project URL change alone does not redirect them.
+This feature does not reset lane fences, change economics or resume concurrency.
 
 ## Supabase RPC transport boundary
 

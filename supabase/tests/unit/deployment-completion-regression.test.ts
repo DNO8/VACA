@@ -20,12 +20,12 @@ function request(now: number) {
     body: JSON.stringify({ ...m, signature: adminKey.sign(hash(Buffer.from("Stellar Signed Message:\n" + text))).toString("base64") }) });
 }
 function host(client: { rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }> }, fetcher: typeof fetch,
-  now: () => number, readSecret: () => string) {
+  now: () => number, readSecret: () => string, operatingCreditOperationId?: string) {
   return createCustodyDeploymentHost({ client: { async rpc(name, args) {
     const reply = await client.rpc(name, args); assert.equal(reply.error, null);
     return { data: reply.data, error: null };
   } }, fetcher, now, readSecret, pool, namespace,
-    firstLedger: 10, creationOperationId: birth, teamFunders: [team] });
+    firstLedger: 10, creationOperationId: birth, operatingCreditOperationId, teamFunders: [team] });
 }
 function accountDTO(a: DTO) {
   const amount = (s: string) => (BigInt(s) / 10000000n) + "." + (BigInt(s) % 10000000n).toString().padStart(7, "0");
@@ -43,7 +43,7 @@ async function expect(r: Response, status: number, body: unknown) {
   assert.equal(r.status, status); assert.deepEqual(await r.json(), body);
   assert.equal(r.headers.get("cache-control"), "no-store");
 }
-function fresh(wrongKey = false) {
+function fresh(wrongKey = false, operatingCreditOperationId?: string) {
   const f = fixture(), events: string[] = [];
   f.h.history.first_ledger = 10; f.h.history.income_state.first_ledger = 10;
   f.h.credit.discovery_state.first_ledger = 10;
@@ -72,7 +72,9 @@ function fresh(wrongKey = false) {
           authorized_by: admin, page: p, checkpoint: f.h.history.checkpoint,
           page_count: f.h.history.page_count, record_count: f.h.history.record_count, page_record_count: 0 }; break;
       }
-      case "d1_load_operating_credit": data = { kind: "d1_operating_credit_lookup", revision: 1, namespace,
+      case "d1_load_operating_credit":
+        if (operatingCreditOperationId) events.push("credit:" + args.p_operation_id);
+        data = { kind: "d1_operating_credit_lookup", revision: 1, namespace,
         network: "TESTNET", pool, operation_id: birth, receipt: credit }; break;
       case "d1_record_operating_credit":
         assert.deepEqual(args.p_observation, f.h.receipt.observation);
@@ -121,7 +123,7 @@ function fresh(wrongKey = false) {
   };
   const handler = host(client, fetcher, () => f.h.now, () => {
     events.push("secret"); return wrongKey ? adminKey.secret() : poolKey.secret();
-  });
+  }, operatingCreditOperationId);
   return { f, handler, events, get signed() { return signed!; },
     state: () => JSON.stringify([credit, commitment, signed, attempt, [...f.h.persisted]]) };
 }
@@ -165,6 +167,13 @@ Deno.test("T2 completion: genuine saved outcome skips fresh preflight and signin
   assert.equal(hash(Buffer.from(h.snapshot())).toString("hex"), before);
   assert(h.trace.every(x => ["d1_load_issuance_outcome", "d1_load_submission_attempt", "d1_load_signed_transaction",
     "d1_load_unsigned_transaction", "d1_load_initial_financial_observation"].includes(x)), JSON.stringify(h.trace));
+});
+Deno.test("independent credit: use the selected later reference and reject mismatched stored credit", async () => {
+  const later = String((11n << 32n) + 4097n), h = fresh(false, later), before = h.state();
+  await expect(await h.handler(request(h.f.h.now)), 503, { error: "initial_submission_unavailable" });
+  assert(h.events.includes("credit:" + later));
+  assert(!h.events.includes("d1_record_operating_credit")); assert(!h.events.includes("secret"));
+  assert(!h.events.includes("POST /transactions")); assert.equal(h.state(), before);
 });
 Deno.test("T2 completion: actual entrypoint missing configuration returns startup 503", async () => {
   const oldGet = Deno.env.get, oldServe = Deno.serve;

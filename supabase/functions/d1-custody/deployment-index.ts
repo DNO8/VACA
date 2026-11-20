@@ -1,14 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
-import { createDeploymentRuntime } from "./deployment-runtime.ts";
+import { createDeploymentRuntime, createVideoAutoRuntime } from "./deployment-runtime.ts";
 import { createDeploymentRpcClient } from "./deployment-rpc-client.ts";
+import { createIndependentCustodyRouter } from "./deployment-routing.ts";
 
-let handler: ReturnType<typeof createDeploymentRuntime> | undefined;
-try {
-  handler = createDeploymentRuntime({ getEnv: name => Deno.env.get(name),
-    clientFactory: (url, key) => createDeploymentRpcClient(createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    })), fetcher: globalThis.fetch.bind(globalThis), now: () => Math.floor(Date.now() / 1000) });
-} catch { /* Preserve the deployed startup failure without exposing configuration. */ }
-Deno.serve(request => handler ? handler(request) : Response.json({ error: "custody_unavailable" }, {
-  status: 503, headers: { "cache-control": "no-store" },
-}));
+const dependencies = { getEnv: (name: string) => Deno.env.get(name),
+  clientFactory: (url: string, key: string) => createDeploymentRpcClient(createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  })), fetcher: globalThis.fetch.bind(globalThis), now: () => Math.floor(Date.now() / 1000) };
+Deno.serve(createIndependentCustodyRouter(
+  () => createDeploymentRuntime(dependencies), () => createVideoAutoRuntime(dependencies),
+));

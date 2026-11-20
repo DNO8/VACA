@@ -17,6 +17,7 @@ export interface DeploymentHostDependencies {
   readonly namespace: string;
   readonly firstLedger: number;
   readonly creationOperationId: string;
+  readonly operatingCreditOperationId?: string;
   readonly teamFunders: readonly string[];
   readonly readSecret: (pool: string) => string | Promise<string>;
   readonly fetcher: typeof fetch;
@@ -36,6 +37,9 @@ function failure(error: CustodyError): Response {
 export function createCustodyDeploymentHost(dependencies: DeploymentHostDependencies): CustodyHandler {
   const { client, pool, namespace, firstLedger, creationOperationId, readSecret, fetcher, now } = dependencies;
   const teamFunders = Object.freeze([...dependencies.teamFunders]);
+  const creditOperationId = dependencies.operatingCreditOperationId ?? creationOperationId;
+  requireValid(/^[1-9][0-9]{0,19}$/.test(creditOperationId) && String(BigInt(creditOperationId)) === creditOperationId &&
+    BigInt(creditOperationId) <= 18446744073709551615n && (BigInt(creditOperationId) >> 32n) >= BigInt(firstLedger));
   Keypair.fromPublicKey(pool);
   requireValid(/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(namespace));
   requireValid(Number.isSafeInteger(firstLedger) && firstLedger > 0);
@@ -95,7 +99,7 @@ export function createCustodyDeploymentHost(dependencies: DeploymentHostDependen
       command.authenticatedAdmin, pool, "TESTNET"), source);
     requireValid(history.completeAtAnchor);
     await recordOperatingCredit(new OperatingCreditDatabase(client, namespace, command.authenticatedAdmin),
-      creationOperationId, teamFunders, source);
+      creditOperationId, teamFunders, source);
     const saved = await discovery.loadState();
     requireValid(saved.pool === pool && saved.first_ledger === firstLedger && saved.coverage_complete && saved.checkpoint);
     const account = await source.readAccountAtCheckpoint({ pool, firstLedger, checkpoint: saved.checkpoint });
