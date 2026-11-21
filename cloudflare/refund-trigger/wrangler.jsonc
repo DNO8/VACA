@@ -9,7 +9,7 @@
   },
   "vars": {
     "ENABLED": "false",
-    "TARGET_URL": "https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/internal-refund-tick",
+    "TARGET_URL": "https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/video-auto/internal-refund-tick",
     "SCOPE_ID": "video-auto",
     "MAX_BATCH": "1"
   },

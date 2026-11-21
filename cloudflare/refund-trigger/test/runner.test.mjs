@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { runTick } from '../src/runner.mjs';
 import worker, { RefundTrigger } from '../src/worker.mjs';
 
-const url = 'https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/internal-refund-tick';
+const url = 'https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/video-auto/internal-refund-tick';
 const env = { ENABLED: 'true', TARGET_URL: url, SCOPE_ID: 'video-auto', MAX_BATCH: '1',
   GATEWAY_JWT: 'synthetic.header.signature', REFUND_TOKEN: 'A'.repeat(43) };
 const a = '00000000-0000-0000-0000-000000000001';
@@ -54,7 +54,7 @@ test('scheduled handler awaits fixed singleton and sends only a scheduled slot',
   await worker.scheduled({ scheduledTime: NaN, cron: '* * * * *' }, config);
   assert.equal(called, 1);
 });
-test('one exact financial HTTP request follows durable intent acknowledgement', async () => {
+test('one exact B financial HTTP request follows durable intent acknowledgement', async () => {
   const h = setup(async () => { assert.equal(h.store.snapshot().phase, 'in_flight'); assert.equal(h.store.syncs, 1); return reply(result()); });
   assert.deepEqual(await h.tick(), { status: 'completed' });
   assert.equal(h.calls.length, 1);
@@ -64,6 +64,17 @@ test('one exact financial HTTP request follows durable intent acknowledgement', 
   assert.equal(h.store.snapshot().phase, 'idle'); assert.equal(h.store.writes, 2);
   assert.ok(!JSON.stringify(h.store.snapshot()).includes(env.GATEWAY_JWT));
   assert.ok(!JSON.stringify(h.store.snapshot()).includes(env.REFUND_TOKEN));
+});
+test('original A destination is rejected before storage or transport effects', async () => {
+  const original = 'https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/internal-refund-tick';
+  for (const admitted of [false, true]) {
+    const h = setup();
+    if (admitted) assert.deepEqual(await h.tick(), { status: 'completed' });
+    const before = h.store.snapshot(), writes = h.store.writes, syncs = h.store.syncs, calls = h.calls.length;
+    assert.deepEqual(await h.tick(120000, { ...env, TARGET_URL: original }), { status: 'unavailable' });
+    assert.deepEqual(h.store.snapshot(), before);
+    assert.equal(h.store.writes, writes); assert.equal(h.store.syncs, syncs); assert.equal(h.calls.length, calls);
+  }
 });
 test('invalid destination, configuration and event cannot write or send', async () => {
   for (const patch of [{ TARGET_URL: url + '?' }, { TARGET_URL: url.replace('https:', 'http:') },
@@ -159,10 +170,15 @@ test('scheduled entry reaches actual Durable Object handler and deduplicates wit
   } finally { globalThis.fetch = savedFetch; console.log = savedLog; }
 });
 
-test('deployment configuration is inert and contains no runtime credential values', () => {
+test('deployment configuration targets B, is inert and contains no runtime credential values', async () => {
   const cfg = JSON.parse(readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
+  assert.equal(cfg.vars.TARGET_URL, url); assert.equal(cfg.vars.SCOPE_ID, 'video-auto');
   assert.equal(cfg.workers_dev, false); assert.equal(cfg.preview_urls, false);
   assert.deepEqual(cfg.triggers.crons, []); assert.equal(cfg.vars.ENABLED, 'false');
   assert.equal(cfg.routes, undefined); assert.equal(cfg.vars.GATEWAY_JWT, undefined); assert.equal(cfg.vars.REFUND_TOKEN, undefined);
   assert.equal(cfg.durable_objects.bindings[0].class_name, 'RefundTrigger');
+  const h = setup(), before = h.store.snapshot();
+  assert.deepEqual(await h.tick(60000, { ...env, ...cfg.vars }), { status: 'disabled' });
+  assert.deepEqual(h.store.snapshot(), before);
+  assert.equal(h.store.writes, 0); assert.equal(h.store.syncs, 0); assert.equal(h.calls.length, 0);
 });

@@ -1,4 +1,4 @@
-const TARGET = 'https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/internal-refund-tick';
+const TARGET = 'https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody/video-auto/internal-refund-tick';
 const KEY = 'trigger-v1';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const cursor = value => value === null || (typeof value === 'string' && uuid.test(value));
