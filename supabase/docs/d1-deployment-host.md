@@ -1,6 +1,6 @@
 # Preserve the deployed D1 host when adding automatic refunds
 
-`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **The donor mount has accepted bounded evidence. Independent video routing has parent-local evidence; independent verification is pending. This candidate is not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
+`functions/d1-custody/deployment-index.ts` is the proposed delivery entrypoint. It combines the retained v4 issuance/manual host with the verified automatic-refund engine. **The donor mount has accepted bounded evidence. Independent video routing has bounded source evidence:13 parent tests,78 unchanged manual-route observations,3 independent probes and their exact3-test parent replay. Earlier verifier setup failures remain recorded; this does not prove deployed runtime or activation readiness. This candidate is not deployed.** The existing `index.ts` and shared runtime remain unchanged; they are not interchangeable deployment entrypoints.
 
 ## Preserved boundaries
 
