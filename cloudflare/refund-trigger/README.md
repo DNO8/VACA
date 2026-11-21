@@ -9,7 +9,7 @@ The trigger targets only the B lifecycle endpoint: `https://tgqxxnldwiqisopiclmk
 No installation or dependencies are required. From the repository root, with Node22:
 
 ```sh
-node --test cloudflare/refund-trigger/test/runner.test.mjs
+node --test cloudflare/refund-trigger/test/*.test.mjs
 node --check cloudflare/refund-trigger/src/runner.mjs
 node --check cloudflare/refund-trigger/src/worker.mjs
 ```
