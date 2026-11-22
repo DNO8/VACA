@@ -86,6 +86,29 @@ Client absolute routes need deliberate owner-side adaptation; a project URL chan
 alone does not redirect them.
 This feature does not reset lane fences, change economics or resume concurrency.
 
+## Edge startup compatibility
+
+Keep `deployment-global-compat.ts` as the **first side-effect import** in the
+entrypoint. Bundled Stellar SDK 13.3.0 reads Node's `global` while its modules
+initialize; the Edge worker may expose only `globalThis`. The small compatibility
+module adds that alias only when the property is absent and leaves an existing
+binding unchanged. It has no dependencies or configuration/network access.
+An assignment in the entrypoint body would run too late for static imports.
+
+From the repository root, with Node 22.23.3, run the isolated ordering regression:
+
+```sh
+node --experimental-vm-modules --test supabase/tests/integration/deployment-global-compat.test.cjs
+```
+
+The regression evaluates the real entrypoint with inert dependency modules and a
+serve-registration recorder. It checks ordering, repeated initialization and an
+existing immutable global without dispatching requests or accessing credentials.
+It is not a complete Edge worker or financial-runtime test. Verify the emitted
+bundle's initialization order separately; do not patch generated or vendor files.
+The v11 startup failure was rolled back to prior code as v12; this compatibility
+candidate has not been deployed. See [recovery evidence](../../odd/tasks/d1-replacement-binding-recovery.md).
+
 ## Supabase RPC transport boundary
 
 The delivery entrypoint projects the real SDK response to its own `data` and

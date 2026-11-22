@@ -1,0 +1,111 @@
+{
+  "scope": "Local fix for missing global during SDK initialization; not full Edge worker/financial proof",
+  "base": "6244e7b28ce34534d542ce3850a073d6de18bbe8",
+  "sourceHashes": {
+    "supabase/functions/d1-custody/deployment-global-compat.ts": "a0d8d494d5d5e61e2c6f290034173139b5ebedb1d9418a97004708cfe1c94da4",
+    "supabase/functions/d1-custody/deployment-index.ts": "52dfd83e7b754e2a3571cfe91a2396d8f675e5e4ab9b4744b622e267a16830b4",
+    "supabase/tests/integration/deployment-global-compat.test.cjs": "b590b25c76d4b85a22fff79693e78e5b014da25bddd5f13fe9886362d5e27426",
+    "supabase/docs/d1-deployment-host.md": "815e1417c25fb6b7c45c0bc85bd23196d6b85eb3e28233d7e9915e196763cd63"
+  },
+  "failure": {
+    "name": "ReferenceError",
+    "message": "global is not defined",
+    "deployedFrame": "index.js:54142:21",
+    "sdkFrame": "@stellar/stellar-sdk/13.3.0/lib/horizon/call_builder.js:22",
+    "sdkSHA256": "0a60ca6e0e6e58dd7b3c717a13dda8c99dc6c1f0ecd4e63bf2bbd0176b32acd1"
+  },
+  "parentEntryTests": {
+    "command": "node --experimental-vm-modules --test supabase/tests/integration/deployment-global-compat.test.cjs",
+    "red": {
+      "exit": 1,
+      "passed": 1,
+      "failed": 1,
+      "error": "ReferenceError: global is not defined"
+    },
+    "green": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0
+    },
+    "finalWithAdoptedRegression": {
+      "exit": 0,
+      "passed": 3,
+      "failed": 0
+    },
+    "warnings": [
+      "stripTypeScriptTypes is experimental",
+      "VM Modules is experimental"
+    ]
+  },
+  "actualSDKInitialization": {
+    "source": "unchanged pinned module, explicit inert dependency table",
+    "red": {
+      "exit": 1,
+      "name": "ReferenceError",
+      "message": "global is not defined",
+      "operationalCalls": 0
+    },
+    "green": {
+      "exit": 0,
+      "export": "CallBuilder function",
+      "operationalCalls": 0,
+      "allowedDependencies": [
+        "urijs",
+        "urijs/src/URITemplate",
+        "../errors",
+        "./horizon_axios_client",
+        "eventsource"
+      ]
+    }
+  },
+  "independent": {
+    "task": "mwrlyg7u-9-52yt",
+    "syntheticCommit": "2adfe517fc930358f8df3fbe73533d8b09ade17c",
+    "passedGroups": 7,
+    "failedGroups": 0,
+    "helperExit": 0,
+    "helperFiles": 108,
+    "helperBytes": 4791924,
+    "procedureFailure": "First exit0 probe used unestablished scratch and was discarded; one procedure correction invoked mandatory helper then formal checks passed",
+    "negativeControlExit": 1,
+    "candidateExit": 0,
+    "existingGlobalDifferential": "Exact stdout/stderr/exit/effects equality; zero operational calls",
+    "extraCases": "Missing alias/idempotence; immutable binding/getter/undefined preserved, no getter reads"
+  },
+  "build": {
+    "buildExit": 0,
+    "wrapperExit": 1,
+    "wrapperError": "ValueError: substring not found (assumed supabase/ prefix in generated comment)",
+    "postcheckCorrection": "Match emitted SDK initializer, no rebuild or generated-file edit",
+    "postcheckExit": 0,
+    "syntaxExit": 0,
+    "syntaxStdout": "",
+    "syntaxStderr": "",
+    "sourceFiles": 99,
+    "bundleBytes": 3739705,
+    "bundleSHA256": "0162cb35f88232a9e9ba5e7a52c837a79536096e7fbb2496e4879bc25f987bc2",
+    "aliasOffset": 2206852,
+    "firstSdkInitializerOffset": 2960587,
+    "aliasLine": 64832,
+    "firstSdkInitializerLine": 86717,
+    "runtimeProbes": 0
+  },
+  "buildStdout": "",
+  "buildStderr": "\u26a0\ufe0f  deno bundle is experimental and subject to changes\nDownload https://registry.npmjs.org/@supabase%2fsupabase-js\nBundled 413 modules in 226ms\n  ../../out/deployment.js 3.57MB\n\n",
+  "typecheck": {
+    "firstExit": 1,
+    "firstError": "error: unexpected argument '--cached-only' found\n\n  tip: a similar argument exists: '--doc-only'\n\nUsage: deno check --doc-only [file]...\n\n",
+    "correctedExit": 0,
+    "correction": "Removed unsupported cached-only flag after exact check --help; OS network isolation and other guards unchanged",
+    "correctedStdout": "",
+    "correctedStderr": "Check functions/d1-custody/deployment-index.ts\nDownload https://registry.npmjs.org/@supabase%2fsupabase-js\n",
+    "isolation": "Retained bwrap --unshare-net, read-only source, clear environment, --frozen --no-remote --deny-import",
+    "invocationRef": ".tooling/d1-edge-global-compat-01a20230/typecheck-corrected-result.json"
+  },
+  "remote": "Unchanged restored v12; no new deployment, settings or financial calls",
+  "unverified": [
+    "Complete hosted Edge worker initialization",
+    "Financial/runtime/XDR/historical trigger proof",
+    "New deployment smoke"
+  ]
+}

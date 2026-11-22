@@ -1,3 +1,4 @@
+import "./deployment-global-compat.ts";
 import { createClient } from "@supabase/supabase-js";
 import { createDeploymentRuntime, createVideoAutoRuntime } from "./deployment-runtime.ts";
 import { createDeploymentRpcClient } from "./deployment-rpc-client.ts";
