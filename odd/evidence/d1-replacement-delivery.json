@@ -100,7 +100,7 @@
     "transportChunks": 234
   },
   "buildStdout": "",
-  "buildStderr": "\u26a0\ufe0f  deno bundle is experimental and subject to changes\nDownload https://registry.npmjs.org/@supabase%2fsupabase-js\nBundled 412 modules in 217ms\n  ../../out/deployment.js 3.57MB\n\n",
+  "buildStderr": "⚠️  deno bundle is experimental and subject to changes\nDownload https://registry.npmjs.org/@supabase%2fsupabase-js\nBundled 412 modules in 217ms\n  ../../out/deployment.js 3.57MB\n\n",
   "independentArtifact": {
     "task": "mwrjr0s6-6-346c",
     "syntheticAuditCommit": "ede30b87bc3bf47c03667a217ecda053cd771c25",
@@ -183,7 +183,29 @@
     "toolIsError": true,
     "detail": "Wrapper discarded provider error detail; no automatic retry or invented cause"
   },
-  "authenticatedConfigSmoke": "pending public anon gateway JWT or human-executed read-only GETs",
+  "authenticatedConfigSmoke": {
+    "status": "failed",
+    "job": 8,
+    "exit": 1,
+    "results": [
+      {
+        "path": "/config",
+        "status": 500,
+        "cacheControl": null,
+        "body": "{\"code\":\"WORKER_ERROR\",\"message\":\"Function exited due to an error (please check logs)\"}"
+      },
+      {
+        "path": "/video-auto/config",
+        "status": 500,
+        "cacheControl": null,
+        "body": "{\"code\":\"WORKER_ERROR\",\"message\":\"Function exited due to an error (please check logs)\"}"
+      }
+    ],
+    "assertion": "A config did not return expected status/cache policy",
+    "note": "B503 was an expectation, NOT the observed result; actual B500 establishes no disabled-state proof.",
+    "financialCalls": 0,
+    "settingsWrites": 0
+  },
   "settings": "No settings changed. B/automatic flags remain human-reported false, not independently read back. No Cloudflare writes.",
   "recovery": {
     "version": 10,
@@ -201,5 +223,43 @@
     "historical trigger proof (previously deferred)",
     "integrated financial acceptance",
     "harness OOM root-cause fix"
-  ]
+  ],
+  "incident": {
+    "rootCause": "unknown; no exposed get_logs tool found",
+    "next": "Await human sanitized v11 error/stack and explicit rollback choice",
+    "rollback": "Validated v10 payload available; not executed"
+  },
+  "restoration": {
+    "authorization": "Explicit human restore_verified_v10_code_and_check_a selection",
+    "deployment": {
+      "id": "ac86ceed-898f-4ccc-9edd-6aad439262f0",
+      "slug": "d1-custody",
+      "name": "d1-custody",
+      "status": "ACTIVE",
+      "version": 12,
+      "created_at": 1794441919911,
+      "updated_at": 1795335726705,
+      "verify_jwt": true,
+      "import_map": true,
+      "entrypoint_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_12/source/index.js",
+      "import_map_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_12/source/deno.json",
+      "ezbr_sha256": "9f540f0b311f610f9c8c1bbb8e8208568f438749bca01693fa7bb289a76b54b2"
+    },
+    "authenticatedAGet": {
+      "version": 12,
+      "method": "GET",
+      "path": "/config",
+      "status": 200,
+      "cacheControl": "no-store",
+      "body": "{\"network\":\"TESTNET\",\"pool_public_key\":\"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN\",\"donation_ttl_seconds\":300}",
+      "requests": 1,
+      "financialCalls": 0,
+      "settingsWrites": 0
+    },
+    "checkExit": 0,
+    "settingsChanges": 0,
+    "financialCalls": 0,
+    "gitRevert": false
+  },
+  "currentServingState": "Version12 serves restored v10 code; A/config200 confirmed with same public anon JWT. New v11 artifact remains diagnostically unresolved and is not serving."
 }
