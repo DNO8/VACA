@@ -1,0 +1,109 @@
+{
+  "sourceCommit": "b033f3c9e56b13c348238fc990a088ac8f2fc9fd",
+  "publication": {
+    "job": 15,
+    "exit": 0,
+    "nonforce": true,
+    "remoteConfirmed": "b033f3c9e56b13c348238fc990a088ac8f2fc9fd"
+  },
+  "authorization": "S6: one corrected deploy; two config GETs; on failure one exact backup restoration and one A GET",
+  "binding": {
+    "commit": "b033f3c9e56b13c348238fc990a088ac8f2fc9fd",
+    "sourceHashes": 99,
+    "chunks": 234,
+    "bytes": 3739705,
+    "codePoints": 3739589,
+    "utf16Units": 3739593,
+    "sha256": "0162cb35f88232a9e9ba5e7a52c837a79536096e7fbb2496e4879bc25f987bc2",
+    "rollbackRevalidated": true
+  },
+  "deployment": {
+    "id": "ac86ceed-898f-4ccc-9edd-6aad439262f0",
+    "slug": "d1-custody",
+    "name": "d1-custody",
+    "status": "ACTIVE",
+    "version": 13,
+    "created_at": 1794441919911,
+    "updated_at": 1795339319640,
+    "verify_jwt": true,
+    "import_map": true,
+    "entrypoint_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_13/source/index.js",
+    "import_map_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_13/source/deno.json",
+    "ezbr_sha256": "ab2925cce75e5583e03b67a1178d321387203f618b737701d34e0c491a95c9e4"
+  },
+  "smoke": {
+    "job": 16,
+    "exit": 1,
+    "version": 13,
+    "results": [
+      {
+        "path": "/config",
+        "status": 503,
+        "cacheControl": "no-store",
+        "body": "{\"error\":\"custody_unavailable\"}"
+      },
+      {
+        "path": "/video-auto/config",
+        "status": 503,
+        "cacheControl": "no-store",
+        "body": "{\"error\":\"custody_unavailable\"}"
+      }
+    ],
+    "passed": false,
+    "requests": 2,
+    "financialCalls": 0,
+    "settingsWrites": 0,
+    "interpretation": "A exact config and B public unavailability; no direct flag-value or financial proof"
+  },
+  "fallback": {
+    "id": "ac86ceed-898f-4ccc-9edd-6aad439262f0",
+    "slug": "d1-custody",
+    "name": "d1-custody",
+    "status": "ACTIVE",
+    "version": 14,
+    "created_at": 1794441919911,
+    "updated_at": 1795339461125,
+    "verify_jwt": true,
+    "import_map": true,
+    "entrypoint_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_14/source/index.js",
+    "import_map_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_14/source/deno.json",
+    "ezbr_sha256": "9f540f0b311f610f9c8c1bbb8e8208568f438749bca01693fa7bb289a76b54b2"
+  },
+  "fallbackCheck": {
+    "job": 17,
+    "exit": 0,
+    "version": 14,
+    "path": "/config",
+    "status": 200,
+    "cacheControl": "no-store",
+    "body": "{\"network\":\"TESTNET\",\"pool_public_key\":\"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN\",\"donation_ttl_seconds\":300}",
+    "requests": 1,
+    "financialCalls": 0,
+    "settingsWrites": 0
+  },
+  "currentServingState": "Version14 serves restored v10 code; published global fix is not currently serving",
+  "budget": {
+    "candidateDeploys": 1,
+    "candidateConfigGets": 2,
+    "fallbackDeploys": 1,
+    "fallbackConfigGets": 1,
+    "remainingAttempts": 0
+  },
+  "localDiagnosis": {
+    "agent": "mwrmtbnn-a-8q5s",
+    "reads": 3,
+    "finding": "Router catches any synchronous host-construction exception; A and B are independent. A503 cause not distinguished.",
+    "publicARequirements": {
+      "D1_POOL_PUBLIC_KEY": "GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN",
+      "D1_NAMESPACE": "5a08ccd6-b4ba-4b31-adc9-fe3e57a6bda7",
+      "D1_FIRST_LEDGER": "5676563",
+      "SUPABASE_URL": "https://tgqxxnldwiqisopiclmk.supabase.co"
+    },
+    "credentialObservation": "No credential values read; no evidence any required setting is absent or mismatched",
+    "next": "Await human names/digests for public A settings; do not request service_role or seed values"
+  },
+  "settingsWrites": 0,
+  "financialCalls": 0,
+  "activation": false,
+  "gitRevert": false
+}
