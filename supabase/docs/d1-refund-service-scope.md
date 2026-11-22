@@ -10,7 +10,7 @@ Existing administrator behavior and the manual financial path remain unchanged.
 - The assertion validates the supplied pair against the locked authoritative `d1_pools` row. A mismatched registry row grants nothing.
 - Row deletion revokes subsequent admissions. An already admitted transaction holds membership `FOR SHARE` until it ends; revocation waits, rather than cancelling admitted work.
 - Lock order is **membership → pool → evidence**. Provisioning/revocation must never take a pool lock before a membership lock.
-- All public/application roles, including `service_role`, lack direct registry access and private-function execution. There is no provisioning RPC or seed principal.
+- All public/application roles, including `service_role`, lack direct registry access and private-function execution. There is no application provisioning RPC or seed principal. Migration060 adds only trusted database operator enrollment/revocation; see the [operator guide](d1-refund-service-scope-administration.md). It neither provisions private identity nor grants application administration.
 
 ## Scoped observation admission (050)
 
