@@ -54,9 +54,9 @@ query remain intact. Existing handlers own authentication and method validation.
 | Trusted setting | Required value or role |
 |---|---|
 | `D1_VIDEO_AUTO_ENABLED` | Exactly `true`; absent/other values leave B unavailable. |
-| `D1_VIDEO_AUTO_POOL_PUBLIC_KEY` | `GAPE4SD4RURXR2JFSK3JTVG6TJ53K7ECBILSVLKZY3RFOLXMWWHB5TKT` |
-| `D1_VIDEO_AUTO_NAMESPACE` | `3c6f6494-1712-4a1c-ab8e-560a1b8b072e` |
-| `D1_VIDEO_AUTO_FIRST_LEDGER` | `5824020`; fixed creation operation remains `25013975431254017`. |
+| `D1_VIDEO_AUTO_POOL_PUBLIC_KEY` | `GAYWVFBP2YPYMU245D6AOE7WWTVZOWGPVIFVGOH5EFFSSQ3VZAVR5JCW` |
+| `D1_VIDEO_AUTO_NAMESPACE` | `8126a1f4-ed8a-41ec-905b-9ad3442e5e6e` |
+| `D1_VIDEO_AUTO_FIRST_LEDGER` | `5859490`; fixed creation operation is `25166317921255425`. |
 | `D1_VIDEO_AUTO_OPERATING_FUNDER` | Explicitly approved public team funder, not the pool. No inherited default. |
 | `D1_VIDEO_AUTO_OPERATING_OPERATION_ID` | Genuine separate native D1OPS credit reference; canonical uint64 at/after the first ledger, never the creation operation. |
 | `D1_VIDEO_AUTO_POOL_SECRET_SEED` | Human-provisioned B initial/manual signing capability; read lazily and checked against B. Never put its value in this document. |
@@ -70,10 +70,20 @@ for unchanged A. B supplies a separate reference, but the existing journal still
 requires anchored, genuine D1OPS evidence from a trusted funder. A reference is not
 credit admission; B's creation balance has memo:none and is not operating credit.
 
-**Not ready for activation:** registration receipt, approved funder/real credit,
-secure signing configuration, service enrollment, exact packaged-runtime proof
-and trigger proof remain outstanding. Client absolute routes need deliberate
-owner-side adaptation; a project URL change alone does not redirect them.
+The selected B is the replacement pool above. The previous B namespace
+`3c6f6494-1712-4a1c-ab8e-560a1b8b072e`, its registration, enrollment and payment
+remain historical records; this source change neither reassigns nor deletes them.
+Replacement registration, service enrollment and the separate 100 XLM D1OPS
+payment were confirmed. Its operating operation is `25174263610757121`, distinct
+from account creation; admission to the operating-credit journal is still pending.
+Preparatory Supabase settings are human-reported saved, not independently read back.
+
+**Not ready for activation:** keep both B enable flags `false`. This binding
+correction is not backend deployment, journal credit admission or trigger activation.
+Exact packaged-runtime and historical-trigger proofs remain deferred, not passed;
+private Cloudflare provisioning and integrated financial acceptance remain unverified.
+Client absolute routes need deliberate owner-side adaptation; a project URL change
+alone does not redirect them.
 This feature does not reset lane fences, change economics or resume concurrency.
 
 ## Supabase RPC transport boundary

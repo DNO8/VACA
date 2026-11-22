@@ -4,16 +4,16 @@ import { createIndependentCustodyRouter } from "../../functions/d1-custody/deplo
 
 const base = "https://offline.invalid/functions/v1/d1-custody";
 const second = base + "/video-auto";
-const pool = "GAPE4SD4RURXR2JFSK3JTVG6TJ53K7ECBILSVLKZY3RFOLXMWWHB5TKT";
-const namespace = "3c6f6494-1712-4a1c-ab8e-560a1b8b072e";
-const credit = String((5824021n << 32n) + 4097n); // Synthetic public operation reference, never submitted.
+const pool = "GAYWVFBP2YPYMU245D6AOE7WWTVZOWGPVIFVGOH5EFFSSQ3VZAVR5JCW";
+const namespace = "8126a1f4-ed8a-41ec-905b-9ad3442e5e6e";
+const credit = String((5859491n << 32n) + 4097n); // Synthetic public operation reference, never submitted.
 function configuration(): Record<string, string> {
   return {
     SUPABASE_URL: DEPLOYED_SCOPE.url, SUPABASE_SERVICE_ROLE_KEY: "offline-service-capability",
     D1_POOL_PUBLIC_KEY: DEPLOYED_SCOPE.pool, D1_NAMESPACE: DEPLOYED_SCOPE.namespace,
     D1_FIRST_LEDGER: String(DEPLOYED_SCOPE.firstLedger),
     D1_VIDEO_AUTO_ENABLED: "true", D1_VIDEO_AUTO_POOL_PUBLIC_KEY: pool,
-    D1_VIDEO_AUTO_NAMESPACE: namespace, D1_VIDEO_AUTO_FIRST_LEDGER: "5824020",
+    D1_VIDEO_AUTO_NAMESPACE: namespace, D1_VIDEO_AUTO_FIRST_LEDGER: "5859490",
     D1_VIDEO_AUTO_OPERATING_FUNDER: DEPLOYED_SCOPE.funder,
     D1_VIDEO_AUTO_OPERATING_OPERATION_ID: credit,
   };
@@ -47,8 +47,8 @@ Deno.test("independent routes: actual entrypoint selects fixed B without redirec
 });
 Deno.test("independent routes: disabled or malformed B cannot borrow A configuration", async () => {
   for (const override of [{ D1_VIDEO_AUTO_ENABLED: "false" }, { D1_VIDEO_AUTO_NAMESPACE: DEPLOYED_SCOPE.namespace },
-    { D1_VIDEO_AUTO_OPERATING_OPERATION_ID: "25013975431254017" }, { D1_VIDEO_AUTO_OPERATING_FUNDER: "" },
-    { D1_VIDEO_AUTO_POOL_PUBLIC_KEY: DEPLOYED_SCOPE.pool }, { D1_VIDEO_AUTO_FIRST_LEDGER: "5824021" },
+    { D1_VIDEO_AUTO_OPERATING_OPERATION_ID: "25166317921255425" }, { D1_VIDEO_AUTO_OPERATING_FUNDER: "" },
+    { D1_VIDEO_AUTO_POOL_PUBLIC_KEY: DEPLOYED_SCOPE.pool }, { D1_VIDEO_AUTO_FIRST_LEDGER: "5859491" },
     { D1_VIDEO_AUTO_OPERATING_OPERATION_ID: "18446744073709551616" },
     { D1_VIDEO_AUTO_OPERATING_OPERATION_ID: credit + "\n" }, { D1_VIDEO_AUTO_OPERATING_FUNDER: pool }] as Record<string, string>[]) {
     await withHost({ ...configuration(), ...override }, async (h, reads) => {

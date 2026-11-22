@@ -26,7 +26,7 @@ function settings(): Record<string, string> {
     D1_VIDEO_AUTO_FIRST_LEDGER: String(B.firstLedger),
     D1_VIDEO_AUTO_OPERATING_FUNDER: A.funder,
     D1_VIDEO_AUTO_OPERATING_OPERATION_ID:
-      String((5824021n << 32n) + 4097n),
+      String(((BigInt(B.firstLedger) + 1n) << 32n) + 4097n),
   };
 }
 

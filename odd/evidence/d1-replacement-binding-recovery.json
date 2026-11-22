@@ -1,0 +1,76 @@
+{
+  "scope": "Replacement B config binding only; no financial/runtime/deployment acceptance",
+  "originalBase": "d04e61ab63f1d202f8bba792638c1b6a639c05c5",
+  "syntheticBaseline": "a3550b1b1a81a9838ee2996bf4b30660b9a6dc3a",
+  "syntheticCandidate": "2b1b159280688a2358b3a3d83f559dfaf5c1aa12",
+  "fixtureReproduction": {
+    "kind": "static",
+    "exit": 1,
+    "stdout": "fixture_ledger=5824021; replacement_birth=5859490",
+    "error": "AssertionError: synthetic operating credit predates replacement B",
+    "structuralCorrectionExit": 0
+  },
+  "parentFocused": {
+    "exit": 0,
+    "passed": 3,
+    "failed": 0,
+    "typecheck": true,
+    "stdout": "\u001b[0m\u001b[38;5;245mrunning 3 tests from ./supabase/tests/unit/deployment-replacement-binding.test.ts\u001b[0m\nreplacement binding: exact registered tuple serves B without changing manual A ... \u001b[0m\u001b[32mok\u001b[0m \u001b[0m\u001b[38;5;245m(7ms)\u001b[0m\nreplacement binding: old and mixed tuples fail before effects without disabling A ... \u001b[0m\u001b[32mok\u001b[0m \u001b[0m\u001b[38;5;245m(2ms)\u001b[0m\nreplacement binding: disabled B remains unavailable with no configuration fallback ... \u001b[0m\u001b[32mok\u001b[0m \u001b[0m\u001b[38;5;245m(0ms)\u001b[0m\n\n\u001b[0m\u001b[32mok\u001b[0m | 3 passed | 0 failed \u001b[0m\u001b[38;5;245m(17ms)\u001b[0m\n\n",
+    "stderr": "\u001b[0m\u001b[32mCheck\u001b[0m supabase/tests/unit/deployment-replacement-binding.test.ts\n"
+  },
+  "independent": {
+    "task": "mwrj8rok-3-92vh",
+    "candidate": {
+      "exit": 0,
+      "passed": 3,
+      "rejectionCases": 26
+    },
+    "baseline": {
+      "exit": 0,
+      "passed": 1,
+      "filtered": 2
+    },
+    "comparison": "Three extracted A status/body/header captures equal; NOT raw stdout/stderr equality",
+    "initialProbeFailure": {
+      "candidatePassed": 1,
+      "candidateFailed": 2,
+      "baselinePassed": 0,
+      "baselineFailed": 1,
+      "exit": 1,
+      "cause": "Expected headers omitted pre-existing CORS; one probe correction, no product fix"
+    },
+    "originalProbeSHA256": "cfe2aece61bb87cf4d03bf6cc055b74accba1f19b6fec0bf8cd6de508d64405c",
+    "rawChildLogs": "unavailable after runtime scratch cleanup",
+    "recovery": "Exact source recovered from child transcript, SHA256 checked, import relocated only"
+  },
+  "parentAdopted": {
+    "exit": 0,
+    "passed": 3,
+    "failed": 0,
+    "typecheck": true,
+    "stdout": "\u001b[0m\u001b[38;5;245mrunning 3 tests from ./supabase/tests/unit/deployment-replacement-independent.test.ts\u001b[0m\nA config differential with replacement B settings ...\n\u001b[0m\u001b[38;5;245m------- output -------\u001b[0m\nA_DIFFERENTIAL=[{\"status\":200,\"body\":\"{\\\"network\\\":\\\"TESTNET\\\",\\\"pool_public_key\\\":\\\"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN\\\",\\\"donation_ttl_seconds\\\":300}\",\"headers\":[[\"access-control-allow-origin\",\"*\"],[\"cache-control\",\"no-store\"],[\"content-type\",\"application/json\"]]},{\"status\":200,\"body\":\"{\\\"network\\\":\\\"TESTNET\\\",\\\"pool_public_key\\\":\\\"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN\\\",\\\"donation_ttl_seconds\\\":300}\",\"headers\":[[\"access-control-allow-origin\",\"*\"],[\"cache-control\",\"no-store\"],[\"content-type\",\"application/json\"]]},{\"status\":200,\"body\":\"{\\\"network\\\":\\\"TESTNET\\\",\\\"pool_public_key\\\":\\\"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN\\\",\\\"donation_ttl_seconds\\\":300}\",\"headers\":[[\"access-control-allow-origin\",\"*\"],[\"cache-control\",\"no-store\"],[\"content-type\",\"application/json\"]]}]\n\u001b[0m\u001b[38;5;245m----- output end -----\u001b[0m\nA config differential with replacement B settings ... \u001b[0m\u001b[32mok\u001b[0m \u001b[0m\u001b[38;5;245m(7ms)\u001b[0m\nreplacement tuple and inclusive first-ledger boundary ... \u001b[0m\u001b[32mok\u001b[0m \u001b[0m\u001b[38;5;245m(1ms)\u001b[0m\nreject old mixed malformed prebirth creation and disabled before effects ...\n\u001b[0m\u001b[38;5;245m------- output -------\u001b[0m\nREJECT_CASES=26\n\u001b[0m\u001b[38;5;245m----- output end -----\u001b[0m\nreject old mixed malformed prebirth creation and disabled before effects ... \u001b[0m\u001b[32mok\u001b[0m \u001b[0m\u001b[38;5;245m(1ms)\u001b[0m\n\n\u001b[0m\u001b[32mok\u001b[0m | 3 passed | 0 failed \u001b[0m\u001b[38;5;245m(16ms)\u001b[0m\n\n",
+    "stderr": "\u001b[0m\u001b[32mCheck\u001b[0m supabase/tests/unit/deployment-replacement-independent.test.ts\n"
+  },
+  "rdd": "off; native assessment skipped, no approval",
+  "remoteMetadata": {
+    "id": "ac86ceed-898f-4ccc-9edd-6aad439262f0",
+    "slug": "d1-custody",
+    "name": "d1-custody",
+    "status": "ACTIVE",
+    "version": 10,
+    "created_at": 1794441919911,
+    "updated_at": 1794441919911,
+    "verify_jwt": true,
+    "import_map": true,
+    "entrypoint_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_1/source/index.js",
+    "import_map_path": "file:///tmp/user_fn_tgqxxnldwiqisopiclmk_ac86ceed-898f-4ccc-9edd-6aad439262f0_1/source/deno.json",
+    "ezbr_sha256": "9f540f0b311f610f9c8c1bbb8e8208568f438749bca01693fa7bb289a76b54b2"
+  },
+  "notExecuted": [
+    "historical routing/verifier suites",
+    "donor suites",
+    "packaged runtime unsigned-save/XDR proof",
+    "historical trigger proof",
+    "SQL/deploy/activation/payment/private credentials"
+  ]
+}

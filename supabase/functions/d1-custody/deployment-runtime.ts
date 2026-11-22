@@ -26,9 +26,9 @@ interface Dependencies {
 
 export const VIDEO_AUTO_SCOPE = Object.freeze({
   url: DEPLOYED_SCOPE.url,
-  pool: "GAPE4SD4RURXR2JFSK3JTVG6TJ53K7ECBILSVLKZY3RFOLXMWWHB5TKT",
-  namespace: "3c6f6494-1712-4a1c-ab8e-560a1b8b072e", firstLedger: 5824020,
-  creationOperationId: "25013975431254017",
+  pool: "GAYWVFBP2YPYMU245D6AOE7WWTVZOWGPVIFVGOH5EFFSSQ3VZAVR5JCW",
+  namespace: "8126a1f4-ed8a-41ec-905b-9ad3442e5e6e", firstLedger: 5859490,
+  creationOperationId: "25166317921255425",
 });
 
 /** Existing manual configuration and bindings are unchanged. */
