@@ -1,0 +1,53 @@
+{
+  "schema": "vaca.d1.independent-artifact-audit/v1",
+  "verifier": "mwtgwigm-q-06m2",
+  "inputHead": "b24ec2a62025a2d788592330e0d1d44e34cafffc",
+  "scope": "S4/T5",
+  "verdict": "unmet",
+  "publicationEligible": false,
+  "apk": {
+    "sha256Before": "73290a0bb891b1fd98d57b4ca2fbe366283514d9769af7f8cc1971d07fe5fc99",
+    "sha256After": "73290a0bb891b1fd98d57b4ca2fbe366283514d9769af7f8cc1971d07fe5fc99",
+    "bytesBefore": 138872229,
+    "bytesAfter": 138872229,
+    "package": "cl.vaca.app.dev",
+    "version": "0.1.0",
+    "code": 2,
+    "minSdk": 26,
+    "targetSdk": 36,
+    "debuggable": true,
+    "signers": 1,
+    "v2": true,
+    "certificateSha256": "3fee367d1c6a658958e18ef44e6c532cbaba163aadbca3bf7b6d9e06b545b2da"
+  },
+  "zip": {"entries": 1254, "inflatedBytes": 245327958, "allCrcsValid": true},
+  "source": {"filesVerified": 260, "literalBMarkersPresent": true},
+  "kernelMarkers": {"namespace": false, "pool": false, "prefix": false, "origin": true, "TESTNET": true},
+  "toolExits": {"badging": 0, "xmltree": 0, "signature": 0},
+  "batchExit": 1,
+  "checks": {"rawPass": 33, "rawFail": 4, "adjudicatedPass": 34, "contentGaps": 3},
+  "auditWarning": "minSdk assertion used wrong label; observed minSdkVersion 26 passes. No audit rerun concealed the failure.",
+  "payloadImmutable": true,
+  "originalPrivateProvenance": "parent-attested; not independently reproducible from the public projection",
+  "runtime": "unverified",
+  "parentSpotCheck": {
+    "exit": 1,
+    "path": "/tmp/gpB0XHXc/d1-b-artifact-parent-ig532d7t",
+    "sameMissingMarkers": true,
+    "kernelBytes": 87825424,
+    "artifactUnchanged": true
+  },
+  "rootCauseDiagnosis": {
+    "explorer": "mwth1q3v-r-9poi",
+    "conclusion": "Refund feature is disconnected from the production main.dart import graph.",
+    "evidence": [
+      "source/vaca_app/lib/main.dart:7-21 starts VacaApp",
+      "source/vaca_app/lib/app.dart:5-77 reaches AppShell, with no refund routes",
+      "source/vaca_app/lib/features/shell/presentation/app_shell.dart:4-82 imports and exposes no refund entry",
+      "source/vaca_app/lib/features/refund/presentation/refund_admin_screen.dart:12-25 defines an entry that has no external production import or reference",
+      "dart-tool/flutter_build/ddc39cfcee4c57e7b48934465012debf/kernel_snapshot_program.d includes main.dart but no refund feature dependencies"
+    ],
+    "notEstablished": ["stale-cache contamination", "runtime routing", "financial acceptance"],
+    "nextDecision": "Authorize a minimal real navigation entry and a separate new build attempt, or retain the no-new-navigation constraint and leave this APK unpublished."
+  }
+}
