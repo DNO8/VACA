@@ -56,6 +56,7 @@ stops that phase. Preserve its exact output and receipt; never reset markers.
 
 ```sh
 python3 -B odd/evidence/d1-b-apk-build-test.py
+python3 -B odd/evidence/d1-b-apk-control-independent-test.py
 ```
 
 These tests use synthetic files and do not build or sign. Independent control
