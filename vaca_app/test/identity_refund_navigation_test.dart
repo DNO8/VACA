@@ -239,6 +239,93 @@ void main() {
     expect(tester.takeException(), isNull);
   }
 
+  testWidgets('independent: A reset and B stay passive across real app routes',
+      (tester) async {
+    final before = Map<String, String>.from(storage.values);
+    await mount(tester, realApp: true);
+    final entry = find.byKey(const ValueKey('refund-admin-entry'));
+    final selector = find.byKey(const ValueKey('refund-custody-profile'));
+    TextFormField field(String name) => tester.widget<TextFormField>(
+          find.byKey(ValueKey('refund-$name')),
+        );
+    void expectA() {
+      expect(
+        tester.widget<DropdownButtonFormField<CustodyProfile>>(selector)
+            .initialValue,
+        CustodyProfile.a,
+      );
+      for (final name in ['namespace', 'pool', 'original-request']) {
+        expect(field(name).controller!.text, isEmpty);
+        expect(field(name).enabled, isTrue);
+      }
+    }
+
+    void expectPassive() {
+      expect(find.byType(RefundPanel), findsNothing);
+      expect(find.byType(RefundRemainderPanel), findsNothing);
+      expect(wallet.provisions, 1);
+      expect(financialReads, isEmpty);
+      expect(gatewayEffects, isEmpty);
+      expect(storage.values, before);
+      expect(tester.takeException(), isNull);
+    }
+
+    Future<void> enter() async {
+      await tester.tap(entry.hitTestable());
+      await tester.pumpAndSettle();
+      expect(find.byType(RefundAdminScreen), findsOneWidget);
+      expectA();
+    }
+
+    Future<void> chooseB() async {
+      await tester.ensureVisible(selector);
+      await tester.tap(selector);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(CustodyProfile.b.label).last);
+      await tester.pumpAndSettle();
+      expect(field('namespace').controller!.text, CustodyProfile.bNamespace);
+      expect(field('pool').controller!.text, CustodyProfile.bPool);
+      expect(field('namespace').enabled, isFalse);
+      expect(field('pool').enabled, isFalse);
+      expect(field('original-request').enabled, isTrue);
+      expect(field('original-request').controller!.text, isEmpty);
+      expectPassive();
+    }
+
+    await enter();
+    expectPassive();
+    // A view-only input must not be reinterpreted as a B original.
+    await tester.enterText(
+      find.byKey(const ValueKey('refund-original-request')),
+      '11111111-1111-4111-8111-111111111111',
+    );
+    await chooseB();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(entry.hitTestable(), findsOneWidget);
+    await enter();
+    expectPassive();
+    await chooseB();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wallet Stellar testnet').hitTestable());
+    await tester.pumpAndSettle();
+    expect(find.byType(StellarWalletScreen), findsOneWidget);
+    expectPassive();
+    await tester.tap(find.byTooltip('Volver'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Acerca de VACA').hitTestable());
+    await tester.pumpAndSettle();
+    expect(find.byType(AboutVacaScreen), findsOneWidget);
+    expectPassive();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await enter();
+    expectPassive();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  });
+
   // Explicitly supersedes the former no-entry policy after navigation approval.
   testWidgets(
       'real app reaches passive B refunds and preserves wallet and About',
