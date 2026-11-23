@@ -1,0 +1,97 @@
+{
+  "unit": "wallet-claims",
+  "base": "11adde0ab36176348d577d7b9b51cc44ee3d6ad6",
+  "source": "907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb",
+  "writerTask": "mwtuqi00-d-fvty",
+  "status": "partial",
+  "workerReported": {
+    "firstPreparation": {"exit": 1, "cause": "URI-escaped plus character retained in package mount path"},
+    "onePreparationCorrection": {"exit": 0, "seconds": 0.55, "scope": "Decode URI mount paths; isolate public inputs and verify 215 roots, SQLite and network confinement"},
+    "red": {"exit": 255, "seconds": 0.71, "testsLoaded": 0, "error": "ProcessException: Failed to find \"which\" in the search path.", "meaningfulBehavioralRed": false},
+    "green": "not run",
+    "presentationRegression": "not run",
+    "analysis": "not run",
+    "metadata": {"exit": 1, "reason": "Only the three exact-source tests were transferred; nine-path unit incomplete"},
+    "whitespace": {"exit": 0},
+    "timeout": false,
+    "productionAndDocsTransferred": false,
+    "correctionAllowanceConsumed": true
+  },
+  "evidenceQualification": {
+    "completionReportsRetained": true,
+    "originalRawReceiptsAvailable": false,
+    "parentRunnerReadback": "ENOENT after automatic child TMPDIR cleanup",
+    "recoveryTask": "mwtv43uv-e-j21h",
+    "recoveryOrigin": "Exact helper text from the child's visible task/tool context, not surviving disk files",
+    "recoveredRunnerBytes": 11570,
+    "recoveredRunnerSha256": "5f1151776ba6cb2bb23206ebe8f66205716c050db3c9fe6985110253f935ca0b",
+    "recoveredMetadataSha256": "ca3f519cde3227e6029dc7e08a30051a65adeadd1abebebac745eb39c3ff44bb",
+    "recoveryExecutedHelpers": false,
+    "recoveryIsOriginalReceiptProof": false
+  },
+  "parentRecoveryBoundary": {
+    "workerCycleRemainsStopped": true,
+    "cause": "Existing /usr/bin/which symlink reaches /etc/alternatives/which, which was not exposed inside the namespace",
+    "proposedSmallCorrection": "Read-only bind existing /usr/bin/which.debianutils at sandbox /etc/alternatives/which",
+    "scope": "Parent-owned isolated OS-input admission only; preserve recovered helper text and all previous failure reports",
+    "forbidden": ["host symlink repair", "installation", "network-capable fallback", "private input admission", "worker budget reset", "automatic retry after another failure"],
+    "execution": "Parent applied only the proposed readonly mount in a separate helper copy; original recovered text remains unchanged",
+    "osAdmission": {"exit": 0, "seconds": 0.563, "stderr": "", "checks": ["exact which/git resolution", "215 public package roots", "SQLite load", "no external route", "no private/original paths"]},
+    "applicationRed": {
+      "job": "job-10",
+      "exit": 1,
+      "seconds": 0.734,
+      "timeout": false,
+      "testsLoaded": 0,
+      "stdout": "",
+      "stderrSummary": "Flutter SDK installation appears corrupted: isolated SDK view lacks packages/flutter_tools",
+      "hostFlutterToolsDirectoryExists": true,
+      "hostSdkCorruptionEstablished": false,
+      "meaningfulBehavioralRed": false,
+      "rawReceipts": "Parent-owned parent-red.json/stdout/stderr retained separately"
+    },
+    "continuity": "Small understood parent-owned input correction was attempted; another incomplete-runtime-view failure stops automatic verification, without resetting worker limits",
+    "furtherAutomaticRuntimeChecks": "stopped"
+  },
+  "newAuthorizedCycle": {
+    "authorization": "Canonical S4/L13; explicit human choice authorize_one_bounded_offline_verification",
+    "staticSdkAudit": "mwtvoj2a-f-hql9",
+    "hostInputMetadata": {
+      "exit": 0,
+      "appHostedRoots": 209,
+      "toolHostedRoots": 101,
+      "additionalToolHostedRoots": 58,
+      "unionHostedRoots": 267,
+      "toolConfigPackages": 102,
+      "toolConfigSha256": "47398f373e4384171d9be969361dd27d7a1bf94436aa09beac8a5565716739d2",
+      "runnerSha256": "b72e6385484969cadfada039e022239820866b5468fc7649ebfa90f7ee35884e"
+    },
+    "isolationAdmission": {
+      "wrapperExit": 1,
+      "error": "AssertionError: one invocation only",
+      "cause": "Parent named the metadata manifest admission.json, colliding with the execute(admission) result-path guard",
+      "guardTriggeredBeforeSubprocess": true,
+      "namespaceCommandExecuted": false,
+      "sdkCommandExecuted": false,
+      "testsLoaded": 0,
+      "runtimeReadiness": "UNVERIFIED"
+    },
+    "stopDisposition": "Stopped under the explicit human stop-on-failure condition; no rename, guard weakening or automatic retry",
+    "remainingChecks": ["meaningful baseline reproduction", "candidate focused tests", "button regression", "scoped analysis", "independent verification"],
+    "nextTechnicalCorrectionNotApplied": "Keep input-manifest and result-receipt names distinct, preserving the duplicate-invocation guard"
+  },
+  "sourceOnlyContinuation": {
+    "exactUnitCoverage": 9,
+    "productionAndTestBlobsExactSource907": 6,
+    "guides": 3,
+    "allowedGuideChanges": "Only immutable source907 links to omitted provenance",
+    "modesPreserved": true,
+    "manifestsUnchanged": true,
+    "unexpectedPaths": [],
+    "whitespaceExit": 0,
+    "metadataExit": 0,
+    "functionalProof": "UNVERIFIED",
+    "sourceCommit": null,
+    "childPullRequest": null
+  }
+}
