@@ -3,18 +3,19 @@
 ## Custody-specific A/B selection
 
 The three refund HTTP clients now accept optional `profile: CustodyProfile.b`;
-A remains the constructor/provider default. The existing standalone refund admin
-surface offers an explicit labeled selection, clears the original reference on
+A remains the constructor/provider default. The existing refund admin screen,
+reachable from Identity → Herramientas de prueba, offers an explicit labeled
+selection, clears the original reference on
 profile changes, and blocks selection/reference changes while either panel is
 busy (including confirmation). B pins its own origin, namespace, pool and
 `/functions/v1/d1-custody/video-auto` prefix before signing/sending. General
-Supabase configuration, Identity navigation, beneficiary claims, original proofs
-and durable holds remain unchanged. The passive status client stays unmounted
+Supabase configuration, beneficiary claims, original proofs and durable holds
+remain unchanged. The authorized Identity entry adds no shell tab or admin role. The passive status client stays unmounted
 and status-only. See [A/B custody profile](d1-b-custody-profile.md) for exact pins,
 constructor usage, selection semantics and offline test boundaries.
 
 ## Status and integration boundary
-Client source is implemented against agreed contract `70db5386`, with feature-local providers and retained standalone administrative components. Normal Identity navigation no longer exposes the refund entry. **Prior bounded offline verification of the refund client is complete:** a parent-executed 60/60 refund suite and clean targeted analysis, supplemented by eight reviewer-designed, parent-executed probes with independent PASS adjudication. See [the offline evidence report](../../odd/evidence/d1-refund-offline-independent.md); those results do not verify this navigation removal.
+Client source is implemented against agreed contract `70db5386`, with feature-local providers and retained administrative components. Identity now exposes the existing refund entry under its test tools. **Prior bounded offline verification of the refund client is complete:** a parent-executed 60/60 refund suite and clean targeted analysis, supplemented by eight reviewer-designed, parent-executed probes with independent PASS adjudication. See [the offline evidence report](../../odd/evidence/d1-refund-offline-independent.md); those historical results do not verify the new production navigation hookup.
 
 The `UNEXECUTED`, `UNVERIFIED` and deferred statements below are explicitly historical implementation checkpoints, not current blanket failures. Later offline results do not establish live financial acceptance, close the historical toolchain/backend-source proof debts, or update the installed APK. See [current Android delivery](d1-android-artifact-delivery.md#current-recorded-state) for artifact and publication boundaries. Source navigation is not operational or financial acceptance.
 
@@ -50,11 +51,11 @@ Mounting or changing the scope sends nothing. The user explicitly consults statu
 The panel captures its scope/generation across dialogs and commands. Scope changes clear old facts; old responses/confirmations cannot populate or dispatch from a new view, including A→B→A. UI busy feedback is NOT another financial coordinator or backend idempotence. Existing already-dispatched operations are not canceled/replanned. `refund_panel_test.dart` contains public widget/mock transport cases for these rules; all were recorded as UNEXECUTED at that checkpoint. Later mocked widget results are not device or financial acceptance. Local navigation source is composed below; actual backend activation and runtime acceptance still require their separate evidence.
 
 ## Local administrative navigation
-Identity → Herramientas de prueba retains Wallet Stellar testnet and Acerca de VACA, but no longer offers Reembolsos Stellar testnet. Wallet/About callbacks, core providers and D3 flows are unchanged. The standalone `RefundAdminEntry`, `RefundAdminScreen`, manual panels, protocol clients, journals, authorization/safety checks and their tests remain in source; they are not mounted by normal Identity navigation. If explicitly hosted, the standalone entry still opens the administrative screen, never grants admin membership, and requires backend authorization for every signed request.
+Identity → Herramientas de prueba offers the existing Reembolsos Stellar testnet entry between Wallet Stellar testnet and Acerca de VACA. It reuses `RefundAdminEntry` and `RefundAdminScreen`, without adding a shell tab or changing Wallet/About callbacks, core providers or D3 flows. Opening the screen never grants admin membership; every signed request still requires backend authorization. The existing app-shell wallet provisioning behavior is unchanged, not introduced by this entry.
 
-Automatic expiry refunds and wallet-facing CB/refund history in Vaquitas are not yet implemented by this work. Planned backend automation must be additive to existing manual execution/reconciliation and shared durable safety checks, not a separate uncoordinated financial path. Moving administration out of normal mobile navigation does not implement web administration.
+Automatic expiry refunds and wallet-facing CB/refund history in Vaquitas are not yet implemented by this work. Planned backend automation must be additive to existing manual execution/reconciliation and shared durable safety checks, not a separate uncoordinated financial path. This local entry does not implement web administration or backend automation.
 
-This is a source-only navigation change: the installed APK has not been updated, and no backend deployment, activation or live financial acceptance is claimed. Parent verification observed three new public-widget cases passing for entry absence, Wallet/About preservation and no refund-client construction, plus 109 existing refund/About/Vaquita cases passing. Targeted analysis of the screen and new test reported no issues. The navigation fixture uses 800×1000; baseline identity-statistics overflow at width390 was observed before production edits and remains unresolved. The earlier ambiguous-FFI-import test compilation failure is retained separately; neither failure is relabeled as a passing check. The standalone behavior below remains applicable only when explicitly hosted.
+Source changes alone do not update the installed APK or establish backend deployment, activation or live financial acceptance. Historical verification of the former entry-removal policy passed three widget cases and 109 existing refund/About/Vaquita cases, with clean targeted analysis; it is not evidence for this hookup. The current navigation regression starts from `VacaApp(skipOnboarding: true)`, reaches the B selector through the actual shell/Identity route, and checks Wallet/About and passive financial composition with isolated fixtures. Results are recorded separately in the feature task. The navigation fixture uses 800×1000; baseline identity-statistics overflow at width390 remains unresolved. The earlier ambiguous-FFI-import failure and subsequent APK content-audit failure remain historical failures, not passing checks.
 
 The operator supplies an ALREADY EXISTING namespace UUID, original pool PUBLIC key and ORIGINAL issuance request UUID from the original record. Existing `RefundScope` validates exact canonical values; the form does not generate, trim, renew or substitute identifiers. No amount, donor destination, wallet seed, fee or XDR is accepted. This is a known-reference lookup, not original-record discovery or verification. Mobile currently has no authoritative original-request list or initial-issuance receipt source; incident IDs, claimable-balance IDs, the refund journal and historical initial `/status` cannot supply one. No new API or direct database RPC is invented.
 

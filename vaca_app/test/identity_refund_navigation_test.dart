@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 // Match the existing in-memory widget fixture's installed Linux SONAME.
 // ignore: depend_on_referenced_packages
 import 'package:sqlite3/open.dart';
+import 'package:vaca_app/app.dart';
 import 'package:vaca_app/core/providers.dart';
 import 'package:vaca_app/core/result/result.dart';
 import 'package:vaca_app/core/security/identity_key_source.dart';
@@ -15,11 +16,72 @@ import 'package:vaca_app/core/security/secure_storage.dart';
 import 'package:vaca_app/core/theme/app_theme.dart';
 import 'package:vaca_app/data/local/database.dart';
 import 'package:vaca_app/features/about/presentation/about_vaca_screen.dart';
+import 'package:vaca_app/features/delivery/domain/sync_status_service.dart';
 import 'package:vaca_app/features/identity/data/kyc_adapter.dart';
 import 'package:vaca_app/features/identity/domain/identity_service.dart';
 import 'package:vaca_app/features/identity/presentation/identity_data_screen.dart';
 import 'package:vaca_app/features/refund/presentation/refund_admin_screen.dart';
 import 'package:vaca_app/features/refund/refund_providers.dart';
+import 'package:vaca_app/features/refund/domain/custody_profile.dart';
+import 'package:vaca_app/features/refund/presentation/refund_panel.dart';
+import 'package:vaca_app/features/refund/presentation/refund_remainder_panel.dart';
+import 'package:vaca_app/features/vaquita/domain/vaquita_feed_service.dart';
+import 'package:vaca_app/features/wallet/domain/stellar_wallet_gateway.dart';
+import 'package:vaca_app/features/wallet/domain/stellar_wallet_service.dart';
+import 'package:vaca_app/features/wallet/presentation/stellar_wallet_screen.dart';
+
+class _RejectGateway implements StellarWalletGateway {
+  _RejectGateway(this.effects);
+  final List<String> effects;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    effects.add(invocation.memberName.toString());
+    throw StateError('Navigation must not reach a financial gateway');
+  }
+}
+
+class _OfflineWallet extends StellarWalletService {
+  _OfflineWallet(SecureStorage storage, this.effects)
+      : super(storage, _RejectGateway(effects));
+  final List<String> effects;
+  int provisions = 0;
+  static const snapshot = StellarWalletSnapshot(
+    accountId: 'GDYAWWQFFPSC5XUEEJE2OVHBXABA2LZBSRMUSV4PXWL443MXGDOBMRTP',
+    balance: '0',
+    funded: true,
+    usdcTrustlineReady: true,
+    usdcBalance: '0',
+  );
+
+  @override
+  Future<Result<StellarWalletSnapshot>> create() async {
+    provisions++;
+    return const Success(snapshot);
+  }
+
+  @override
+  Future<Result<StellarWalletSnapshot?>> load() async =>
+      const Success(snapshot);
+
+  @override
+  Future<Result<List<StellarClaim>>> pendingClaims() async => const Success([]);
+
+  @override
+  Future<Result<StellarWalletSnapshot>> fund() {
+    effects.add('fund');
+    throw StateError('Navigation must not fund a wallet');
+  }
+}
+
+class _EmptyFeed implements VaquitaFeedService {
+  @override
+  Future<Result<List<VaquitaFeedItem>>> fetchFeed() async => const Success([]);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw StateError('Unexpected feed operation');
+}
 
 class _MemoryStorage implements SecureStorage {
   final values = <String, String>{};
@@ -52,6 +114,8 @@ void main() {
   late IdentityService identity;
   late List<String> financialReads;
   late int walletOpens;
+  late List<String> gatewayEffects;
+  late _OfflineWallet wallet;
 
   setUpAll(() {
     if (Platform.isLinux) {
@@ -76,7 +140,12 @@ void main() {
     await identity.getOrCreateLocalProfile();
     financialReads = [];
     walletOpens = 0;
-    addTearDown(() => expect(financialReads, isEmpty));
+    gatewayEffects = [];
+    wallet = _OfflineWallet(storage, gatewayEffects);
+    addTearDown(() {
+      expect(financialReads, isEmpty);
+      expect(gatewayEffects, isEmpty);
+    });
   });
 
   Never rejectFinancialRead(String provider) {
@@ -84,7 +153,7 @@ void main() {
     throw StateError('Identity navigation must not construct $provider');
   }
 
-  Future<void> mount(WidgetTester tester) async {
+  Future<void> mount(WidgetTester tester, {bool realApp = false}) async {
     // Navigation coverage only: the baseline stats rows overflow at width 390.
     // This bounded tablet viewport does not establish narrow-layout correctness.
     tester.view.physicalSize = const Size(800, 1000);
@@ -97,6 +166,19 @@ void main() {
           databaseProvider.overrideWithValue(database),
           secureStorageProvider.overrideWithValue(storage),
           identityServiceProvider.overrideWithValue(identity),
+          stellarWalletServiceProvider.overrideWithValue(wallet),
+          vaquitaFeedServiceProvider.overrideWithValue(_EmptyFeed()),
+          vaquitaAlertProvider.overrideWith((ref) async => false),
+          syncSnapshotProvider.overrideWith(
+            (ref) => Stream.value(
+              const SyncSnapshot(
+                phase: SyncPhase.offline,
+                pendingCount: 0,
+                deliveredCount: 0,
+                canRetry: false,
+              ),
+            ),
+          ),
           // Guard both public clients and direct transport construction for
           // both refund protocols, without constructing real financial clients.
           refundClientProvider.overrideWith(
@@ -120,20 +202,36 @@ void main() {
                 rejectFinancialRead('remainderHttpClientFactoryProvider'),
           ),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: IdentityDataScreen(onOpenWallet: () => walletOpens++),
-        ),
+        child: realApp
+            ? const VacaApp(skipOnboarding: true)
+            : MaterialApp(
+                theme: AppTheme.light,
+                home: IdentityDataScreen(onOpenWallet: () => walletOpens++),
+              ),
       ),
     );
     await tester.pumpAndSettle();
+    if (realApp) {
+      expect(find.text('Inicio'), findsOneWidget);
+      expect(wallet.provisions, 1);
+      await tester.tap(find.text('Identidad').hitTestable());
+      await tester.pumpAndSettle();
+    }
     expect(find.text('Identidad no verificada'), findsOneWidget);
     expect(financialReads, isEmpty);
-    // Materialize the lazy list's navigation section before asserting absence.
+    // Scope the scroll to Identity, not the shell's horizontal PageView.
     await tester.scrollUntilVisible(
       find.text('Wallet Stellar testnet'),
       200,
-      scrollable: find.byType(Scrollable),
+      scrollable: find.descendant(
+        of: find.byType(IdentityDataScreen),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    // Center the group: top-aligning About hides Wallet behind the shell bar.
+    await Scrollable.ensureVisible(
+      tester.element(find.text('Acerca de VACA')),
+      alignment: 0.5,
     );
     await tester.pumpAndSettle();
     expect(find.text('Wallet Stellar testnet').hitTestable(), findsOneWidget);
@@ -141,19 +239,72 @@ void main() {
     expect(tester.takeException(), isNull);
   }
 
-  testWidgets('normal identity navigation omits refund administration',
+  // Explicitly supersedes the former no-entry policy after navigation approval.
+  testWidgets(
+      'real app reaches passive B refunds and preserves wallet and About',
       (tester) async {
-    await mount(tester);
+    final before = Map<String, String>.from(storage.values);
+    await mount(tester, realApp: true);
 
-    expect(find.text('Reembolsos Stellar testnet'), findsNothing);
-    expect(find.byType(RefundAdminEntry), findsNothing);
-    expect(find.byKey(const ValueKey('refund-admin-entry')), findsNothing);
-    expect(find.byType(RefundAdminScreen), findsNothing);
-    expect(walletOpens, 0);
+    expect(find.byType(RefundAdminEntry), findsOneWidget);
+    final entry = find.byKey(const ValueKey('refund-admin-entry'));
+    expect(entry.hitTestable(), findsOneWidget);
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(find.byType(RefundAdminScreen), findsOneWidget);
+    expect(
+      find.textContaining('abrir esta pantalla no concede permisos'),
+      findsOneWidget,
+    );
+    final selector = find.byKey(const ValueKey('refund-custody-profile'));
+    await tester.ensureVisible(selector);
+    await tester.tap(selector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(CustodyProfile.b.label).last);
+    await tester.pumpAndSettle();
+    for (final item in {
+      'refund-namespace': CustodyProfile.bNamespace,
+      'refund-pool': CustodyProfile.bPool,
+      'refund-original-request': '',
+    }.entries) {
+      final field =
+          tester.widget<TextFormField>(find.byKey(ValueKey(item.key)));
+      expect(field.controller!.text, item.value);
+      expect(field.enabled, item.key == 'refund-original-request');
+    }
+    expect(find.byType(RefundPanel), findsNothing);
+    expect(find.byType(RefundRemainderPanel), findsNothing);
     expect(financialReads, isEmpty);
+    expect(gatewayEffects, isEmpty);
+    expect(storage.values, before);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(RefundAdminScreen), findsNothing);
+    await tester.tap(find.text('Wallet Stellar testnet'));
+    await tester.pumpAndSettle();
+    expect(find.byType(StellarWalletScreen), findsOneWidget);
+    // Wallet uses its existing custom, Spanish-labeled back control.
+    await tester.tap(find.byTooltip('Volver'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Acerca de VACA'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AboutVacaScreen), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(IdentityDataScreen), findsOneWidget);
+    expect(entry.hitTestable(), findsOneWidget);
+    expect(wallet.provisions, 1);
+    expect(financialReads, isEmpty);
+    expect(gatewayEffects, isEmpty);
+    expect(storage.values, before);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
   });
 
-  testWidgets('identity wallet action still invokes its callback without refunds',
+  testWidgets(
+      'identity wallet action still invokes its callback without refunds',
       (tester) async {
     await mount(tester);
 

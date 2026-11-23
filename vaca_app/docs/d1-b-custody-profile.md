@@ -3,11 +3,12 @@
 ## Alcance de fuente
 
 La selección pertenece solo a los clientes de reembolso. No modifica el
-`SUPABASE_URL` general, feed, KYC, bundles, cuentas, navegación ni claims del
-beneficiario/Horizon. No agrega una entrada de administración a Identity.
-La pantalla administrativa existente sigue siendo independiente; abrirla no
-concede rol ni autorización del backend. Esta entrega no actualiza el APK,
-activa backend ni acredita disponibilidad o aceptación financiera.
+`SUPABASE_URL` general, feed, KYC, bundles, cuentas ni claims del
+beneficiario/Horizon. El acceso autorizado es **Identidad → Herramientas de prueba
+→ Reembolsos Stellar testnet**, junto a Wallet y Acerca de VACA, sin una pestaña
+nueva. Reutiliza la pantalla administrativa existente; abrirla no concede rol ni
+autorización del backend. Los cambios de fuente por sí solos no actualizan el
+APK instalado, activan backend ni acreditan disponibilidad o aceptación financiera.
 
 ## Configuración pública y rutas
 
@@ -61,6 +62,12 @@ segundo esquema de almacenamiento ni un reset. Estado fresco, reserva duradera,
 readback y permiso de un solo uso siguen precediendo a refund. Un hold previo
 conserva el camino de recuperación status/reconcile; ningún perfil ofrece
 reintento automático, polling, redirecciones o ejecución por ausencia de estado.
+
+`test/identity_refund_navigation_test.dart` parte de `VacaApp`, recorre Identidad
+y el acceso real hasta el selector B, y comprueba la vuelta a Wallet y Acerca de
+VACA. Sustituye la provisión de wallet, feed y transportes por fixtures locales:
+no arranca `main()` ni el scheduler, y no firma, fondea ni envía comandos reales.
+Esta prueba reemplaza expresamente la política anterior de ocultar el acceso.
 
 `test/d1_custody_profile_test.dart` cubre los pines, rechazo sin lectura de wallet
 ni transporte, rutas de ambas versiones y consumidor pasivo, recuperación sin
