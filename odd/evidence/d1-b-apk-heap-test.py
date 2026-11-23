@@ -72,7 +72,12 @@ class HeapProbe {
                  ('metaspace', EXPECTED.replace('384m', '512m')),
                  ('codecache', EXPECTED.replace('128m', '64m')),
                  ('heapdump', EXPECTED.replace('-HeapDump', '+HeapDump')),
-                 ('duplicate', '-Xmx1024m '+EXPECTED)]
+                 ('duplicate', '-Xmx1024m '+EXPECTED),
+                 # Independently executed variants from mwtg2fax-o-o3ny.
+                 ('duplicate_same', EXPECTED+' -Xmx1536m'),
+                 ('duplicate_metaspace', EXPECTED+' -XX:MaxMetaspaceSize=384m'),
+                 ('heap_alias', EXPECTED+' -XX:MaxHeapSize=1610612736'),
+                 ('missing_metaspace', EXPECTED.replace(' -XX:MaxMetaspaceSize=384m', ''))]
         for label, options in cases:
             with self.subTest(case=label):
                 result = subprocess.run(
