@@ -1,0 +1,14 @@
+// Heap-only guard for the explicitly authorized fresh correction context.
+// The historical task/signing/native policy remains a separate unchanged script.
+def required = ['-Xmx1536m', '-XX:MaxMetaspaceSize=384m',
+                '-XX:ReservedCodeCacheSize=128m', '-XX:-HeapDumpOnOutOfMemoryError']
+def controlled = java.lang.management.ManagementFactory.runtimeMXBean.inputArguments.findAll { arg ->
+    arg.startsWith('-Xmx') || arg.startsWith('-XX:MaxHeapSize=') ||
+        arg.startsWith('-XX:MaxMetaspaceSize=') || arg.startsWith('-XX:ReservedCodeCacheSize=') ||
+        arg == '-XX:+HeapDumpOnOutOfMemoryError' || arg == '-XX:-HeapDumpOnOutOfMemoryError'
+}
+if (Runtime.runtime.maxMemory() != 1610612736L || controlled.size() != required.size() ||
+    (controlled as Set) != (required as Set)) {
+    throw new GradleException('BAPK_REJECT_HEAP')
+}
+println('BAPK_HEAP 1610612736')

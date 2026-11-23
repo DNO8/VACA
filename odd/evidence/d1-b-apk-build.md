@@ -30,7 +30,19 @@ python3 -B odd/evidence/d1-b-apk-build.py build --prepared-sha <accepted-prepare
 ```
 
 Observe each result and bind its receipt before the next command. Do not batch
-all phases. The fixed context is `.tooling/d1-b-apk-d7e24f3-code2/`.
+all phases. The fixed correction context is
+`.tooling/d1-b-apk-d7e24f3-code2-heap1536/`. The consumed original
+`.tooling/d1-b-apk-d7e24f3-code2/` remains untouched.
+
+The original build failed in D8 with `java.lang.OutOfMemoryError: Java heap space`
+at a 1024 MiB heap. The owner explicitly authorized one heap-only correction and
+one additional attempt. The corrected runner fixes 1536 MiB in both Gradle
+argument channels; Metaspace384m, CodeCache128m and disabled heap dumps remain.
+A separate `00-heap.gradle` checks the **actual JVM** and emits
+`BAPK_HEAP 1610612736`; the runner requires that proof. The historical policy,
+launcher and libraries are unchanged. No time limit or retry allowance increased.
+The observed 3.59 GiB available RAM and nearly full swap motivated the smaller
+increase rather than 2048 MiB; they do not guarantee build success.
 
 - **seed:** verifies/copies the 47,284 admitted public cache records plus six
   pinned `gen_snapshot` binaries into fresh owned caches; admits the new source;
@@ -57,9 +69,12 @@ stops that phase. Preserve its exact output and receipt; never reset markers.
 ```sh
 python3 -B odd/evidence/d1-b-apk-build-test.py
 python3 -B odd/evidence/d1-b-apk-control-independent-test.py
+python3 -B odd/evidence/d1-b-apk-heap-test.py
 ```
 
-These tests use synthetic files and do not build or sign. Independent control
+These tests use synthetic files and do not build or sign. The heap suite also
+runs the public JDK/Groovy against only the new heap guard, including rejection
+of wrong heaps, changed limits, enabled heap dumps and duplicate heap arguments. Independent control
 verification is separate. After an actual build, independently audit the exact
 APK hash, package/code, ARM64 engine, certificate and source/config provenance.
 Publish only after that audit. Source publication, artifact publication, phone

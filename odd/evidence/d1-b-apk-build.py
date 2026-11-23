@@ -34,7 +34,8 @@ b, a = b2.b, b2.a
 SOURCE = 'd7e24f3e866833721ad6003ca1c86e825cfab0f2'
 SOURCE_PIN = '5fb1a2f10f8069877e58d8536b52c865f2a9febcd313f3b5d865ccb19f1c64b4'
 INPUTS = HERE.parents[1]/'.tooling/d1-b-apk-inputs-d7e24f3'
-ROOT = HERE.parents[1]/'.tooling/d1-b-apk-d7e24f3-code2'
+ROOT = HERE.parents[1]/'.tooling/d1-b-apk-d7e24f3-code2-heap1536'
+JVM = '-Xmx1536m -XX:MaxMetaspaceSize=384m -XX:ReservedCodeCacheSize=128m -XX:-HeapDumpOnOutOfMemoryError'
 CACHE = Path('/home/danilo/projects/vaca-d1-apk-delivery-isolated/.tooling/d1-recording-apk/unit-a')
 CACHE_STATE_PIN = 'b4ddd71517b92b20d35eec38c029c39c3e423294f23aaa5342b97f2725898913'
 EXTRA = dict(zip(('android-'+arch+'-'+mode for arch in ('arm', 'arm64', 'x64') for mode in ('profile', 'release')), (
@@ -116,9 +117,9 @@ def source_state(root, pins):
 
 
 def controls(root):
-    names = ('init.d/policy.gradle', 'launcher.sh', 'projects.json')
+    names = ('init.d/00-heap.gradle', 'init.d/policy.gradle', 'launcher.sh', 'projects.json')
     result = {name: b2.fingerprint(root/name) for name in names}
-    for name in ('d1-b-apk-build.py', 'd1-recording-apk-unit-b2.py',
+    for name in ('d1-b-apk-build.py', 'd1-b-apk-heap-policy.gradle', 'd1-recording-apk-unit-b2.py',
                  'd1-recording-apk-unit-b1.py', 'd1-recording-apk-sandbox.py',
                  'd1-recording-apk-unit-b3-policy.gradle',
                  'd1-recording-apk-unit-b3-launcher.sh'):
@@ -213,7 +214,7 @@ def plan(root, bindings):
     for name in ('gradlew', 'gradle/wrapper/gradle-wrapper.jar', 'gradle/wrapper/gradle-wrapper.properties'):
         args += ['--ro-bind', str(root/'source/vaca_app/android'/name), '/b3/'+name]
     args += ['--ro-bind', str(root/'launcher.sh'), '/app/vaca_app/android/gradlew']
-    options = ['-Dorg.gradle.jvmargs='+b2.JVM, '-Dorg.gradle.daemon=false', '-Dorg.gradle.parallel=false',
+    options = ['-Dorg.gradle.jvmargs='+JVM, '-Dorg.gradle.daemon=false', '-Dorg.gradle.parallel=false',
                '-Dorg.gradle.workers.max=1', '-Dorg.gradle.configuration-cache=false']
     return args+['--setenv', 'GRADLE_OPTS', shlex.join(options)]
 
@@ -225,6 +226,7 @@ def command():
             'build', 'apk', '--debug', '--flavor', 'dev', '--no-pub', '--dart-define=FLAVOR=dev',
             '--build-name=0.1.0', '--build-number=2',
             '--dart-define-from-file=/b3/config', '--target-platform=android-arm64',
+            '--android-project-arg=org.gradle.jvmargs='+JVM,
             '--android-project-arg=org.gradle.java.installations.paths='+str(a.J),
             '--android-project-arg=org.gradle.java.installations.auto-download=false',
             '--android-project-arg=org.gradle.java.installations.auto-detect=false',
@@ -382,6 +384,7 @@ def seed():
         for name in SCAFFOLDS: (root/'source'/name).mkdir(mode=0o700)
         for name in b.OUTPUTS[:3]: a.copy_public(root/'source'/name, root/'dart-tool'/Path(name).name)
         for index, name in enumerate(GENERATED): a.copy_public(root/'source'/name, root/'generated'/str(index))
+        a.copy_public(HERE/'d1-b-apk-heap-policy.gradle', root/'init.d/00-heap.gradle')
         a.copy_public(HERE/'d1-recording-apk-unit-b3-policy.gradle', root/'init.d/policy.gradle')
         a.copy_public(HERE/'d1-recording-apk-unit-b3-launcher.sh', root/'launcher.sh')
         (root/'launcher.sh').chmod(0o700)
@@ -452,6 +455,7 @@ def build(prepared_sha=None, root=ROOT):
                                         descriptors=tuple(descriptor(value) for value in bindings.values()))
             a.require(receipt['result'] == dict(exit=0, reason='ok'), 'BAPK_BUILD_FAILED')
             lines = (root/'compile/stdout').read_text(errors='replace').splitlines()
+            a.require('BAPK_HEAP 1610612736' in lines, 'BAPK_HEAP_PROOF')
             a.require(lines.count('B3_FINAL devDebug cl.vaca.app.dev debug /b3/signer') == 1, 'BAPK_FINAL_MODEL')
             a.require((root/'state/attempt').is_dir(), 'BAPK_NO_GRADLE_ATTEMPT')
             receipt['artifact'] = artifact(root)
