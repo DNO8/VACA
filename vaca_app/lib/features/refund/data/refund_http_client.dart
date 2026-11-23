@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../domain/refund_scope.dart';
+import '../domain/custody_profile.dart';
 import '../domain/refund_status.dart';
 import 'refund_wallet_signer.dart';
 import 'refund_submission_journal.dart';
@@ -12,6 +13,7 @@ import 'refund_submission_journal.dart';
 class RefundHttpClient {
   RefundHttpClient({
     required this.projectUrl,
+    this.profile = CustodyProfile.a,
     required String publicApiKey,
     required RefundWalletSigner signer,
     HttpClientAdapter? adapter,
@@ -38,10 +40,12 @@ class RefundHttpClient {
         publicApiKey.isEmpty) {
       throw const RefundProtocolError('d1_refund_configuration');
     }
+    profile.validateOrigin(projectUrl);
     if (adapter != null) _http.httpClientAdapter = adapter;
   }
 
   final Uri projectUrl;
+  final CustodyProfile profile;
   final RefundWalletSigner _signer;
   final DateTime Function() _now;
   final Dio _http;
@@ -54,6 +58,7 @@ class RefundHttpClient {
     final cancel = CancelToken();
     Timer? timer;
     try {
+      profile.validateScope(scope);
       if (action == RefundAction.refund) {
         RefundValidation.require(reservation != null);
         reservation!.consume(scope);
@@ -70,7 +75,7 @@ class RefundHttpClient {
       RefundValidation.require(utf8.encode(body).length <= 8192);
       timer = Timer(const Duration(seconds: 10), () => cancel.cancel());
       final response = await _http.postUri<ResponseBody>(
-        projectUrl.resolve('/functions/v1/d1-custody/${action.path}'),
+        projectUrl.resolve('${profile.pathPrefix}/${action.path}'),
         data: body,
         cancelToken: cancel,
       );

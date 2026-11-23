@@ -1,5 +1,18 @@
 # D1 refund client v1
 
+## Custody-specific A/B selection
+
+The three refund HTTP clients now accept optional `profile: CustodyProfile.b`;
+A remains the constructor/provider default. The existing standalone refund admin
+surface offers an explicit labeled selection, clears the original reference on
+profile changes, and blocks selection/reference changes while either panel is
+busy (including confirmation). B pins its own origin, namespace, pool and
+`/functions/v1/d1-custody/video-auto` prefix before signing/sending. General
+Supabase configuration, Identity navigation, beneficiary claims, original proofs
+and durable holds remain unchanged. The passive status client stays unmounted
+and status-only. See [A/B custody profile](d1-b-custody-profile.md) for exact pins,
+constructor usage, selection semantics and offline test boundaries.
+
 ## Status and integration boundary
 Client source is implemented against agreed contract `70db5386`, with feature-local providers and retained standalone administrative components. Normal Identity navigation no longer exposes the refund entry. **Prior bounded offline verification of the refund client is complete:** a parent-executed 60/60 refund suite and clean targeted analysis, supplemented by eight reviewer-designed, parent-executed probes with independent PASS adjudication. See [the offline evidence report](../../odd/evidence/d1-refund-offline-independent.md); those results do not verify this navigation removal.
 

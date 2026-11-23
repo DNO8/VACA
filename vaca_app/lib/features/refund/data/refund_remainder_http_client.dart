@@ -10,12 +10,14 @@ import '../../../core/result/result.dart';
 import '../../../core/security/secure_storage.dart';
 import '../domain/refund_remainder_status.dart';
 import '../domain/refund_scope.dart';
+import '../domain/custody_profile.dart';
 import 'refund_remainder_submission_journal.dart';
 
 /// Explicit v2 commands only: no retries, redirects, polling or v1 relabeling.
 class RemainderHttpClient {
   RemainderHttpClient({
     required this.projectUrl,
+    this.profile = CustodyProfile.a,
     required String publicApiKey,
     required SecureStorage storage,
     HttpClientAdapter? adapter,
@@ -39,10 +41,12 @@ class RemainderHttpClient {
         publicApiKey.isEmpty) {
       throw const RefundProtocolError('d1_remainder_configuration');
     }
+    profile.validateOrigin(projectUrl);
     if (adapter != null) _http.httpClientAdapter = adapter;
   }
 
   final Uri projectUrl;
+  final CustodyProfile profile;
   final SecureStorage _storage;
   final DateTime Function() _now;
   final Dio _http;
@@ -52,6 +56,7 @@ class RemainderHttpClient {
     final cancel = CancelToken();
     Timer? timer;
     try {
+      profile.validateScope(scope);
       if (action == RemainderAction.refund) {
         RefundValidation.require(reservation != null);
         reservation!.consume(scope);
@@ -73,7 +78,7 @@ class RemainderHttpClient {
       };
       timer = Timer(const Duration(seconds: 10), () => cancel.cancel());
       final response = await _http.postUri<ResponseBody>(
-        projectUrl.resolve('/functions/v1/d1-custody/$suffix'),
+        projectUrl.resolve('${profile.pathPrefix}/$suffix'),
         data: body,
         cancelToken: cancel,
       );

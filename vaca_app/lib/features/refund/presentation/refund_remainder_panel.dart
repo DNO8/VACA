@@ -9,8 +9,9 @@ import '../refund_providers.dart';
 
 /// No command or wallet read during build; every action is an explicit gesture.
 class RefundRemainderPanel extends ConsumerStatefulWidget {
-  const RefundRemainderPanel({super.key, required this.scope});
+  const RefundRemainderPanel({super.key, required this.scope, this.onBusyChanged});
   final RefundScope scope;
+  final ValueChanged<bool>? onBusyChanged;
   @override
   ConsumerState<RefundRemainderPanel> createState() => _RefundRemainderPanelState();
 }
@@ -40,6 +41,7 @@ class _RefundRemainderPanelState extends ConsumerState<RefundRemainderPanel> {
     final scope = widget.scope;
     final generation = _generation;
     setState(() => _busy = true);
+    widget.onBusyChanged?.call(true);
     try {
       if (action == RemainderAction.refund) {
         final confirmed = await showDialog<bool>(
@@ -77,7 +79,10 @@ class _RefundRemainderPanelState extends ConsumerState<RefundRemainderPanel> {
       if (!mounted || generation != _generation) return;
       setState(() { _failed = true; _result = null; });
     } finally {
-      if (mounted && generation == _generation) setState(() => _busy = false);
+      if (mounted && generation == _generation) {
+        setState(() => _busy = false);
+        widget.onBusyChanged?.call(false);
+      }
     }
   }
 

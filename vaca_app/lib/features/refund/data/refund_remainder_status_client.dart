@@ -9,6 +9,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import '../../../core/result/result.dart';
 import '../../../core/security/secure_storage.dart';
 import '../domain/refund_scope.dart';
+import '../domain/custody_profile.dart';
 import '../domain/refund_remainder_status.dart';
 
 /// An observed state or a local unknown hold, never retry/financial permission.
@@ -28,6 +29,7 @@ class RemainderStatusResult {
 class RemainderStatusClient {
   RemainderStatusClient({
     required this.projectUrl,
+    this.profile = CustodyProfile.a,
     required String publicApiKey,
     required SecureStorage storage,
     HttpClientAdapter? adapter,
@@ -54,10 +56,12 @@ class RemainderStatusClient {
         publicApiKey.isEmpty) {
       throw const RefundProtocolError('d1_remainder_configuration');
     }
+    profile.validateOrigin(projectUrl);
     if (adapter != null) _http.httpClientAdapter = adapter;
   }
 
   final Uri projectUrl;
+  final CustodyProfile profile;
   final SecureStorage _storage;
   final DateTime Function() _now;
   final Dio _http;
@@ -69,6 +73,7 @@ class RemainderStatusClient {
     final cancel = CancelToken();
     Timer? timer;
     try {
+      profile.validateScope(scope);
       // Reject a foreign baseline before any wallet read or transport effect.
       RefundValidation.require(
           previous == null || scope.matches(previous.toJson()));
@@ -83,7 +88,7 @@ class RemainderStatusClient {
       RefundValidation.require(utf8.encode(body).length <= 8192);
       timer = Timer(const Duration(seconds: 10), () => cancel.cancel());
       final response = await _http.postUri<ResponseBody>(
-        projectUrl.resolve('/functions/v1/d1-custody/refund-remainder-status'),
+        projectUrl.resolve('${profile.pathPrefix}/refund-remainder-status'),
         data: body,
         cancelToken: cancel,
       );

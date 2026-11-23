@@ -1,5 +1,16 @@
 # D1 remainder client
 
+## Custody-specific A/B selection
+
+Full v2 and the passive status-only transport accept the optional custody
+`profile`, defaulting to A without changing existing constructor calls. B uses
+its pinned origin and `/functions/v1/d1-custody/video-auto` prefix, rejecting
+foreign pool/namespace before wallet access or sending. The existing admin
+surface selects the profile explicitly; switching clears presentation/reference,
+never journals/shared holds, and is disabled during commands/confirmation in
+either lane. No status-only screen or new navigation is added. See
+[A/B custody profile](d1-b-custody-profile.md) for pins, API usage and tests.
+
 ## Delivery status
 
 This is source implementation, not operational acceptance. The earlier implementation was delivered under an explicit stop on further checks; historical passing checks do not validate it. A subsequent bounded authorization reopens offline refund tests and demonstrated-defect corrections, not network, device, funds or backend verification.

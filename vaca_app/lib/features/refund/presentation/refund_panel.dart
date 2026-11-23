@@ -8,8 +8,9 @@ import '../refund_providers.dart';
 
 /// Administrative view. Only explicit gestures invoke the consumer.
 class RefundPanel extends ConsumerStatefulWidget {
-  const RefundPanel({super.key, required this.scope});
+  const RefundPanel({super.key, required this.scope, this.onBusyChanged});
   final RefundScope scope;
+  final ValueChanged<bool>? onBusyChanged;
   @override
   ConsumerState<RefundPanel> createState() => _RefundPanelState();
 }
@@ -38,6 +39,7 @@ class _RefundPanelState extends ConsumerState<RefundPanel> {
     final scope = widget.scope;
     final generation = _generation;
     setState(() => _busy = true);
+    widget.onBusyChanged?.call(true);
     try {
       if (action == RefundAction.refund) {
         final confirmed = await showDialog<bool>(
@@ -79,7 +81,10 @@ class _RefundPanelState extends ConsumerState<RefundPanel> {
         _failed = true;
       });
     } finally {
-      if (mounted && generation == _generation) setState(() => _busy = false);
+      if (mounted && generation == _generation) {
+        setState(() => _busy = false);
+        widget.onBusyChanged?.call(false);
+      }
     }
   }
 
