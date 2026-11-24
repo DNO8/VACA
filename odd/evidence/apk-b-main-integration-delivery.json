@@ -1,0 +1,65 @@
+{
+  "source": "907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb",
+  "children": [
+    {
+      "pr": 2,
+      "sourceHead": "8700585b320ba0f7f1c639794a9344c04eb9c5b5",
+      "previousTarget": "0a8601f84f569ee97142c69a6808592546fc983a",
+      "mergeCommit": "3d4eabfd730909c295985dcfb2c5779ef42cac47",
+      "tree": "f5ba95b7f816e174610d7bcf8db60bd43dde825c",
+      "appTree": "13750130c364f9bf349e8ac64f3569a626518e9d",
+      "paths": 9,
+      "remoteChecks": [],
+      "branchesPreserved": true,
+      "mainUnchanged": true
+    },
+    {
+      "pr": 3,
+      "sourceHead": "62959269d53a46868bea42583ba19c78e89239d1",
+      "previousTarget": "3d4eabfd730909c295985dcfb2c5779ef42cac47",
+      "mergeCommit": "ee07702a97cd09bcad4f304463064293c7d6770f",
+      "tree": "c7b0788e51d5e37e0729775a1fc4083ea1fa059e",
+      "appTree": "c2496361b4a7b13a56c382f99b44a2720db0de3e",
+      "paths": 35,
+      "remoteChecks": [],
+      "branchesPreserved": true,
+      "mainUnchanged": true
+    },
+    {
+      "pr": 4,
+      "sourceHead": "0a9fe492aff042361f9c572afb41c61ad8e0a2d1",
+      "previousTarget": "ee07702a97cd09bcad4f304463064293c7d6770f",
+      "mergeCommit": "a42d209c39726a446ef08dafd014d7eddf5ed00f",
+      "tree": "a3e09aa6802d831e6fa542cd97b1496370df40a6",
+      "appTree": "511b8817e94d650b0f297cb5541a26f08957be73",
+      "paths": 3,
+      "remoteChecks": [],
+      "branchesPreserved": true,
+      "mainUnchanged": true
+    }
+  ],
+  "policy": {
+    "mainAndTrackerProtected": false,
+    "applicableRules": [],
+    "allowMergeCommit": true,
+    "deleteBranchOnMerge": false,
+    "requiredRemoteChecksObserved": [],
+    "qualification": "Absent remote checks are not functional proof;207 admitted offline tests and independent checks are recorded separately."
+  },
+  "preflightIncident": {
+    "job": 27,
+    "exit": 1,
+    "reason": "PR2 stored baseRefOid remained e7c527d after the target advanced; no merge or re-push occurred.",
+    "reconciliationJob": 28,
+    "reconciliationExit": 0,
+    "storedBaseSnapshot": "e7c527d1666f968756a71cf8d8f9c25473380745",
+    "liveBaseRefTarget": "0a8601f84f569ee97142c69a6808592546fc983a",
+    "resolution": "Validate baseRef.target.oid and Git live refs, then exact merge-preview/post-merge trees and parents. No check/admin bypass."
+  },
+  "releasesBeforeMain": {
+    "455959305": "APK/checksum IDs,sizes,digests andtag verified unchanged;not redownloaded by this integration.",
+    "449502685": "Older release identity/assets captured for post-merge comparison."
+  },
+  "mainDelivery": "Pending; this record establishes ordered child integration only.",
+  "preserved": "Original source branches/releases; no source/build/dependency/SDK/host changes,branch deletion orfinancial activity."
+}
