@@ -1,4 +1,6 @@
-# D1 backend: offline unsigned issuance planning
+# D1 backend: offline unsigned issuance planning and validation
+
+## Plan new unsigned XDR
 
 [`planIssuance(prepared, context)`](functions/d1-custody/issuance-plan.ts) builds unsigned
 Stellar Testnet XDR. Its caller supplies a trusted, successfully persisted `Preparation`,
@@ -15,10 +17,25 @@ bounds are `[now, deadline - 1]`, inclusive. The planner does not mutate its inp
 Invalid inputs throw `invalid_issuance_plan`; an otherwise valid request at or after
 its deadline throws `issuance_window_exhausted`.
 
-This slice does not import an endpoint, verify a receipt, reserve a sequence, sign or
-submit a transaction, or perform any database or network operation. Producing XDR does
-not check ledger readiness or imply authorization. The pool's complementary claimant
-is not a donor refund.
+## Validate saved unsigned XDR
+
+[`validateUnsignedTransaction(input)`](functions/d1-custody/unsigned-transaction.ts)
+validates saved evidence against the trusted persisted preparation, Testnet passphrase,
+pool account, observed sequence, reserved transaction sequence, and expected lowercase
+transaction hash. It requires bounded, canonical Base64 and an ordinary unsigned
+transaction. Using the envelope's historical minimum time and fee, it calls the planner
+and requires an exact XDR byte match before checking the hash. This rejects modified
+operations or preconditions even when the supplied hash matches the modified envelope.
+
+It returns only `{ unsignedXdr, transactionHash }` and throws
+`invalid_unsigned_transaction` for invalid evidence. Validation does not mutate its
+inputs, read the current clock, or reset the deadline. Success on expired evidence
+means the saved bytes match the historical plan, not that the transaction can be used now.
+
+Neither module imports an endpoint, verifies a receipt, reserves a sequence, signs or
+submits a transaction, or performs any database or network operation. Building or
+validating XDR does not check ledger readiness or grant authority to sign or submit.
+The pool's complementary claimant is not a donor refund.
 
 ## Verify offline
 
@@ -40,12 +57,17 @@ backend="$PWD/supabase"
 node "$runner" deno check --config="$backend/deno.json" --lock="$backend/deno.lock" --frozen \
   "$backend/functions/d1-custody/issuance-plan.ts" \
   "$backend/functions/d1-custody/preparation-types.ts" \
-  "$backend/tests/unit/issuance-plan.test.ts"
+  "$backend/functions/d1-custody/unsigned-transaction.ts" \
+  "$backend/tests/unit/issuance-plan.test.ts" \
+  "$backend/tests/unit/unsigned-transaction.test.ts"
 node "$runner" deno test --allow-env --config="$backend/deno.json" --lock="$backend/deno.lock" --frozen \
   "$backend/tests/unit"
 ```
 
-To run only the planner tests, pass `"$backend/tests/unit/issuance-plan.test.ts"`
-in place of the directory. The tests decode XDR with synthetic identities and do not
-need credentials or live services. The historical lockfile is frozen and unchanged;
-its Supabase SDK pin is retained for lockfile consistency but not imported by the planner.
+The Deno `check` task covers both modules, their preparation types, and both test
+files. To focus the test command, replace the directory with
+`"$backend/tests/unit/issuance-plan.test.ts"` or
+`"$backend/tests/unit/unsigned-transaction.test.ts"`. Both suites use synthetic
+identities and do not need credentials or live services. The historical lockfile is
+frozen and unchanged; its Supabase SDK pin is retained for lockfile consistency but
+not imported by either module.
