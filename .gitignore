@@ -29,6 +29,7 @@
 !/supabase/functions/d1-custody/discovery.ts
 !/supabase/functions/d1-custody/transaction-observation.ts
 !/supabase/functions/d1-custody/custody-error.ts
+!/supabase/functions/d1-custody/discovery-source.ts
 !/supabase/migrations/
 /supabase/migrations/*
 !/supabase/migrations/015_d1_testnet_custody.sql
@@ -57,6 +58,10 @@
 !/supabase/tests/unit/unsigned-transaction.test.ts
 !/supabase/tests/unit/discovery.test.ts
 !/supabase/tests/unit/transaction-observation.test.ts
+!/supabase/tests/unit/discovery-source.test.ts
+!/supabase/tests/unit/transaction-source.test.ts
+!/supabase/tests/unit/pool-observation.test.ts
+!/supabase/tests/unit/discovery-source-boundaries.test.ts
 
 # Tooling local de agentes
 /.atl/

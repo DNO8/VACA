@@ -1,4 +1,4 @@
-# D1 backend: local journals and offline transaction evidence
+# D1 backend: local journals and indexer evidence
 
 ## Verify local database preparation and the legacy allocation fence
 
@@ -142,6 +142,39 @@ Invalid or contradictory evidence throws the shared
 The parser checks consistency only: it does not verify signatures or consensus,
 query a ledger, submit a transaction, or authorize financial execution.
 
+## Read indexer evidence through the adapter
+
+[`HorizonDiscoverySource`](functions/d1-custody/discovery-source.ts) accepts an injected
+fetcher. Its five read-only methods return supplied-indexer evidence, not database
+writes or financial authority:
+
+| Method | Evidence returned |
+| --- | --- |
+| `readPage` | Income-operation page; only an empty page completes the scan. |
+| `readAccountAtCheckpoint` | Pool configuration consistent with the saved checkpoint and final head. |
+| `readOperationAtCheckpoint` | One pinned operation, with the head rechecked after operation and transaction lookups. |
+| `readTransactionPageAtCheckpoint` | Included success/failure history using a separate transaction cursor. |
+| `readClaimableBalance` | Positive `current_indexer_observation` / `present` with matching mapping and predicates. |
+
+Requests use the fixed Testnet Horizon origin, GET, rejected redirects and omitted
+credentials. Responses must be non-redirected HTTP 200 with a body. The 1 MiB body
+cap and 10-second fetch-plus-body deadline apply **per request**, not to a whole page.
+On a stalled body, cancellation is requested without waiting for cancellation to
+finish. Upstream failures become the shared `CustodyError` with status `503` and
+code/message `dependency_unavailable`, without upstream details or partial results.
+
+`readPage` pins its anchor at the start and does not recheck the head at the end;
+callers must keep its context stable across awaits. The other checkpoint methods'
+explicit snapshot checks are not a promise of caller-mutation protection for it.
+Current indexer presence or absence does not establish consensus, claimant,
+disposition, durable readiness, or permission to sign, submit, fund or refund.
+
+All adapter tests inject fake fetchers and synthetic in-memory fixtures. They need
+no live network, database or credentials. The separate boundary suite covers the
+pinned-operation and claimable-presence methods plus transport failures and stalled
+fetch/body handling. The three real-deadline tests make the full suite take over
+30 seconds; keep the isolated runner's existing 120-second limit unchanged.
+
 ## Verify offline
 
 From the repository root, verify that no Deno task grants environment access directly:
@@ -166,16 +199,21 @@ node "$runner" deno check --config="$backend/deno.json" --lock="$backend/deno.lo
   "$backend/functions/d1-custody/discovery.ts" \
   "$backend/functions/d1-custody/custody-error.ts" \
   "$backend/functions/d1-custody/transaction-observation.ts" \
+  "$backend/functions/d1-custody/discovery-source.ts" \
   "$backend/tests/unit/issuance-plan.test.ts" \
   "$backend/tests/unit/unsigned-transaction.test.ts" \
   "$backend/tests/unit/discovery.test.ts" \
-  "$backend/tests/unit/transaction-observation.test.ts"
+  "$backend/tests/unit/transaction-observation.test.ts" \
+  "$backend/tests/unit/discovery-source.test.ts" \
+  "$backend/tests/unit/transaction-source.test.ts" \
+  "$backend/tests/unit/pool-observation.test.ts" \
+  "$backend/tests/unit/discovery-source-boundaries.test.ts"
 node "$runner" deno test --allow-env --config="$backend/deno.json" --lock="$backend/deno.lock" --frozen \
   "$backend/tests/unit"
 ```
 
-The Deno `check` task covers the planner, validator, both evidence parsers, shared
-preparation types and error class, and all four unit test files. To focus the test command, replace the directory
+The Deno `check` task covers the planner, validator, both evidence parsers, indexer
+adapter, shared preparation types and error class, and all eight unit test files. To focus the test command, replace the directory
 with one test file, for example `"$backend/tests/unit/discovery.test.ts"`. All suites use
 synthetic identities and do not need credentials or live services. The historical
 lockfile is frozen and unchanged; its Supabase SDK pin is retained for lockfile
