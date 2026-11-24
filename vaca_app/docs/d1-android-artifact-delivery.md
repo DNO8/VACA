@@ -1,0 +1,234 @@
+# D1 Android delivery: installed artifact and newer verified source
+
+## Latest phone update: 9840e9ff — preserving installation confirmed
+
+Under explicit S20 authorization, the published dev/debug APK was installed on the bound Samsung SM-A075M using one `install -r`. Android returned `Success`; all nine device-command receipts report exit0, complete output, no timeout and empty stderr. The installed SHA-256 is `69b6832bb512d824a885f67af483f0e1701cec291444fdc06e79eca102cddf72`, replacing the previously installed `be229024842593f2c89bbb3b75e1b7d4847d5e3e7ad539e8e06552a097759a17` artifact.
+
+App ID `10363` and first installation time `2026-11-13 12:57:21` remained unchanged. Recorded last update time advanced to `2026-11-14 22:46:09`. This proves package-identity continuity, not byte-for-byte equality of wallet or other application-data contents. No uninstall, data-clear or app-launch command was executed. Android enforced signature compatibility; no new installed-certificate scan was performed.
+
+**The automatic wrapper failed and its exit1 remains retained.** PowerShell exited0, but outer stderr contained nine completed CIM progress records, causing `PowerShell stderr is nonempty; retain uncertainty, no retry`. Independent retained-receipt review `mwh6c9bw-4-nh6r` examined every device stage and found no Error/Warning stream or installation error: S20's bounded installation/hash/continuity requirements are established separately from the failed wrapper gate. The install took10.4413153s; total wrapper duration36.125176845998794s, without timeout. No installer replay or result rewrite occurred.
+
+Local receipts: `supabase/.temp/d1-phone-update-9840e9ff/recovery1/update/`, including `preserving_update.*`, `installed_apk_hash_{before,after}.*`, `metadata_{before,after}.*`, `powershell.{stdout,stderr}` and unchanged `result.json`. Earlier absent-listener, startup outer-timeout, date-format comparison and empty-device-list failures remain recorded separately; they are not erased by this outcome.
+
+This update establishes installation only—not app runtime behavior, financial acceptance, web deployment or historical #48/#56 proof closure. The sections below retain earlier publication and installation checkpoints; their earlier not-installed statements do not supersede this later update.
+
+## Latest delivery: 9840e9ff — published test pre-release
+
+**The host-error-handling APK has been built, independently inspected and published with its checksum as test pre-release445695443.** Source `9840e9ffedbc49c8f4e6b894ee2b62f257b4e85b` is published on `feat/d1-t5b-proof`. The exact APK is **161968472 bytes**, SHA-256 `69b6832bb512d824a885f67af483f0e1701cec291444fdc06e79eca102cddf72`; download filename `vaca-d1-testnet-9840e9ff.apk`.
+
+Parent build job1 exited0 in121.972s. Independent artifact inspection passed after retaining the initial missing-java PATH failure (35 passing assertions, apksigner127) and a targeted correction (16 passing assertions, apksigner0/v2/expected certificate, final nine payload hashes unchanged). See [current build and inspection evidence](https://github.com/DNO8/VACA/blob/907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb/odd/evidence/d1-host-errors-apk-delivery.md) for provenance limits: two HTTP clients' source embedding is independently checked; configuration/Git/current-input preservation remains separately attributed parent evidence. No standalone status-client compiled coverage or historical #48/#56 closure is claimed.
+
+Published downloads: [release](https://github.com/DNO8/VACA/releases/tag/d1-android-testnet-9840e9ff), [APK](https://github.com/DNO8/VACA/releases/download/d1-android-testnet-9840e9ff/vaca-d1-testnet-9840e9ff.apk), [checksum](https://github.com/DNO8/VACA/releases/download/d1-android-testnet-9840e9ff/SHA256SUMS.txt). Parent hash-pinned job-2 exited0 in36.88590751599986s, verified the exact source/tag, `draft:false`, `prerelease:true` and both asset sizes/GitHub SHA-256 digests. The checksum is95 bytes, SHA-256 `0e4a9ae50f43a7a3eb83c19349e523d25cbbe18d02fbd550066c2ea46094ae87`. Latest remained absent; prior release445514859/tagc8667d9 was unchanged. No installation, launch, backend/web deployment, runtime or financial acceptance follows.
+
+Independent static helper/receipt review `mwh37v36-6-m6rr` returned PASS (parent handoff):44 commands,38 exit0/six expected404 exit1/no timeout. This used retained API receipts, not independent live retrieval; helper/manifest byte hashes were parent-pinned, not independently recomputed by that reviewer. The release body's conditional “Publication is PENDING until the parent verifies the actual GitHub transaction.” is historical preparation wording inherited from notes, not the observed publication status. Remote notes and local publication evidence remain unchanged.
+
+## Previously published c8667d9 delivery (preserved)
+
+The following publication/current-state checkpoints describe **c8667d9**, not the newer published9840e9ff delivery.
+
+**A replacement dev/debug APK has now been built and inspected from the offline-verified refund source. It is [available as a test pre-release](https://github.com/DNO8/VACA/releases/tag/d1-android-testnet-c8667d9), but not installed.** The earlier installed trust-root APK does not contain the later RFC3339 parser correction. Complete web/app financial acceptance remains open.
+
+The new APK is **161,968,472 bytes**, SHA-256 `d1a62a3165699062dec9227e450c15d9e4abd1f60c90ef859ec49e7ab1cb698f`, built from `c8667d9c3c18eed0f8b9c90acb40adc80b660baa`. See [the build and bounded inspection report](https://github.com/DNO8/VACA/blob/907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb/odd/evidence/d1-refund-apk-delivery.md) for the observed outcome, original probe failure, corrected parent execution and independent PASS adjudication. The installed-artifact history below remains distinct.
+
+## Current recorded state
+
+| Deliverable | Observed outcome | Evidence boundary |
+|---|---|---|
+| Earlier installed APK | `cl.vaca.app.dev`, version `0.1.0` / code `1`, debug; **191140969 bytes** | Contains the public backend configuration and bundle/receipt public trust roots; not a production release |
+| APK SHA-256 | `be229024842593f2c89bbb3b75e1b7d4847d5e3e7ad539e8e06552a097759a17` | Recorded installed artifact, not the newer refund source candidate |
+| Preserving update | `install -r` succeeded; installed hash matched; app ID, first-install time and CE/DE directory inodes were unchanged | No uninstall, clear-data or agent launch; not direct wallet-content verification |
+| Signal and receipt | Human reported successful synchronization and receipt delivery after the update | Human-observed ingestion only, not independent receipt-byte or financial verification |
+| Refund source | Parent suite **60/60 passed**, targeted analyzer clean; **8 reviewer-designed probes passed under parent execution**, then independently adjudicated PASS | Offline mocks and source review, not a new APK or live financial journey |
+| Source and artifact publication | Source/evidence push confirmed through `eeff028c4371e99a27ae6c5f2741a08ac0bd11e6` on `feat/d1-t5b-proof`; pre-release tag `d1-android-testnet-c8667d9` binds the APK to build source `c8667d9c3c18eed0f8b9c90acb40adc80b660baa` | GitHub asset digests matched; not a stable/store release or phone installation |
+
+The installed-artifact/update record is the local task `odd/tasks/d1-apk-trust-root-update.md`, especially L17–L19 and L31–L32; that task is not a published artifact. Current source verification is [the offline independent report](https://github.com/DNO8/VACA/blob/907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb/odd/evidence/d1-refund-offline-independent.md). Earlier source publication is recorded in [the configured delivery task](https://github.com/DNO8/VACA/blob/907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb/odd/tasks/d1-configured-apk-delivery.md). These are recorded outcomes, not fresh device or remote inspections.
+
+The current client-public build inputs are `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SERVER_BUNDLE_PUBLIC_KEY` and `SERVER_RECEIPT_PUBLIC_KEY`. Values and local configuration files are not published here. Public anon gateway headers are not wallet/admin identity; pool signing remains backend-owned.
+
+## Original-reference handoff for the existing app entry
+
+1. Retain the authoritative original record: request UUID, TESTNET pool and namespace, payment transaction hash and operation ID, donor, asset, original gross, confirmation time (`confirmedAt`), incident, beneficiary, allocated amount and original deadline.
+2. The existing app route is Identity → Herramientas de prueba → Reembolsos Stellar testnet. Its form accepts only the existing namespace UUID, original pool public key and original issuance request UUID. The additional facts stay in the original record for comparison with validated status; this is **not a receipt importer or automatic discovery feature**.
+3. Never replace the original request UUID with an incident ID, claimable-balance ID or refund attempt ID. Do not generate a replacement UUID, reset a deadline, or rewrite a stored scope to match a newer deployment.
+4. Opening the reference is not refund authorization. Explicit commands still require personal-wallet proofs, backend membership/financial checks and the durable local hold. Timeout, absence, pending status or a missing claimable balance does not prove eligible nonissuance.
+
+The web owner must deliver the durable original-reference record and complete UI/payment flow before a complete cross-client readiness claim. Existing browser-local legacy payments must not be resent or silently converted into a D1 issuance claim. See [the refund integration boundary](d1-refund-client.md#local-administrative-navigation) and [the draft acceptance plan](https://github.com/DNO8/VACA/blob/907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb/odd/docs/d1-testnet-acceptance-plan.md); neither authorizes financial execution.
+
+## Remaining delivery boundaries
+
+- The replacement APK has been built and inspected, but has not been installed or launched. Do not attribute its source changes to the phone until a separately authorized update is observed.
+- Hosted APK distribution is complete through the test pre-release. Web release and financial acceptance remain separate pending deliverables. No complete Vercel candidate is established by this app evidence.
+- Historical independent toolchain-integrity and backend-source prerequisites (#48/#56) remain unresolved; the successful offline review does not close them.
+- The historical build/audit/installation failures below remain evidence. Do not replay old one-shot scripts or infer a current device/process identity from them.
+
+## Historical build and configuration record
+
+**The rest of this document preserves earlier checkpoints.** Statements such as “not configured,” “not pushed,” “deferred” or “unexecuted” describe those checkpoints; use the current-state table and linked later evidence above for the latest recorded outcome. Job numbers belong to their recorded sessions, not a global sequence.
+
+Job16 produced the first fresh APK; job17 completed its identity and bounded signing-boundary inspection. That original artifact did not establish secret absence, configured backend behavior, phone execution or financial acceptance. The instruction at that checkpoint deferred phone installation and testing; later explicit authorization and the preserving update superseded that deferral. Backend/Supabase work remains separately owned. See [the Android task](https://github.com/DNO8/VACA/blob/907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb/odd/tasks/d1-client-android-toolchain.md), S4–S6 and L11–L15.
+
+### Recorded build recipe — not a new execution request
+
+The parent launched job73 with this Flutter argument vector, from `vaca_app`:
+
+```text
+build apk --debug --flavor dev --no-pub --dart-define=FLAVOR=dev --target-platform=android-arm64
+```
+
+Use the pinned clone-local Dart executable and Flutter tool snapshot recorded by that job, not an arbitrary `flutter` on the host PATH. The local environment is part of the recipe:
+
+| Input | Recorded selection / constraint |
+|---|---|
+| JDK | Temurin 17.0.21+9; Java/Javac 17.0.21 |
+| Android SDK | Clone-local SDK; command-line tools 19.0, platform `android-36`, build-tools `36.0.0` |
+| NDK | `28.2.13676358` |
+| Gradle | Project Gradle 8.14; no wrapper/dependency upgrades |
+| Environment | Minimal clone-local environment and caches under `.tooling/`; bind `JAVA_HOME`, Android SDK discovery and PATH to the parent's retained pinned paths, not host defaults |
+| Flutter/Dart inputs | Existing pinned tool snapshot and package resolution; `--no-pub`, no Flutter upgrade or Dart dependency refresh |
+| Build bounds | 1200-second timeout with process-group stop; no inherited backend defines or release credentials |
+
+The version/environment selection is recorded in the Android task L5–L14 and `supabase/.temp/d1-android-toolchain-install/install.json`. Exact executable paths and environment bindings must come from the parent-owned recipe/receipts; this guide does not invent a runnable wrapper or claim their independent verification. The prior independent integrity proof remains unresolved. Package-file presence and local version receipts do not close that gap.
+
+**Historical job73 is not the successful artifact:** its outer receipt was unavailable and retained logs show failure. The successful job16 receipt is `supabase/.temp/d1-gradle-apk-after-cache/result.json`; the exact APK identity is recorded below. Do not substitute another APK, replay a completed attempt or infer authority for another build.
+
+## Authorized local Gradle correction (S7)
+
+The original job73 logs record a wrapper download timeout, Flutter's internal retry and a disappeared Gradle daemon; no successful APK or outer completion receipt was recovered. Available host memory was approximately1456MiB of7597MiB, while project defaults allow8G heap/4G metaspace. This motivates a local cap, **not a proven OOM diagnosis**. Gradle8.14 now has a cached distribution marker; no distribution/version upgrade was made.
+
+The clone-local `.tooling/gradle-home/gradle.properties` overrides memory to1024M heap/384M metaspace/128M codecache, one worker, no parallelism, no persistent daemon and in-process Kotlin. Project `android/gradle.properties` and the pinned environment JSON are not edited. These local caps are not new defaults for other developers.
+
+The separate single-attempt runner is `supabase/.temp/d1-gradle-resource-correction/build_once.py`, using the same pinned snapshot/arguments above. It preserves the original attempt files; records invocation/result/stdout/stderr separately; stops the process group at a Flutter retry announcement; and keeps the1200-second timeout. Success requires a fresh APK plus unchanged named dependency/project inputs and local limits. This remains a build check, not historical toolchain integrity closure. No suites, phone, backend or financial operations are part of the correction.
+
+One independent static review (`mwa0jr56-2-m94n`) found no concrete blocker in this correction and ran only Python in-memory syntax compilation (exit0). Parent repeated that exact syntax check once (exit0). Neither check executes the build or dynamically establishes Gradle behavior. The actual compilation result must be reported separately.
+
+### Observed resource-bounded attempt and deadline correction
+
+Job4 **failed**: its receipt records effective exit1, child exit0, a retry announcement and no admitted APK. Logs show classpath downloads failing due to DNS/connection timeouts at official Google Maven and Maven Central. Five named project/dependency inputs and local caps stayed unchanged. Observed elapsed time was72236.6s, so the nominal1200-second wall-time bound was **not established**; no suspension or memory cause is inferred.
+
+A subsequent bounded connectivity probe (job6, exit0) returned HEAD200 from the exact official AGP8.11.1 and protobuf3.25.5 POM endpoints in default/direct modes, without proxy variables. No DNS, hosts, proxy, mirror or version was changed.
+
+The fresh runner `supabase/.temp/d1-gradle-network-restored/build_once.py` retains old receipts and checks a1200-second wall-clock deadline during waits of at most2s and again after child exit, rejecting late success. Timeout remains effective124; retry announcements remain failure. Termination grace, reader joins, accounting and runtime scheduling are additional; this is not an absolute runtime guarantee. One targeted static follow-up (`mwc74zb6-3-loua`) found no blocker; syntax check and parent repeat exited0, without builds. A new compilation under restored network conditions still needs its own observed result; no APK or historical integrity closure follows from this correction.
+
+### Android preferences initialization correction
+
+Job7 failed after39.48s (exit1, no retry, no admitted APK) applying the Android application plugin. One offline `help --stacktrace` reproduction (job10, exit1) established `AndroidLocationsException`: `ANDROID_PREFS_ROOT`, `ANDROID_SDK_HOME` and `ANDROID_USER_HOME` supplied conflicting preference locations; the exception recommends only `ANDROID_USER_HOME`. Initial diagnostic job9 used the wrong shell and failed parsing the Bash wrapper before Gradle started; it is not a valid plugin reproduction.
+
+The clone-local environment JSON now removes **only** deprecated `ANDROID_PREFS_ROOT` and `ANDROID_SDK_HOME`. All17 remaining values, including `ANDROID_USER_HOME`, SDK/NDK discovery, home/cache paths and Java configuration, are unchanged. Before-bytes are retained at `supabase/.temp/d1-gradle-preferences-fixed/environment-before.json`. No SDK reinstall, global configuration or dependency/version change occurred.
+
+The fresh `supabase/.temp/d1-gradle-preferences-fixed/build_once.py` is byte-identical to the deadline-corrected runner. One new-env independent static review (`mwc7dayf-4-r39d`) found no blocker; its read-only JSON/runner/syntax check and the parent readback/check exited0. These establish only the bounded configuration change; the actual corrected build remains a separate functional outcome. Historical toolchain integrity and artifact proof remain unresolved.
+
+### Previous result: corrected-preferences build timed out
+
+Job11 ended with **exit124**, `timeout=true`, `childExit=-9`, no retry announcement and no admitted artifact, after1787.51s (~29m48s). The receipt reports the five named project/dependency inputs and local Gradle limits unchanged. Retained stdout contains only the start of `assembleDevDebug`; stderr only the Java user-home setting. These logs do not establish the stalled stage or cause, nor a successful APK. The nominal1200-second deadline is not evidence of an absolute20-minute runtime bound.
+
+At that point, build and artifact delivery were blocked/pending. Subsequent explicitly authorized investigation and a fresh build are recorded below; the timeout is not erased or reclassified as success. Phone/backend/stopped suites/financial actions and the historical missing toolchain-integrity proof remain unchanged.
+
+### Observed configuration and fresh successful build
+
+One offline configuration probe (job14, exit1/42.666s) found declared `com.android.tools.build:gradle:8.7.3` unavailable in the cache for `sqlite3_flutter_libs`. One authorized online configuration/cache-population invocation (job15, exit0/50.998s) downloaded declared dependencies and completed `help` with all projects evaluated. This did not establish the cause of the earlier timeout or build an APK.
+
+The human then explicitly authorized one fresh dev/debug arm64-targeted APK build. Job16 exited0 after409.263s, without a retry announcement, using the unchanged reviewed runner and existing caps. Five named project/dependency inputs and local caps matched before/after; subsequent job17 readback also matched all seven recorded inputs, including the environment JSON. Build stderr contains Java user-home notices and a deprecated-API note, not an all-warning-free result. No suites or device/backend actions ran.
+
+| Artifact binding | Observed value |
+|---|---|
+| Build source revision | `818fb37b02be800feda58735725ce2fa4c1fd630` |
+| APK, relative to repository | `vaca_app/build/app/outputs/flutter-apk/app-dev-debug.apk` |
+| Bytes | `161968472` |
+| SHA-256, rechecked before/after inspection | `29798bbc7863eb29c43d065cef9bd1ece814aa60ec73287d557bbea3dee7ad8c` |
+| Local receipts | `supabase/.temp/d1-gradle-apk-after-cache/{scope,invocation,result,artifact-review}.json` |
+| Build variant / configuration | `dev` / `debug`; `FLAVOR=dev`; no supplied backend defines or release credentials |
+
+Application source/configuration under `vaca_app/lib`, `android/app` and the pubspec files had no diff from the build revision at review time. The working tree was not globally clean: prior unrelated tooling/phone files, task bookkeeping and the Gradle-generated tracked problems report were excluded from evidence publication. No clean-build/reproducibility or comprehensive input-integrity claim follows.
+
+## Compiled identity from the exact APK
+
+Job17 ran pinned build-tools36.0.0 `aapt2 dump badging` and `apksigner verify --verbose --print-certs`, both exit0, against the hashed APK:
+
+| Field | Compiled observation |
+|---|---|
+| Android application ID | `cl.vaca.app.dev` |
+| Display name | `VACA Dev` |
+| Android API | Minimum26; compile/target36 |
+| Version | `0.1.0`, versionCode1 |
+| Debug flag | `application-debuggable` present |
+| Signing | APK v2 signature verifies; one `C=US, O=Android, CN=Android Debug` RSA2048 certificate |
+| Certificate SHA-256 | `3fee367d1c6a658958e18ef44e6c532cbaba163aadbca3bf7b6d9e06b545b2da` |
+| Flutter engine | `lib/arm64-v8a/libflutter.so` only |
+| Other native payloads | `arm64-v8a`: 9 libraries total; `armeabi-v7a`: 7; `x86_64`: 7 |
+
+The recipe targets arm64, but the ZIP is **not arm64-only**: other native dependencies include additional ABIs. Their presence does not establish app support for those ABIs. Signature validity is artifact-integrity evidence, not release identity or a security approval. This is not a production/public-release distribution handoff.
+
+## Bounded pool-secret / signing review procedure
+
+Completed within the following bounds: job17 streamed all1268 uncompressed ZIP members (268493998bytes), including the Dart debug kernel and native payloads, checking ASCII Stellar secret-seed candidates with version/CRC validation, JWT `service_role` claims, PEM private-key markers and Supabase secret-key patterns. **No matching candidates were found.** No matched values or real secure-storage contents were exposed.
+
+Targeted source readback covered `refund_wallet_signer.dart`, `refund_remainder_http_client.dart`, `refund_providers.dart` and `app_config.dart`. The inspected v1/v2 proof methods read the existing personal-wallet storage entry and sign a canonical Stellar Signed Message digest; the pool is a public scope field, not the selected signing key. Providers accept client-public configuration and compose the personal signer passively. Source hashes and observations are retained in `artifact-review.json`.
+
+This is a bounded plaintext/source inspection, **not** proof that secrets are absent or that every compiled pool-signing call path is safe. Native/Dart decompilation, encoded/encrypted/split material and runtime-fetched data were not covered. The procedure below states the review boundary; it does not authorize additional execution:
+
+1. Gate review on a fresh successful build result and the exact hashed APK. Record the inspected source revision, artifact identity, method and coverage separately; do not attach conclusions to a different artifact.
+2. Trace client configuration and signing ownership. Public endpoint/API configuration and personal-wallet authentication signing are allowed. A user's personal-wallet signer is **not** pool custody; the presence of a signing API alone is not a defect. A public pool account ID is not a pool secret.
+3. In the bounded generated-artifact review, inspect packaged configuration/assets and inspectable code/native payloads for embedded service-role credentials, pool seeds/private keys, or client pool-transaction signing paths. Do not read real secret stores or expose candidate key material in reports; record sanitized classifications and locations only. Stop/escalate a suspected pool-secret/custody path rather than exercising it.
+4. Report source observations and compiled observations separately. State exactly what was inspected, what was inaccessible and what remains unknown. Missing plaintext matches, stripped/compiled code or an uneventful build cannot prove secret absence, full call-path safety, backend custody correctness or runtime behavior.
+
+The allowed client design uses the existing personal-wallet proof path; backend pool signing must stay backend-owned. The APK result above supplies bounded observations only; it does not certify secret absence or backend custody correctness. No financial operation, live request or phone execution belongs to this review.
+
+## Public backend handoff and known-reference entry
+
+The refund provider reads **only client-public** build defines:
+
+```text
+SUPABASE_URL
+SUPABASE_ANON_KEY
+```
+
+The backend owner subsequently reported **publication and selected TESTNET activation complete** (correlations `98e25a7af7cf69dd0c2e9200212d19ed` and `f369a4d0db9d9ee7b489d4499eb3902e`). This supersedes the earlier future-target handoff `0c0ca2eaef6fc0110315a1a4679d439a`: do not use its former `GDFTI…` Friendbot pool or former namespace for new configuration. These are owner-reported deployment/activation facts, not this client's HTTP, APK integration or financial verification.
+
+| Public input | Owner-confirmed value / limitation |
+|---|---|
+| `SUPABASE_URL` project origin | `https://tgqxxnldwiqisopiclmk.supabase.co` |
+| Published custody base, owner-reported | `https://tgqxxnldwiqisopiclmk.supabase.co/functions/v1/d1-custody` |
+| Network | `TESTNET`, not Stellar Mainnet; project environment label does not change this |
+| Selected pool public key | `GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN` |
+| Selected public signed-refund namespace | `5a08ccd6-b4ba-4b31-adc9-fe3e57a6bda7`; not a `/config` field |
+| Selected first ledger | `5676563`; owner-reported activation metadata, not a `/config` field |
+| `SUPABASE_ANON_KEY` | Human supplied the project's legacy public anon JWT (`role: anon`); parent prepared the ignored clone-local JSON, not a configured APK. Value deliberately omitted; not a user-session or privileged key |
+| JWT gateway | Owner reports `verify_jwt: true`; must remain enabled. Accepted current contract: same legacy public anon JWT in both `apikey` and `Authorization: Bearer …` |
+| Publication | Owner reports `d1-custody` ACTIVE, version1, function ID `ac86ceed-898f-4ccc-9edd-6aad439262f0`, import map enabled |
+
+Owner-reported `GET /config` source response is exactly the following JSON with `no-store`; it is **not a live response**:
+
+```json
+{"network":"TESTNET","pool_public_key":"GBJU5J6F2L6XXPTYADYS6NIPAP6RAJBN7SAXJDAOWIFSPEWFSCASEIXN","donation_ttl_seconds":300}
+```
+
+Owner-reported source routes are POST `/prepare`, `/issue`, `/reconcile`; v1 POST `/refund`, `/refund-status`, `/refund-reconcile`; and v2 POST `/refund-remainder`, `/refund-remainder-status`, `/refund-remainder-reconcile`, retaining the frozen signed-body/Ed25519 contracts. The owner's handler has **no POST `/status`**, and its `/config` does not advertise status. Preserve this client's existing `config.status` gating and separately owned status integration; do not invent remote status availability or fallback. The namespace does not manufacture an existing request UUID/reference.
+
+The owner reports deployed bundle bytes matching its prepared files, including index SHA-256 `5275452af36aa8e6990123d42bc7b2ec0ed4d996b07d1187bbaa0829dcf4b6df`, and native selected-activation success with a read-only row confirmation. This supersedes the earlier no-deployment/no-activation status; it does not establish a new migration inventory or authorize importing/editing the owner's root.
+
+The owner reports the human selected **“Con la primera operación real de la app”** for creation-credit persistence. Operating-credit records and preparations remain zero intentionally. Existing real signed/current-admin `/issue` prerequisites will observe/register creation credit once a genuine prepared request exists. Backend implementation/publication/selected activation are reported closed under that deferral: **do not wait for a new ingestion endpoint, create a synthetic preparation or send funds to manufacture closure**. Financial/E2E/SOW acceptance remains unproven.
+
+### Accepted gateway contract; local configuration independently checked in isolated static scope
+
+Owner report `9f4470eb1c1dfeccdb0d11b69984be61` selects the project's **legacy public anon JWT** for the current wallet-signed D1 endpoints. All three D1 refund transport constructors now set `apikey: <public anon JWT>`, `Authorization: Bearer <same public anon JWT>` and `Content-Type: application/json`. No new login, Supabase Auth/session flow, token refresh or gateway change is introduced. This source change is not included in the already-built job16 APK.
+
+These public headers provide shared project gateway access, **not user/admin identity**. Personal-wallet signed bodies and the backend's actual current `admin_wallets` checks retain their separate authorization role. JWT verification does not establish the wallet signer's identity. This is the explicitly chosen current contract, not a live request result or a universal claim that `apikey`-only/publishable-key compatibility fails; see [Supabase auth headers](https://supabase.com/docs/guides/functions/auth-headers).
+
+**The human has supplied the actual public anon JWT; parent preparation exited0 and created the ignored clone-local `.tooling/d1-client-public-config.json`, not a configured APK.** The parent reports mode0600, exactly `SUPABASE_URL`/`SUPABASE_ANON_KEY`, matching JSON readback and successful ignore/untracked checks after adding the exact clone-local exclusion. The earlier exit1 (`Configuration path is not ignored; no file written`) remains recorded. Parent checks matched JWT structure/declared issuer/anon role/project, not signature or live gateway behavior. No key value is reproduced here.
+
+**T12 is complete only for local configuration and the newly authorized isolated static check.** After the human explicitly authorized the minimal temporary copy, independent verifier `mwd1c4v7-4-sdy9` executed one bounded check: exit0, empty stderr, no concrete blocker. It checked duplicate-field rejection, exactly the two required configuration fields, project URL, snapshot mode/size/hash, and canonical JWT syntax with the expected declared anon/project claims. A tiny isolated Git replay verified that the exact anchored exclusion ignores the target but not its sibling. S6/S9/S10 configuration portions and S11 were MET; the parent repeated the exact reported command body once, also exit0/empty stderr. Original Git metadata and exclusion preservation remain parent-attested; replay is not independent inspection of original Git. Declared claims and signature shape are **not** signature, time, identity or live gateway validation. Earlier verifier `mwd0q6ql-2-07po` remains a separate zero-probe attempt unavailable under its former scope; it is not retroactively passed. No automatic retries, builds or deferred suites follow this result.
+
+The historical owner-approved retrieval route remains [the project's API keys dashboard](https://supabase.com/dashboard/project/tgqxxnldwiqisopiclmk/settings/api-keys) → **Legacy anon/service_role API keys** → **only anon/public**; this is not a new retrieval request. Never copy the adjacent service-role key or any pool seed/secret; do not substitute a user-session JWT. If legacy anon is unavailable/disabled, report missing public configuration rather than inventing a JWT, adding Auth or disabling the gateway. Creating the JSON alone does not configure an already-compiled app: job16 still contains neither the later headers nor backend defines. Local source commit `c72193d` and documentation commit `3ab5dab` remain not pushed. No configured APK or runtime/live acceptance is established; stopped functional suites, phone and financial actions remain deferred. Historical missing proofs48/56 and deferred40 remain unchanged.
+
+The selected target is for new configured context only. **Never rewrite an existing refund's original pool, namespace, request UUID, payment, gross or deadline to match a new activation.** No phone or financial execution is authorized by this handoff.
+
+Never substitute a service-role key, pool seed/private key or release credential. Dart defines are packaged client configuration, not secret storage. The successful job16 supplied neither backend define; an APK exists, but a configured/live D1 refund backend is not established. A later configured artifact must stay within the confirmed public handoff and carry its own build identity and evidence. Public-release monetization/legal URL rules do not justify switching this dev build to `public`.
+
+The source's existing known-reference `RefundAdminScreen` mounts the v1 and remainder panels with the **same original scope**. Do not invent an alternate entry route or generate a new refund identity. `RefundScope` binds `TESTNET`, the original namespace UUID, public pool account ID and request UUID. The source guide describes passive construction/opening/reference changes, with status/refund/reconciliation requiring explicit commands and first-refund confirmation. These are source descriptions, not executed UI evidence. No one should open that entry on the phone in this phase.
+
+## Evidence limits and next ownership
+
+- Source anchors: `android/app/build.gradle.kts:35–80` (identity/flavors/API); `lib/core/config/app_config.dart:24–88` (Dart flavor and public-release configuration); `lib/features/refund/refund_providers.dart:14–38,48–58,67–80` (public defines, personal-wallet signer and passive composition); `lib/features/refund/domain/refund_scope.dart:16–37` (original TESTNET scope). Paths in this list are relative to `vaca_app`.
+- [Remainder client guide](d1-remainder-client.md), especially Administrative integration and Existing boundaries, records the known-reference entry and source-only signing/command boundaries. It does not verify that integration in an APK.
+- A build exit code cannot validate dialogs, durable holds, concurrency, signing semantics, backend/provider settlement, funds or operational readiness. Previous source completion and historical checks do not fill these gaps.
+- Original documentation work ran no build or inspection. Later parent job16 compiled the APK and job17 performed the bounded inspection reported here. Earlier job73/4/7/11 failures remain historical failures; see the Android task. Historical independent toolchain proof remains missing; stopped functional suites remain unexecuted. No phone/backend execution, functional/financial acceptance or comprehensive security verdict is implied.
