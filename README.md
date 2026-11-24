@@ -9,9 +9,10 @@ Infraestructura cívica de resiliencia para emergencias, desarrollada por **Fund
 | Carpeta | Contenido |
 | --- | --- |
 | `vaca_app/` | App móvil Flutter offline-first (Android/iOS): captura de incidentes, outbox durable, entrega cifrada y recibos verificables. |
+| [`supabase/`](supabase/README.md) | Backend D1: planificación offline de emisión sin firma y pruebas unitarias. |
 
 > [!NOTE]
-> La documentación del proyecto (especificaciones, brandboard, whitepaper, SOW, changelogs y evidencia de entregables) vive en **Fundación Camada**. Este repositorio se mantiene deliberadamente como repo de código de la app.
+> La documentación del proyecto (especificaciones, brandboard, whitepaper, SOW, changelogs y evidencia de entregables) vive en **Fundación Camada**.
 
 ## Repos relacionados
 
