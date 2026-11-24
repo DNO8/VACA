@@ -1,6 +1,6 @@
 # APK-only integration: offline verification admission plan
 
-**Initial preparation snapshot, not current execution status.** At the time of initial admission, no app transfer or test execution had occurred. Use the [source-bound manifest](apk-b-main-slices.json) for the three child PRs, in order, against the integration tracker—not directly against main. Current outcomes and authorizations are recorded in [the canonical task](../tasks/apk-b-main-integration.md) and the wallet/refund verification evidence; historical preparation qualifications below remain intact.
+**Initial preparation snapshot, not current execution status.** At the time of initial admission, no app transfer or test execution had occurred. Use the [source-bound manifest](apk-b-main-slices.json) for the three child PRs, in order, against the integration tracker—not directly against main. Current outcomes and authorizations are recorded in [the canonical task](../tasks/apk-b-main-integration.md) and the wallet/refund verification evidence, [Identity results](apk-b-main-identity-verification.json), and [final qualified gate](apk-b-main-final-verification.json); historical preparation qualifications below remain intact.
 
 ## Review and transfer order
 
@@ -85,6 +85,10 @@ A read-only audit of source907 found 29 runnable test files. The final admitted 
 
 1. `bundle_codec_test.dart`, `revenuecat_ad_tracking_service_test.dart`, `supabase_contract_test.dart`, `sync_status_service_test.dart` — local crypto/value tests and injected fake adapters.
 2. `bundle_scheduler_test.dart`, `incident_service_test.dart` — in-memory SQLite, injected fake transport/scheduler and owned temporary test files. Teardown stops the scheduler and closes its database.
+
+A later pre-execution audit found the two DB fixtures use the default sqlite3-2.9.4 Linux loader name `libsqlite3.so`, unlike the navigation fixture's explicit `.so.0` override. The installed public runtime supplied `.so.0`, not that alias. The owner explicitly authorized one alias **only in the owned temporary namespace**, targeting the already installed public library, with a readonly bind and an alias-only loader path. No host/SDK/test changes, installation or extra retry budget followed. This is a narrow later authorization, not a relaxation of the initial preparation mandate above.
+
+The final candidate `0a9fe492aff042361f9c572afb41c61ad8e0a2d1` passed **207 tests across these 26 files**: 88 refund contracts, 37 profile/UI, 34 wallet, 5 Identity/About, 26 local contracts and 17 memory-DB tests. The 40-file analysis retained exit1 and exactly276 source-identical style INFO, with no errors/warnings. An independent verifier reconstructed all five guide deviations, confirmed entire source-identical lib/test trees, inspected the minimal runner delta and passed one actual namespace/library-identity probe; the parent repeated that probe. None of this establishes phone/backend/financial acceptance.
 
 Use explicit file arguments, unchanged fixtures, 80 seconds per command, and no timeout/preparation retry. Exclude these three files explicitly:
 

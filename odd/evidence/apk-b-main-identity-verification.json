@@ -1,0 +1,128 @@
+{
+  "source": "907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb",
+  "base": "62959269d53a46868bea42583ba19c78e89239d1",
+  "sourceCommit": "0a9fe492aff042361f9c572afb41c61ad8e0a2d1",
+  "pr": "https://github.com/DNO8/VACA/pull/4",
+  "paths": [
+    "vaca_app/lib/features/identity/presentation/identity_data_screen.dart",
+    "vaca_app/test/identity_refund_navigation_test.dart",
+    "vaca_app/docs/d1-android-artifact-delivery.md"
+  ],
+  "scope": "Two code/test entries exactly equal source907 including modes; artifact guide only six approved immutable provenance substitutions. Independently reconstructed.",
+  "checks": [
+    {
+      "name": "base-navigation",
+      "exit": 1,
+      "seconds": 34.819,
+      "timeout": false,
+      "receiptSha256": "fc0c51f175b8c15a19a2f49dce72a400d7d57a4d4f9b060f2f9decfba8ec9300",
+      "stdoutSha256": "578f43349b620efca465b11eda0742bfb9211967e3c778a723a4191909094573",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "runtimeWarnings": [],
+      "commandTemplate": [
+        "<SDK>/bin/cache/dart-sdk/bin/dart",
+        "<SDK>/bin/cache/flutter_tools.snapshot",
+        "--suppress-analytics",
+        "--no-version-check",
+        "test",
+        "--no-pub",
+        "--concurrency=1",
+        "--reporter",
+        "expanded",
+        "test/identity_refund_navigation_test.dart"
+      ]
+    },
+    {
+      "name": "candidate-navigation",
+      "exit": 0,
+      "seconds": 28.773,
+      "timeout": false,
+      "receiptSha256": "38d5a603f272769efea7af2d1b5769e66c2092215d51f161ec255167bcdd5d16",
+      "stdoutSha256": "0f03f84288c65747c643a0521690bd8c28ff83856ea97de4d59df50954df9534",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "runtimeWarnings": [],
+      "commandTemplate": [
+        "<SDK>/bin/cache/dart-sdk/bin/dart",
+        "<SDK>/bin/cache/flutter_tools.snapshot",
+        "--suppress-analytics",
+        "--no-version-check",
+        "test",
+        "--no-pub",
+        "--concurrency=1",
+        "--reporter",
+        "expanded",
+        "test/identity_refund_navigation_test.dart",
+        "test/about_vaca_screen_test.dart"
+      ],
+      "testsPassed": 5
+    },
+    {
+      "name": "analysis",
+      "exit": 0,
+      "seconds": 25.753,
+      "timeout": false,
+      "receiptSha256": "42a094e566d4687695c13ffd064ffcadcf328e7d69f5950d66830076db8ed5c6",
+      "stdoutSha256": "2de75ba870f41f5f433a871890631db5b2d6c112316edfa89d18298eb0bd4fff",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "runtimeWarnings": [],
+      "commandTemplate": [
+        "<SDK>/bin/cache/dart-sdk/bin/dart",
+        "<SDK>/bin/cache/flutter_tools.snapshot",
+        "--suppress-analytics",
+        "--no-version-check",
+        "analyze",
+        "--no-pub",
+        "lib/features/identity/presentation/identity_data_screen.dart",
+        "test/identity_refund_navigation_test.dart"
+      ]
+    },
+    {
+      "name": "parent-independent-spot",
+      "exit": 0,
+      "seconds": 14.14,
+      "timeout": false,
+      "receiptSha256": "52dc9649ddf4d5710b3f1406d4d43d0e2b2c45013232e5a48b3973c836719489",
+      "stdoutSha256": "da24c3fd9665954870070ab76d574cc282534cf3ebd9bba303ff0c8165cb38ee",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "runtimeWarnings": [],
+      "commandTemplate": [
+        "<SDK>/bin/cache/dart-sdk/bin/dart",
+        "<SDK>/bin/cache/flutter_tools.snapshot",
+        "--suppress-analytics",
+        "--no-version-check",
+        "test",
+        "--no-pub",
+        "--concurrency=1",
+        "--reporter",
+        "expanded",
+        "test/independent_identity_navigation_test.dart"
+      ],
+      "testsPassed": 1
+    }
+  ],
+  "baselineQualification": "2 passed /2 expected failures on the new routes; source transfer preceded comparison, not retrospective test-first.",
+  "independent": {
+    "task": "mwtzyp3q-m-x7cl",
+    "reportedTestsPassed": 1,
+    "reportedExit": 0,
+    "reportedSeconds": 40.598,
+    "probeSha256": "d33cb30781d043847fe9c75c9d6a3d32e46857ff134b2d401a81b130b00beeec",
+    "parentRepeat": "parent-independent-spot; same one test, not additional distinct coverage",
+    "assertions": [
+      "About-first round trip preserves Wallet/About",
+      "Incomplete reference rejected with exact UI text",
+      "Back/reentry discards view-only state",
+      "Zero refund factory/financial effects; one synthetic shell provision",
+      "Unchanged synthetic storage and incident rows; no widget exceptions"
+    ]
+  },
+  "limits": [
+    "800x1000 fixture; not narrow-screen/device acceptance",
+    "No application main, live transport, signing, funds, SDK mutation or APK build",
+    "RDD off; no native approval inferred"
+  ]
+}
