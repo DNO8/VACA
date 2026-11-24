@@ -32,7 +32,11 @@
 !/supabase/migrations/
 /supabase/migrations/*
 !/supabase/migrations/015_d1_testnet_custody.sql
+!/supabase/migrations/016_d1_issuance_intents.sql
+!/supabase/migrations/017_d1_issuance_sequences.sql
+!/supabase/migrations/018_d1_unsigned_transactions.sql
 !/supabase/migrations/023_d1_legacy_allocation_guard.sql
+!/supabase/migrations/033_d1_issuance_sequence_ownership.sql
 !/supabase/tests/
 /supabase/tests/*
 !/supabase/tests/config-boundary.test.cjs
@@ -45,6 +49,8 @@
 !/supabase/tests/integration/fixture-runtime.cjs
 !/supabase/tests/integration/fixture-runtime.test.cjs
 !/supabase/tests/integration/preparation-database.test.cjs
+!/supabase/tests/integration/issuance-journal-database.test.cjs
+!/supabase/tests/integration/issuance-sequence-ownership.test.cjs
 !/supabase/tests/unit/
 /supabase/tests/unit/*
 !/supabase/tests/unit/issuance-plan.test.ts
