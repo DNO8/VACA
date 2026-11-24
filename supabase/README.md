@@ -76,6 +76,19 @@ submits a transaction, or performs any database or network operation. Building o
 validating XDR does not check ledger readiness or grant authority to sign or submit.
 The pool's complementary claimant is not a donor refund.
 
+## Parse discovery evidence offline
+
+[`parseDiscoveredOperation(input)`](functions/d1-custody/discovery.ts) checks supplied
+Testnet operation and transaction observations against the envelope XDR and a trusted
+closed-ledger anchor. It binds the operation paging token to the transaction position
+and classifies consistent evidence as an incoming payment, outgoing payment, pool
+account creation, or quarantined operation. Invalid evidence throws
+`invalid_discovered_operation`.
+
+The parser makes no live calls and writes no records. A successful parse checks
+consistency; it does not prove ledger execution, coverage, or readiness, and does not
+grant permission to fund or issue. Any caller must establish ledger coverage separately.
+
 ## Verify offline
 
 From the repository root, verify that no Deno task grants environment access directly:
@@ -97,16 +110,17 @@ node "$runner" deno check --config="$backend/deno.json" --lock="$backend/deno.lo
   "$backend/functions/d1-custody/issuance-plan.ts" \
   "$backend/functions/d1-custody/preparation-types.ts" \
   "$backend/functions/d1-custody/unsigned-transaction.ts" \
+  "$backend/functions/d1-custody/discovery.ts" \
   "$backend/tests/unit/issuance-plan.test.ts" \
-  "$backend/tests/unit/unsigned-transaction.test.ts"
+  "$backend/tests/unit/unsigned-transaction.test.ts" \
+  "$backend/tests/unit/discovery.test.ts"
 node "$runner" deno test --allow-env --config="$backend/deno.json" --lock="$backend/deno.lock" --frozen \
   "$backend/tests/unit"
 ```
 
-The Deno `check` task covers both modules, their preparation types, and both test
-files. To focus the test command, replace the directory with
-`"$backend/tests/unit/issuance-plan.test.ts"` or
-`"$backend/tests/unit/unsigned-transaction.test.ts"`. Both suites use synthetic
-identities and do not need credentials or live services. The historical lockfile is
-frozen and unchanged; its Supabase SDK pin is retained for lockfile consistency but
-not imported by either module.
+The Deno `check` task covers the planner, validator, discovery parser, preparation
+types, and all three unit test files. To focus the test command, replace the directory
+with one test file, for example `"$backend/tests/unit/discovery.test.ts"`. All suites use
+synthetic identities and do not need credentials or live services. The historical
+lockfile is frozen and unchanged; its Supabase SDK pin is retained for lockfile
+consistency but not imported by these modules.
