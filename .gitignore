@@ -5,15 +5,32 @@
 **/*.jks
 **/*.keystore
 
-# Documentación y assets viven en Drive de Fundación Camada — repo = solo vaca_app
+# Documentación y assets viven en Drive de Fundación Camada
 /Especificaciones/
 /estetica/
 /FIBE-docs/
 /font/
 /Markdowns/
 /shipaton/
-/supabase/
 /VACA - documentación/
+
+# Backend — solo archivos ya integrados
+/supabase/*
+!/supabase/README.md
+!/supabase/deno.json
+!/supabase/deno.lock
+!/supabase/functions/
+/supabase/functions/*
+!/supabase/functions/d1-custody/
+/supabase/functions/d1-custody/*
+!/supabase/functions/d1-custody/issuance-plan.ts
+!/supabase/functions/d1-custody/preparation-types.ts
+!/supabase/tests/
+/supabase/tests/*
+!/supabase/tests/config-boundary.test.cjs
+!/supabase/tests/unit/
+/supabase/tests/unit/*
+!/supabase/tests/unit/issuance-plan.test.ts
 
 # Tooling local de agentes
 /.atl/
