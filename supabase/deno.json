@@ -9,7 +9,7 @@
     "frozen": true
   },
   "tasks": {
-    "check": "deno check --no-remote --deny-import functions/d1-custody/issuance-plan.ts functions/d1-custody/preparation-types.ts functions/d1-custody/unsigned-transaction.ts tests/unit/issuance-plan.test.ts tests/unit/unsigned-transaction.test.ts"
+    "check": "deno check --no-remote --deny-import functions/d1-custody/issuance-plan.ts functions/d1-custody/preparation-types.ts functions/d1-custody/unsigned-transaction.ts functions/d1-custody/discovery.ts tests/unit/issuance-plan.test.ts tests/unit/unsigned-transaction.test.ts tests/unit/discovery.test.ts"
   },
   "fmt": {
     "lineWidth": 100,
