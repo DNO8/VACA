@@ -1,6 +1,6 @@
 # APK-only integration: offline verification admission plan
 
-**Preparation only; no app transfer or test execution has occurred.** Use the [source-bound manifest](apk-b-main-slices.json) for the three child PRs, in order, against the integration tracker—not directly against main. S1–S3 remain parent-owned; T1 is not complete until the parent creates the draft/no-merge tracker PR.
+**Initial preparation snapshot, not current execution status.** At the time of initial admission, no app transfer or test execution had occurred. Use the [source-bound manifest](apk-b-main-slices.json) for the three child PRs, in order, against the integration tracker—not directly against main. Current outcomes and authorizations are recorded in [the canonical task](../tasks/apk-b-main-integration.md) and the wallet/refund verification evidence; historical preparation qualifications below remain intact.
 
 ## Review and transfer order
 
@@ -78,6 +78,25 @@ The source fixture installs synthetic database, storage, identity, wallet, feed,
 After focused passes, the parent separately authorizes scoped analysis of all transferred production/test paths and an audited ordinary regression-suite list. **Always exclude `test/stellar_wallet_testnet_smoke_test.dart` explicitly from enumeration**, even with `VACA_STELLAR_TESTNET=0`: value1 funds a new account and creates a real Testnet USDC trustline. Do not use an unfiltered directory-wide `test` command. Audit any additional tests for opt-ins/side effects first; never construct real financial transports, invoke app startup/scheduler or use private configuration. Report new failures; do not alter authoritative source bytes or tooling under this preparation mandate.
 
 Compare final production/test blobs and modes to the manifest; check all47 paths exactly once, no extra app delta and unchanged pubspec/lock/vendor/Android/build inputs. Review guide-only provenance deviations separately. Historical134 related passes, analyzer269 INFO/Drift warning and artifact20PASS/1fixtureFAIL are historical—not fresh checks or blanket expected-failure waivers.
+
+## T5 audited offline admission
+
+A read-only audit of source907 found 29 runnable test files. The final admitted set is **26 files**, not an unqualified whole-suite claim: the T2/button, T3 and T4/About files above (20), plus these two preselected batches:
+
+1. `bundle_codec_test.dart`, `revenuecat_ad_tracking_service_test.dart`, `supabase_contract_test.dart`, `sync_status_service_test.dart` — local crypto/value tests and injected fake adapters.
+2. `bundle_scheduler_test.dart`, `incident_service_test.dart` — in-memory SQLite, injected fake transport/scheduler and owned temporary test files. Teardown stops the scheduler and closes its database.
+
+Use explicit file arguments, unchanged fixtures, 80 seconds per command, and no timeout/preparation retry. Exclude these three files explicitly:
+
+| File | Disposition |
+|---|---|
+| `stellar_wallet_testnet_smoke_test.dart` | Always excluded: live opt-in can fund accounts/create trustlines. |
+| `widget_test.dart` | Ordinary startup validation unavailable in this scope: bare `ProviderScope` reaches default wallet provisioning without synthetic overrides. Do not select only its safe cases to disguise partial coverage. |
+| `visual_audit_golden_test.dart` | Visual validation unavailable in this scope: incomplete create/alert/feed overrides and separate font/image/golden-baseline inputs. Do not update goldens or relax comparisons. |
+
+The unavailable ordinary startup/visual checks are not passes. The source-bound Identity navigation fixture does not equal executing those files. No mandatory CI was established by earlier policy reads; refresh policy/checks at delivery. No live backend, phone or financial acceptance is inferred from the admitted tests.
+
+Source audit: `mwtz9gdk-k-ak98`; exact-source export manifest pins907. Parent spot-checked the bare startup scopes. Refund scoped analysis separately completed with276INFO (269 trailing commas,7 control-flow braces),0errors/warnings; a fresh source907 comparison reproduced every diagnostic line exactly. Both analyzer exit1 results remain retained, not relabeled as clean passes.
 
 ## Narrow guide-provenance repairs for later children
 
