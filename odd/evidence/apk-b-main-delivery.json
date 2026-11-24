@@ -1,0 +1,54 @@
+{
+  "snapshotMeaning": "Observed application delivery immediately after PR1. Branch references are historical at that merge; this passive closing record does not change the tested app.",
+  "mergedAt": "2026-11-24T01:55:56Z",
+  "applicationDelivery": {
+    "pr": 1,
+    "previousMain": "1c60386e4c51a8933303a19424911580cd65d5dd",
+    "reviewedHead": "9067730466e5ae935bebb36d922089935c29f3f3",
+    "mainMergeCommit": "13256926a9339614ab6c6ab06690870c23b74366",
+    "tree": "c3abac48c6c495dec25084b6c5746bdc5ff02f6d",
+    "appTree": "511b8817e94d650b0f297cb5541a26f08957be73",
+    "appPaths": 47,
+    "focusedMetadataPaths": 8,
+    "codeTestSourceExact": true,
+    "releases": [
+      {
+        "id": 455959305,
+        "identityAndAssetsUnchanged": true
+      },
+      {
+        "id": 449502685,
+        "identityAndAssetsUnchanged": true
+      }
+    ],
+    "originalWorktree": {
+      "head": "4e59401f70f30a27d1afe813b24f9d77c51163f6",
+      "statusSha256": "6ef80eddeeba8d0ccdea3b6f3fd3ea9e698182886d0e4a53a6c5894edeef44b1"
+    },
+    "preservedBranches": {
+      "refs/heads/feat/apk-b-main-integration": "9067730466e5ae935bebb36d922089935c29f3f3",
+      "refs/heads/feat/apk-b-main-wallet": "8700585b320ba0f7f1c639794a9344c04eb9c5b5",
+      "refs/heads/feat/apk-b-main-refund": "62959269d53a46868bea42583ba19c78e89239d1",
+      "refs/heads/feat/apk-b-main-identity": "0a9fe492aff042361f9c572afb41c61ad8e0a2d1",
+      "refs/heads/feat/d1-b-refund-profile": "907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb"
+    },
+    "requiredRemoteChecksObserved": [],
+    "checksBypassed": false,
+    "rdd": "off"
+  },
+  "verification": "207PASS in26admittedfiles; independent wallet5/refund6/navigation1 and final source/isolation probe passed; parent repeated bounded probes.",
+  "analysis": "276source-identicalstyleINFO/exit1 retained;0errors/warnings,notcleananalysis.",
+  "excludedTests": [
+    "stellar_wallet_testnet_smoke_test.dart (live funds/trustline opt-in)",
+    "widget_test.dart (unisolated default startup providers)",
+    "visual_audit_golden_test.dart (incomplete overrides/separate baselines)"
+  ],
+  "limitations": [
+    "No phone/backend/financial acceptance",
+    "No APK rebuild,re-sign,re-upload orinstallation",
+    "No branch deletion,force push orcheck/adminbypass",
+    "Original worktree had pre-existing state; its HEAD/status fingerprint stayed unchanged,not claimed clean",
+    "Release identity/assets compared before/after excluding volatile download counts; earlier binary download verification remains historical"
+  ],
+  "closingRecord": "Documentation/evidence only; application tree must remain511b8817e94d650b0f297cb5541a26f08957be73."
+}
