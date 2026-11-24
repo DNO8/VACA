@@ -1,0 +1,356 @@
+{
+  "base": "1c60386e4c51a8933303a19424911580cd65d5dd",
+  "source": "907a4e3d770bd5b6c363a468f2ca496aa3b4ecfb",
+  "units": [
+    {
+      "id": "wallet-claims",
+      "additions": 764,
+      "deletions": 17,
+      "paths": [
+        {
+          "path": "vaca_app/lib/features/vaquita/presentation/vaquita_screen.dart",
+          "additions": 51,
+          "deletions": 11,
+          "source_blob": "5d17f08b9a48aa58e591008c765d33dbf281cd85",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/wallet/data/stellar_sdk_wallet_gateway.dart",
+          "additions": 4,
+          "deletions": 1,
+          "source_blob": "906fa5b9d6d14fcb649e0298a4cd55a5e8735114",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/wallet/domain/stellar_wallet_service.dart",
+          "additions": 20,
+          "deletions": 3,
+          "source_blob": "047ac3cdbf9415a86614948f3f63db5b19756831",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/stellar_wallet_service_test.dart",
+          "additions": 150,
+          "deletions": 2,
+          "source_blob": "fd95be7f2bedfe3b54014b97d314befaeec604c4",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/stellar_wallet_snapshot_test.dart",
+          "additions": 211,
+          "deletions": 0,
+          "source_blob": "a8d7bb8429bd4638c50dcbe72fa342ced081be99",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/vaquita_claim_lookup_test.dart",
+          "additions": 274,
+          "deletions": 0,
+          "source_blob": "0f0220cfc2d5eeac2449cff5bc0c78b6e908b9d1",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/docs/d1-vaquita-claim-lookup.md",
+          "additions": 15,
+          "deletions": 0,
+          "source_blob": "8534f26107d693ebb37c923c6e98a5c89c9bffa4",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/docs/d1-wallet-preparation.md",
+          "additions": 26,
+          "deletions": 0,
+          "source_blob": "f53370a74e7b4e950e6da0628cf62ade6ae15bf7",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/docs/d1-wallet-snapshot-fail-closed.md",
+          "additions": 13,
+          "deletions": 0,
+          "source_blob": "be09557f8935b1886cd1d4f240cd4eb75d62782d",
+          "source_mode": "100644"
+        }
+      ]
+    },
+    {
+      "id": "refund-stack",
+      "additions": 6210,
+      "deletions": 0,
+      "paths": [
+        {
+          "path": "vaca_app/docs/d1-b-custody-profile.md",
+          "additions": 78,
+          "deletions": 0,
+          "source_blob": "41bcb9ae9bdde6deca2cfe0cc991bbf69fd9502b",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/docs/d1-refund-client.md",
+          "additions": 112,
+          "deletions": 0,
+          "source_blob": "d1d0eb7757a8272e37dabfb47f6aa82f2ed7f1d8",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/docs/d1-remainder-client.md",
+          "additions": 62,
+          "deletions": 0,
+          "source_blob": "304325e07d1628d52e480c96c88d026ef1e648be",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_client.dart",
+          "additions": 83,
+          "deletions": 0,
+          "source_blob": "53809809d54a4037bc237871cf9e8a36372cc498",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_http_client.dart",
+          "additions": 148,
+          "deletions": 0,
+          "source_blob": "cc0dad6cbcf246487b27121e0698fa76dd11ddb2",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_remainder_client.dart",
+          "additions": 98,
+          "deletions": 0,
+          "source_blob": "ce9249c574f1f37299c39b8ed3158db5b3f76ede",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_remainder_http_client.dart",
+          "additions": 176,
+          "deletions": 0,
+          "source_blob": "777df9c3bf3bf7b8560643a5c5b84a501d8aa0a6",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_remainder_status_client.dart",
+          "additions": 199,
+          "deletions": 0,
+          "source_blob": "3746bc2c66db2105383093bcb5cf8c927df4cc97",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_remainder_submission_journal.dart",
+          "additions": 35,
+          "deletions": 0,
+          "source_blob": "455d88b0f2b493ec613a522c5e3c4f6b34787346",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_submission_gate.dart",
+          "additions": 136,
+          "deletions": 0,
+          "source_blob": "090a2919e1a8091f2ded87cd1db52c99bf84b60b",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_submission_journal.dart",
+          "additions": 84,
+          "deletions": 0,
+          "source_blob": "d1589692b822a9e8a544ebb7022296de093eac76",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/data/refund_wallet_signer.dart",
+          "additions": 59,
+          "deletions": 0,
+          "source_blob": "ffdea27a162ba39529c0f506a5cf88cd7b4b76fd",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/domain/custody_profile.dart",
+          "additions": 39,
+          "deletions": 0,
+          "source_blob": "9112b89588e3c74afd1215eb1c546d2f172068a1",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/domain/refund_remainder_status.dart",
+          "additions": 209,
+          "deletions": 0,
+          "source_blob": "e6ca77d817c5a73fff616780cda2b5d882915bf3",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/domain/refund_scope.dart",
+          "additions": 120,
+          "deletions": 0,
+          "source_blob": "104349344fa8086b6d19d3d6e96842e9bcc49106",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/domain/refund_status.dart",
+          "additions": 198,
+          "deletions": 0,
+          "source_blob": "e6752d24c50253679e3607a039cbc858900e2805",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/presentation/refund_admin_screen.dart",
+          "additions": 244,
+          "deletions": 0,
+          "source_blob": "e2bcb4d95216896c6ee773e2278f9f27128e540b",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/presentation/refund_panel.dart",
+          "additions": 223,
+          "deletions": 0,
+          "source_blob": "2a8b7148dc17faeecfc58618f257d7ffd9c8775f",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/presentation/refund_remainder_panel.dart",
+          "additions": 191,
+          "deletions": 0,
+          "source_blob": "089fad017517ab41664ade7eaace9e9c7df82636",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/lib/features/refund/refund_providers.dart",
+          "additions": 106,
+          "deletions": 0,
+          "source_blob": "2cb8127857448d84eed3998839520668c12598b1",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/d1_custody_profile_test.dart",
+          "additions": 608,
+          "deletions": 0,
+          "source_blob": "101c01571cf4c139b94773997c50b2d00b51f99e",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/independent_b_probe_test.dart",
+          "additions": 299,
+          "deletions": 0,
+          "source_blob": "dae802dbb3327dba7f9398350e29893371cb87d4",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_admin_screen_test.dart",
+          "additions": 134,
+          "deletions": 0,
+          "source_blob": "c9025635c4713d05ee5a907da89de633da8440fb",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_client_test.dart",
+          "additions": 369,
+          "deletions": 0,
+          "source_blob": "bcf624f519ba3c1f2be88ee5b8f147a6c776d6cb",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_command_coordination_test.dart",
+          "additions": 339,
+          "deletions": 0,
+          "source_blob": "baa2545ffdc5e3cec32eb1af793d510bff8c94a0",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_deadline_independent_test.dart",
+          "additions": 169,
+          "deletions": 0,
+          "source_blob": "dbd3ccdeaa793b6e00d36c75e6b7f55b6ad49e7f",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_host_boundary_independent_test.dart",
+          "additions": 172,
+          "deletions": 0,
+          "source_blob": "4636f62fe8ae83fa6c620cd9c0220919970100ca",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_host_errors_test.dart",
+          "additions": 297,
+          "deletions": 0,
+          "source_blob": "9a51cfb79fbeb9fdecc135170f80a1ba374b39b8",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_panel_test.dart",
+          "additions": 299,
+          "deletions": 0,
+          "source_blob": "34df6e1b59261730cd5ed1bdbcd3cf2d7cd2da70",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_providers_test.dart",
+          "additions": 157,
+          "deletions": 0,
+          "source_blob": "baf289080b62c686b197a2a06f5e38e8a4375322",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_remainder_client_test.dart",
+          "additions": 188,
+          "deletions": 0,
+          "source_blob": "4054948c08a32476141cf3a08b54ba7ec4e2f0af",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_remainder_status_test.dart",
+          "additions": 183,
+          "deletions": 0,
+          "source_blob": "73f47e8a136817915757f277555268dd8dd54944",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_responsive_layout_test.dart",
+          "additions": 109,
+          "deletions": 0,
+          "source_blob": "318a59aa5aca506f953d2398ca39eb102eaf2bf2",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_status_test.dart",
+          "additions": 178,
+          "deletions": 0,
+          "source_blob": "5dc04b9ddc297bae9b0cc2416e0c38e33913c40f",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/refund_test_fixtures.dart",
+          "additions": 109,
+          "deletions": 0,
+          "source_blob": "4414cbcac1f0f96a0282a7aaaa377f24a81950dc",
+          "source_mode": "100644"
+        }
+      ]
+    },
+    {
+      "id": "identity-navigation",
+      "additions": 667,
+      "deletions": 0,
+      "paths": [
+        {
+          "path": "vaca_app/lib/features/identity/presentation/identity_data_screen.dart",
+          "additions": 3,
+          "deletions": 0,
+          "source_blob": "8d9bb5fb6770f6290531a88812384b7492a587ee",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/test/identity_refund_navigation_test.dart",
+          "additions": 430,
+          "deletions": 0,
+          "source_blob": "9d41f11497e87c395c17af8bda685ac5a3afdcd0",
+          "source_mode": "100644"
+        },
+        {
+          "path": "vaca_app/docs/d1-android-artifact-delivery.md",
+          "additions": 234,
+          "deletions": 0,
+          "source_blob": "96f7187f7b5d2b1503e87576242effb204e31407",
+          "source_mode": "100644"
+        }
+      ]
+    }
+  ]
+}
