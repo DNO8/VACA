@@ -1,4 +1,43 @@
-# D1 backend: offline unsigned issuance planning and validation
+# D1 backend: local preparation and offline unsigned issuance
+
+## Verify local database preparation and the legacy allocation fence
+
+Migrations `015_d1_testnet_custody.sql` and `023_d1_legacy_allocation_guard.sql`
+form one local-only unit. This is **not a deployable migration history**: `016`–`022`
+are intentionally absent. Do not apply these migrations to a live database, use a
+migration glob, or configure automatic deployment. A preparation receipt records
+local allocation, not proof of payment, pool readiness or authority to issue.
+
+From the repository root, run the service-free tests first, then the database suite
+on Linux with the already installed isolated toolchain:
+
+```sh
+node --test supabase/tests/integration/fixture-runtime.test.cjs supabase/tests/config-boundary.test.cjs
+D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node supabase/tests/integration/preparation-database.test.cjs
+```
+
+The database suite bootstraps its own `/tmp` cluster as `postgres` on an ephemeral
+`127.0.0.1` port through `run-isolated.cjs`, without inherited PostgreSQL settings or
+Unix sockets. It creates synthetic roles, a wallet/incident fixture and their
+public-only account IDs; the fixture `service_role` models Supabase's RLS bypass
+but still needs the SQL grants. It applies these exact paths, in order:
+
+1. `tests/fixtures/retained-014.sql` and `tests/fixtures/retained-20261011060218.sql` —
+   decoded reservation and allocation statements from historical source
+   `ff89be528f0ce61474b132cfec59f65ba164297e`, with no other retained metadata or migrations.
+2. `migrations/015_d1_testnet_custody.sql`, then synthetic pool activation.
+3. `migrations/023_d1_legacy_allocation_guard.sql`, with the original function-body
+   hashes and metadata checks intact.
+
+The suite seeds historical allocation before `015`, compares stored accounting
+rows and counters around rejects, and waits for real lock contention before
+releasing transactions. It stops PostgreSQL, checks status/PID and removes scratch
+in teardown. No signing keys, ledger or remote services are involved.
+
+To reproduce the test-first negative controls in the same disposable setup, prefix
+only the database command with `D1_FIXTURE_PHASE=before-015` (missing activation RPC)
+or `D1_FIXTURE_PHASE=before-023` (unfenced legacy allocation succeeds). These modes
+intentionally exit nonzero; leave the variable unset for the full suite.
 
 ## Plan new unsigned XDR
 
