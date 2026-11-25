@@ -89,6 +89,20 @@ The parser makes no live calls and writes no records. A successful parse checks
 consistency; it does not prove ledger execution, coverage, or readiness, and does not
 grant permission to fund or issue. Any caller must establish ledger coverage separately.
 
+## Parse included-transaction evidence offline
+
+[`parseIncludedTransaction(input)`](functions/d1-custody/transaction-observation.ts)
+checks supplied Testnet transaction observations and XDR against a closed-ledger
+anchor. Only `txSuccess` and `txFailed` represent included transactions; other result
+codes are rejected. It binds the actual charged fee separately from the fee bid,
+sequence, paging token and operation outcomes without mutating the supplied input.
+
+Invalid or contradictory evidence throws the shared
+[`CustodyError`](functions/d1-custody/custody-error.ts) with code and message
+`transaction_observation_unavailable` and status `503`. No HTTP handler is imported.
+The parser checks consistency only: it does not verify signatures or consensus,
+query a ledger, submit a transaction, or authorize financial execution.
+
 ## Verify offline
 
 From the repository root, verify that no Deno task grants environment access directly:
@@ -111,15 +125,18 @@ node "$runner" deno check --config="$backend/deno.json" --lock="$backend/deno.lo
   "$backend/functions/d1-custody/preparation-types.ts" \
   "$backend/functions/d1-custody/unsigned-transaction.ts" \
   "$backend/functions/d1-custody/discovery.ts" \
+  "$backend/functions/d1-custody/custody-error.ts" \
+  "$backend/functions/d1-custody/transaction-observation.ts" \
   "$backend/tests/unit/issuance-plan.test.ts" \
   "$backend/tests/unit/unsigned-transaction.test.ts" \
-  "$backend/tests/unit/discovery.test.ts"
+  "$backend/tests/unit/discovery.test.ts" \
+  "$backend/tests/unit/transaction-observation.test.ts"
 node "$runner" deno test --allow-env --config="$backend/deno.json" --lock="$backend/deno.lock" --frozen \
   "$backend/tests/unit"
 ```
 
-The Deno `check` task covers the planner, validator, discovery parser, preparation
-types, and all three unit test files. To focus the test command, replace the directory
+The Deno `check` task covers the planner, validator, both evidence parsers, shared
+preparation types and error class, and all four unit test files. To focus the test command, replace the directory
 with one test file, for example `"$backend/tests/unit/discovery.test.ts"`. All suites use
 synthetic identities and do not need credentials or live services. The historical
 lockfile is frozen and unchanged; its Supabase SDK pin is retained for lockfile
