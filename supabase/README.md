@@ -1,10 +1,10 @@
-# D1 backend: local preparation and offline unsigned issuance
+# D1 backend: local journals and offline transaction evidence
 
 ## Verify local database preparation and the legacy allocation fence
 
 Migrations `015_d1_testnet_custody.sql` and `023_d1_legacy_allocation_guard.sql`
-form one local-only unit. This is **not a deployable migration history**: `016`–`022`
-are intentionally absent. Do not apply these migrations to a live database, use a
+form the local preparation/fence unit. This is **not a deployable migration history**:
+`019`–`022` and `024`–`032` are still absent. Do not apply these migrations to a live database, use a
 migration glob, or configure automatic deployment. A preparation receipt records
 local allocation, not proof of payment, pool readiness or authority to issue.
 
@@ -38,6 +38,45 @@ To reproduce the test-first negative controls in the same disposable setup, pref
 only the database command with `D1_FIXTURE_PHASE=before-015` (missing activation RPC)
 or `D1_FIXTURE_PHASE=before-023` (unfenced legacy allocation succeeds). These modes
 intentionally exit nonzero; leave the variable unset for the full suite.
+
+## Verify local issuance journals and sequence ownership
+
+Migrations `016`, `017` and `018` add issuance intents, reserved sequences and an
+unsigned-transaction journal. `033` backfills permanent sequence ownership from
+existing reservations and adds active-owner lookup. A reservation remains owned
+after expiry; expiry does not authorize reusing it for a competing request.
+Current-admin checks also apply to replay, including loading already saved bytes.
+
+The journal treats XDR bytes and hashes as opaque stored evidence. Saving them is
+not XDR validation, a ledger observation, or authority to sign, submit or release
+funds. RPC access is restricted to `service_role`, with RLS and no direct table
+grants to non-owner roles. These migrations are not wired into an HTTP runtime.
+
+Run both suites with the same installed isolated toolchain:
+
+```sh
+D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node supabase/tests/integration/issuance-journal-database.test.cjs
+D1_TOOL_ROOT=/home/danilo/.local/share/vaca-d1-toolchain node supabase/tests/integration/issuance-sequence-ownership.test.cjs
+```
+
+Each suite creates and cleans up its own synthetic local cluster as described above.
+The explicit load order is retained `014`/`20261011060218` → `015` → `016` → `017`
+→ `018` → `023`. The ownership suite seeds real reservations and unsigned receipts,
+including an expired owner, **before applying `033`**. No migration glob, `019`,
+`027`–`032`, or substitute financial tables are used.
+
+The tests check replay, exact rejection codes/messages and unchanged rows/counters,
+both first-owner orderings, expiry during an observed lock wait, and committed
+admin revocation blocking reservation and saved-byte replay. They also compare
+all stored pre-upgrade rows, exact table/RPC permissions, and the existing validated
+`018` foreign key and backing index before and after `033`; new journal inserts
+must still work. This does not prove compatibility with later financial FKs.
+
+For test-first negative controls, prefix the journal command with
+`D1_JOURNAL_PHASE=before-016`, `before-017`, or `before-018`, or prefix the ownership
+command with `D1_OWNERSHIP_PHASE=before-033`. Each intentionally fails on a missing
+public RPC; the last control runs against populated `017`/`018` state. Leave these
+variables unset for passing verification.
 
 ## Plan new unsigned XDR
 
