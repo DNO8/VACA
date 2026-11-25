@@ -1,4 +1,4 @@
-# D1 backend: local journals and indexer evidence
+# Backend source: D1 offline units and the vote contract
 
 ## Verify local database preparation and the legacy allocation fence
 
@@ -217,4 +217,36 @@ adapter, shared preparation types and error class, and all eight unit test files
 with one test file, for example `"$backend/tests/unit/discovery.test.ts"`. All suites use
 synthetic identities and do not need credentials or live services. The historical
 lockfile is frozen and unchanged; its Supabase SDK pin is retained for lockfile
-consistency but not imported by these modules.
+consistency but not imported by these D1 modules.
+
+## Vote source-only integration
+
+The separate `vaquita-vote` handler and `_shared/d2-integrity.ts` preserve source
+from `efe4ec420549cded652cb4e13e55ab0eb8a0b0ef` and its inherited vote policy.
+See [the vote contract and limitations](docs/vote-age-preflight.md) before using it.
+This is not a D2 database bootstrap or a deployment-ready backend history.
+No feed, ACL migration, Android flow, signing or operational activation is included.
+
+Run only the vote-scoped fixtures from the repository root:
+
+```sh
+node --test supabase/tests/vote-preflight.test.mjs supabase/tests/vote.test.mjs
+```
+
+The separate `check:vote` task leaves the D1 `check` task unchanged. Use its explicit
+inputs through the same pre-existing isolated runner and frozen cache:
+
+```sh
+runner=/home/danilo/.local/share/vaca-d1-toolchain/run-isolated.cjs
+backend="$PWD/supabase"
+node "$runner" deno check --config="$backend/deno.json" --lock="$backend/deno.lock" --frozen \
+  "$backend/functions/vaquita-vote/index.ts" \
+  "$backend/functions/_shared/d2-integrity.ts"
+```
+
+The vote handler imports both pinned SDKs. Its `@ts-nocheck` and the Node harness's
+import replacement limit type/runtime evidence: these checks do not prove real
+SDK requests, gateway JWT behavior, effective DB/RPC permissions, atomic writes,
+Horizon history, wallet interaction or deployed acceptance. The inherited POST
+can persist a vote before a failed counter update; this source unit does not fix
+that behavior. Do not deploy or replay historical migrations from these checks.
