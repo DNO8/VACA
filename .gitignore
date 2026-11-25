@@ -19,6 +19,9 @@
 !/supabase/README.md
 !/supabase/deno.json
 !/supabase/deno.lock
+!/supabase/docs/
+/supabase/docs/*
+!/supabase/docs/vote-age-preflight.md
 !/supabase/functions/
 /supabase/functions/*
 !/supabase/functions/d1-custody/
@@ -30,6 +33,12 @@
 !/supabase/functions/d1-custody/transaction-observation.ts
 !/supabase/functions/d1-custody/custody-error.ts
 !/supabase/functions/d1-custody/discovery-source.ts
+!/supabase/functions/vaquita-vote/
+/supabase/functions/vaquita-vote/*
+!/supabase/functions/vaquita-vote/index.ts
+!/supabase/functions/_shared/
+/supabase/functions/_shared/*
+!/supabase/functions/_shared/d2-integrity.ts
 !/supabase/migrations/
 /supabase/migrations/*
 !/supabase/migrations/015_d1_testnet_custody.sql
@@ -41,6 +50,9 @@
 !/supabase/tests/
 /supabase/tests/*
 !/supabase/tests/config-boundary.test.cjs
+!/supabase/tests/edge-harness.mjs
+!/supabase/tests/vote-preflight.test.mjs
+!/supabase/tests/vote.test.mjs
 !/supabase/tests/fixtures/
 /supabase/tests/fixtures/*
 !/supabase/tests/fixtures/retained-014.sql
